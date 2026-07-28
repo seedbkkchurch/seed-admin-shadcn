@@ -1,14 +1,13 @@
 import { Link } from '@tanstack/react-router'
+import { MailQuestion } from 'lucide-react'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { AuthLayout } from '../auth-layout'
-import { SignUpForm } from './components/sign-up-form'
 
 export function SignUp() {
   return (
@@ -16,10 +15,16 @@ export function SignUp() {
       <Card className='max-w-sm gap-4'>
         <CardHeader>
           <CardTitle className='text-lg tracking-tight'>
-            Create an account
+            Sign up is closed
           </CardTitle>
           <CardDescription>
-            Enter your email and password to create an account. <br />
+            New accounts are created by an administrator. If you need access,
+            reach out to your admin and ask them to create an account for you.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='flex flex-col items-center gap-4 text-center'>
+          <MailQuestion className='h-10 w-10 text-muted-foreground' />
+          <p className='text-sm text-muted-foreground'>
             Already have an account?{' '}
             <Link
               to='/sign-in'
@@ -27,30 +32,8 @@ export function SignUp() {
             >
               Sign In
             </Link>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SignUpForm />
-        </CardContent>
-        <CardFooter>
-          <p className='px-8 text-center text-sm text-muted-foreground'>
-            By creating an account, you agree to our{' '}
-            <a
-              href='/terms'
-              className='underline underline-offset-4 hover:text-primary'
-            >
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a
-              href='/privacy'
-              className='underline underline-offset-4 hover:text-primary'
-            >
-              Privacy Policy
-            </a>
-            .
           </p>
-        </CardFooter>
+        </CardContent>
       </Card>
     </AuthLayout>
   )
