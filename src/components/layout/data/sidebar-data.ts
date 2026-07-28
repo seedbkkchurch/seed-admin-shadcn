@@ -6,6 +6,7 @@ import {
   ListTodo,
   FileX,
   HelpCircle,
+  IdCard,
   Lock,
   Bell,
   Package,
@@ -77,6 +78,11 @@ export const sidebarData: SidebarData = {
           title: 'Users',
           url: '/users',
           icon: Users,
+        },
+        {
+          title: 'Lamb Info',
+          url: '/lamb-info',
+          icon: IdCard,
         },
         {
           title: 'Secured by Clerk',
