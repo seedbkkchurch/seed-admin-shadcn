@@ -22,6 +22,8 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  HeartHandshake,
+  BrainCircuit,
 } from 'lucide-react'
 import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
@@ -83,6 +85,16 @@ export const sidebarData: SidebarData = {
           title: 'Lamb Info',
           url: '/lamb-info',
           icon: IdCard,
+        },
+        {
+          title: 'Group Care',
+          url: '/group-care',
+          icon: HeartHandshake,
+        },
+        {
+          title: 'Personality Type',
+          url: '/personality-type',
+          icon: BrainCircuit,
         },
         {
           title: 'Secured by Clerk',
