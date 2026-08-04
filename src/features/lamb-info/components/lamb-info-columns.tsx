@@ -78,7 +78,7 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Group' />
     ),
-    cell: ({ row }) => <div>{row.original.group_care?.name || '-'}</div>,
+    cell: ({ row }) => <div>{row.original.group_care_info?.name || '-'}</div>,
     enableSorting: false,
   },
   {

@@ -18,7 +18,9 @@ export function useLambInfoList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('lamb_info')
-        .select('*, group_care(id, name), personality_type(code, description)')
+        .select(
+          '*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)'
+        )
         .order('first_name', { ascending: true })
 
       if (error) throw error
@@ -48,7 +50,7 @@ export function usePersonalityTypeOptions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('personality_type')
-        .select('code, description')
+        .select('code, description_en, description_th, explain, archetype')
         .order('code', { ascending: true })
 
       if (error) throw error

@@ -41,21 +41,21 @@ const formSchema = z.object({
   first_name: z.string().min(1, 'First name is required.'),
   last_name: z.string().min(1, 'Last name is required.'),
   gender: z.string().optional(),
-  adddress: z.string().optional(),
+  address: z.string().optional(),
   email: z
     .union([z.email({ error: 'Enter a valid email.' }), z.literal('')])
     .optional(),
   phone: z.string().optional(),
-  bithday: z.date().optional(),
+  birthday: z.date().optional(),
   job: z.string().optional(),
   interesting: z.string().optional(),
-  istimote: z.boolean(),
+  is_timote: z.boolean(),
   status: z.boolean(),
-  group_id: z.string().optional(),
+  group_care: z.string().optional(),
   age: z.string().optional(),
-  age_in_god: z.string().optional(),
+  years_of_faith: z.string().optional(),
   remark: z.string().optional(),
-  previous_chruch: z.string().optional(),
+  previous_church: z.string().optional(),
   personality_code: z.string().optional(),
 })
 type LambInfoForm = z.infer<typeof formSchema>
@@ -73,19 +73,19 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       first_name: '',
       last_name: '',
       gender: '',
-      adddress: '',
+      address: '',
       email: '',
       phone: '',
-      bithday: undefined,
+      birthday: undefined,
       job: '',
       interesting: '',
-      istimote: false,
+      is_timote: false,
       status: true,
-      group_id: '',
+      group_care: '',
       age: '',
-      age_in_god: '',
+      years_of_faith: '',
       remark: '',
-      previous_chruch: '',
+      previous_church: '',
       personality_code: '',
     }
   }
@@ -94,20 +94,22 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     first_name: currentRow.first_name ?? '',
     last_name: currentRow.last_name ?? '',
     gender: currentRow.gender ?? '',
-    adddress: currentRow.adddress ?? '',
+    address: currentRow.address ?? '',
     email: currentRow.email ?? '',
     phone: currentRow.phone ?? '',
-    bithday: currentRow.bithday ? new Date(currentRow.bithday) : undefined,
+    birthday: currentRow.birthday ? new Date(currentRow.birthday) : undefined,
     job: currentRow.job ?? '',
     interesting: currentRow.interesting ?? '',
-    istimote: currentRow.istimote ?? false,
+    is_timote: currentRow.is_timote ?? false,
     status: currentRow.status ?? true,
-    group_id: currentRow.group_id ?? '',
+    group_care: currentRow.group_care ?? '',
     age: currentRow.age != null ? String(currentRow.age) : '',
-    age_in_god:
-      currentRow.age_in_god != null ? String(currentRow.age_in_god) : '',
+    years_of_faith:
+      currentRow.years_of_faith != null
+        ? String(currentRow.years_of_faith)
+        : '',
     remark: currentRow.remark ?? '',
-    previous_chruch: currentRow.previous_chruch ?? '',
+    previous_church: currentRow.previous_church ?? '',
     personality_code: currentRow.personality_code ?? '',
   }
 }
@@ -144,19 +146,21 @@ export function LambInfoActionDialog({
       first_name: values.first_name,
       last_name: values.last_name,
       gender: values.gender || null,
-      adddress: values.adddress || null,
+      address: values.address || null,
       email: values.email || null,
       phone: values.phone || null,
-      bithday: values.bithday ? format(values.bithday, 'yyyy-MM-dd') : null,
+      birthday: values.birthday ? format(values.birthday, 'yyyy-MM-dd') : null,
       job: values.job || null,
       interesting: values.interesting || null,
-      istimote: values.istimote,
+      is_timote: values.is_timote,
       status: values.status,
-      group_id: values.group_id || null,
+      group_care: values.group_care || null,
       age: values.age ? Number(values.age) : null,
-      age_in_god: values.age_in_god ? Number(values.age_in_god) : null,
+      years_of_faith: values.years_of_faith
+        ? Number(values.years_of_faith)
+        : null,
       remark: values.remark || null,
-      previous_chruch: values.previous_chruch || null,
+      previous_church: values.previous_church || null,
       personality_code: values.personality_code || null,
     }
 
@@ -258,7 +262,7 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='adddress'
+                name='address'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
@@ -299,7 +303,7 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='bithday'
+                name='birthday'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
@@ -364,11 +368,11 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='age_in_god'
+                name='years_of_faith'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Age in God
+                      Years of Faith
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -384,7 +388,7 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='group_id'
+                name='group_care'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>Group</FormLabel>
@@ -418,8 +422,8 @@ export function LambInfoActionDialog({
                       className='col-span-4'
                       isPending={isPersonalityPending}
                       items={(personalityOptions ?? []).map((p) => ({
-                        label: p.description
-                          ? `${p.code} — ${p.description}`
+                        label: p.description_th
+                          ? `${p.code} — ${p.description_th}`
                           : p.code,
                         value: p.code,
                       }))}
@@ -430,7 +434,7 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='previous_chruch'
+                name='previous_church'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
@@ -460,11 +464,11 @@ export function LambInfoActionDialog({
               />
               <FormField
                 control={form.control}
-                name='istimote'
+                name='is_timote'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Istimote
+                      Is Timote
                     </FormLabel>
                     <FormControl>
                       <Switch
