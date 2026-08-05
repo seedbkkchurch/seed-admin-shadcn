@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -42,7 +43,13 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     ),
     cell: ({ row }) => (
       <LongText className='max-w-36 ps-3'>
-        {row.getValue('nick_name') || '-'}
+        <Link
+          to='/lamb-info/$lambId'
+          params={{ lambId: row.original.id }}
+          className='hover:underline'
+        >
+          {row.getValue('nick_name') || '-'}
+        </Link>
       </LongText>
     ),
     meta: {
@@ -61,7 +68,17 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     cell: ({ row }) => {
       const { first_name, last_name } = row.original
       const fullName = [first_name, last_name].filter(Boolean).join(' ')
-      return <LongText className='max-w-48'>{fullName}</LongText>
+      return (
+        <LongText className='max-w-48'>
+          <Link
+            to='/lamb-info/$lambId'
+            params={{ lambId: row.original.id }}
+            className='hover:underline'
+          >
+            {fullName}
+          </Link>
+        </LongText>
+      )
     },
     meta: { className: 'w-48' },
   },

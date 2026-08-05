@@ -4,6 +4,7 @@ import { type LambInfo, type LambInfoRow } from './schema'
 
 const lambInfoKeys = {
   list: ['lamb-info'] as const,
+  detail: (id: string) => ['lamb-info', id] as const,
 }
 const groupCareKeys = {
   list: ['group-care'] as const,
@@ -25,6 +26,25 @@ export function useLambInfoList() {
 
       if (error) throw error
       return data as LambInfoRow[]
+    },
+  })
+}
+
+export function useLambInfoDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: lambInfoKeys.detail(id ?? ''),
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lamb_info')
+        .select(
+          '*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)'
+        )
+        .eq('id', id as string)
+        .single()
+
+      if (error) throw error
+      return data as LambInfoRow
     },
   })
 }

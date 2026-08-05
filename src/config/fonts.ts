@@ -1,6 +1,11 @@
 /**
  * List of available font names (visit the url `/settings/appearance`).
- * This array is used to generate dynamic font classes (e.g., `font-inter`, `font-manrope`).
+ * This array is used to generate dynamic font classes (e.g., `font-google-sans`).
+ *
+ * The site-wide default is 'google-sans', loaded via the Google Fonts link in
+ * index.html: 'Google Sans' (Latin) with 'IBM Plex Sans Thai Looped' as a
+ * fallback for Thai glyphs, which Google Sans doesn't cover. See
+ * --font-google-sans in src/styles/theme.css.
  *
  * 📝 How to Add a New Font (Tailwind v4+):
  * 1. Add the font name here.
@@ -16,4 +21,4 @@
  *      --font-roboto: 'Roboto', var(--font-sans);
  *   }
  */
-export const fonts = ['inter', 'manrope', 'system'] as const
+export const fonts = ['google-sans', 'system'] as const
