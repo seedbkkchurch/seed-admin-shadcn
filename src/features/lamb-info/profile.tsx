@@ -174,7 +174,9 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
       </div>
       <GeneralInfoCard row={row} />
       <SpiritualInfoCard row={row} />
-      <GrowthProgressCard />
+      <GrowthProgressCard
+        chapterProgress={row.lamb_lesson_ch18_progress ?? null}
+      />
       <GiftsCard key={row.id} lambId={row.id} />
     </div>
   )

@@ -23,6 +23,15 @@ export const lambInfoSchema = z.object({
   remark: z.string().nullable(),
   previous_church: z.string().nullable(),
   personality_code: z.string().nullable(),
+  // Progress through the fixed 18-chapter growth curriculum (see
+  // data/lessons.ts GROWTH_LESSONS) — a count of chapters completed, e.g.
+  // 7 means chapters 1-7 are done. Separate track from life-topic lessons.
+  // .optional() (not just .nullable()) because lamb-info-action-dialog's
+  // create/update form doesn't manage these fields yet (read-only display
+  // only, see growth-progress-card.tsx) — its payload omits them entirely,
+  // and LambInfoInput (Omit<LambInfo, 'id'>) must allow that.
+  lamb_lesson_ch18_progress: z.number().nullable().optional(),
+  lamb_lesson_life_progress: z.number().nullable().optional(),
 })
 export type LambInfo = z.infer<typeof lambInfoSchema>
 

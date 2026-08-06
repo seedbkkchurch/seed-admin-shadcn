@@ -1,22 +1,25 @@
-import { useState } from 'react'
 import { CircleCheckBig, HandHeart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { GROWTH_LESSONS } from '../data/lessons'
 
-// This card has no backing table yet — `lamb_info` doesn't track lesson
-// completion, ministry role, or start date. The checklist below is
-// interactive for preview purposes only; state is local to this component
-// and is never persisted or loaded from the server. Once a growth-progress
-// data model exists, replace the local `checked` state and the ministry
-// placeholders with real queries/mutations.
-export function GrowthProgressCard() {
-  const [checked, setChecked] = useState<Record<number, boolean>>({})
+// Driven by `lamb_info.lamb_lesson_ch18_progress` (a count of chapters
+// completed, e.g. 7 means chapters 1-7 are done) — read-only for now.
+// Checkboxes are disabled: there's no mutation/save path yet, only
+// display. See lamb-info-action-dialog.tsx if/when editing this value is
+// wired in.
+//
+// The "ministry" section below still has no backing data on `lamb_info`
+// (no role/start-date columns), so it stays as placeholder text.
+type GrowthProgressCardProps = {
+  chapterProgress: number | null
+}
 
-  const toggleLesson = (id: number) => {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
-  }
+export function GrowthProgressCard({
+  chapterProgress,
+}: GrowthProgressCardProps) {
+  const completedCount = chapterProgress ?? 0
 
   return (
     <Card>
@@ -31,21 +34,21 @@ export function GrowthProgressCard() {
               บทเรียนที่ศึกษาแล้ว
             </div>
             <span className='text-xs text-muted-foreground'>
-              ยังไม่เชื่อมข้อมูล — ใช้งานได้ชั่วคราว
+              ข้อมูลจริงจากระบบ — แก้ไขยังไม่ได้ตอนนี้
             </span>
           </div>
           <div className='rounded-lg bg-teal-50/60 p-4 dark:bg-teal-950/20'>
             <div className='grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2'>
               {GROWTH_LESSONS.map((lesson) => {
-                const isChecked = !!checked[lesson.id]
+                const isChecked = lesson.id <= completedCount
                 return (
                   <label
                     key={lesson.id}
-                    className='flex cursor-pointer items-center gap-2 py-0.5 text-sm'
+                    className='flex items-center gap-2 py-0.5 text-sm'
                   >
                     <Checkbox
                       checked={isChecked}
-                      onCheckedChange={() => toggleLesson(lesson.id)}
+                      disabled
                       className='data-[state=checked]:border-teal-600 data-[state=checked]:bg-teal-600 dark:data-[state=checked]:bg-teal-600'
                     />
                     <span
