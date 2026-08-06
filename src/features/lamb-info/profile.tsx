@@ -78,6 +78,14 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
             >
               {row.status ? 'Active' : 'Inactive'}
             </Badge>
+            {row.tags && (
+              <Badge
+                variant='outline'
+                className='bg-violet-100/30 text-violet-900 border-violet-200 dark:text-violet-200'
+              >
+                {row.tags}
+              </Badge>
+            )}
           </div>
           <p className='text-muted-foreground'>{fullName}</p>
         </div>

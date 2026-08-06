@@ -22,6 +22,7 @@ export function useLambInfoList() {
         .select(
           '*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)'
         )
+        .order('status', { ascending: false })
         .order('first_name', { ascending: true })
 
       if (error) throw error

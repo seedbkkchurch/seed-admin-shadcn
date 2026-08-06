@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const lambInfoSchema = z.object({
   id: z.string(),
   nick_name: z.string().nullable(),
+  profile_picture: z.string().nullable(),
+  tags: z.string().nullable(),
   first_name: z.string(),
   last_name: z.string(),
   gender: z.string().nullable(),

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   type SortingState,
+  type Updater,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
@@ -31,10 +32,27 @@ type DataTableProps = {
   navigate: NavigateFn
 }
 
+// Active rows are always pinned above Inactive rows, no matter what the
+// user sorts by. We do this by keeping a `status desc` entry pinned at the
+// front of the table's sorting state, with the user's chosen column sort
+// (if any) applied after it as the tie-breaker within each status group.
+const STATUS_SORT = { id: 'status', desc: true } as const
+
+function pinStatusSort(sorting: SortingState): SortingState {
+  return [STATUS_SORT, ...sorting.filter((s) => s.id !== 'status')]
+}
+
 export function LambInfoTable({ data, search, navigate }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([STATUS_SORT])
+
+  const handleSortingChange = (updater: Updater<SortingState>) => {
+    setSorting((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      return pinStatusSort(next)
+    })
+  }
 
   const {
     columnFilters,
@@ -67,7 +85,7 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
     onPaginationChange,
     onColumnFiltersChange,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     onColumnVisibilityChange: setColumnVisibility,
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),

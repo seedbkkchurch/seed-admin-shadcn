@@ -1,6 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
@@ -41,17 +42,23 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nickname' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-36 ps-3'>
+    cell: ({ row }) => {
+      const { profile_picture, nick_name, first_name } = row.original
+      const initial = (nick_name || first_name || '?').charAt(0).toUpperCase()
+      return (
         <Link
           to='/lamb-info/$lambId'
           params={{ lambId: row.original.id }}
-          className='hover:underline'
+          className='flex items-center gap-2 ps-3 hover:underline'
         >
-          {row.getValue('nick_name') || '-'}
+          <Avatar>
+            {profile_picture && <AvatarImage src={profile_picture} alt='' />}
+            <AvatarFallback>{initial}</AvatarFallback>
+          </Avatar>
+          <LongText className='max-w-36'>{nick_name || '-'}</LongText>
         </Link>
-      </LongText>
-    ),
+      )
+    },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
@@ -100,9 +107,7 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
   },
   {
     accessorKey: 'status',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
-    ),
+    header: 'Status',
     cell: ({ row }) => {
       const status = row.getValue('status')
       return (
@@ -119,7 +124,10 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
         </Badge>
       )
     },
-    enableSorting: false,
+    // Sorting on this column is always pinned first by the table (see
+    // lamb-info-table.tsx) rather than user-toggled, so no sort-toggle
+    // header UI is rendered here.
+    enableSorting: true,
   },
   {
     id: 'actions',

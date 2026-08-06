@@ -37,6 +37,9 @@ import {
 import { type LambInfoRow } from '../data/schema'
 
 const formSchema = z.object({
+  profile_picture: z
+    .union([z.url({ error: 'Enter a valid URL.' }), z.literal('')])
+    .optional(),
   nick_name: z.string().optional(),
   first_name: z.string().min(1, 'First name is required.'),
   last_name: z.string().min(1, 'Last name is required.'),
@@ -57,6 +60,7 @@ const formSchema = z.object({
   remark: z.string().optional(),
   previous_church: z.string().optional(),
   personality_code: z.string().optional(),
+  tags: z.string().optional(),
 })
 type LambInfoForm = z.infer<typeof formSchema>
 
@@ -69,6 +73,7 @@ type LambInfoActionDialogProps = {
 function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
   if (!currentRow) {
     return {
+      profile_picture: '',
       nick_name: '',
       first_name: '',
       last_name: '',
@@ -87,9 +92,11 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       remark: '',
       previous_church: '',
       personality_code: '',
+      tags: '',
     }
   }
   return {
+    profile_picture: currentRow.profile_picture ?? '',
     nick_name: currentRow.nick_name ?? '',
     first_name: currentRow.first_name ?? '',
     last_name: currentRow.last_name ?? '',
@@ -111,6 +118,7 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     remark: currentRow.remark ?? '',
     previous_church: currentRow.previous_church ?? '',
     personality_code: currentRow.personality_code ?? '',
+    tags: currentRow.tags ?? '',
   }
 }
 
@@ -142,6 +150,7 @@ export function LambInfoActionDialog({
 
   const onSubmit = async (values: LambInfoForm) => {
     const payload = {
+      profile_picture: values.profile_picture || null,
       nick_name: values.nick_name || null,
       first_name: values.first_name,
       last_name: values.last_name,
@@ -162,6 +171,7 @@ export function LambInfoActionDialog({
       remark: values.remark || null,
       previous_church: values.previous_church || null,
       personality_code: values.personality_code || null,
+      tags: values.tags || null,
     }
 
     try {
@@ -202,6 +212,21 @@ export function LambInfoActionDialog({
               onSubmit={form.handleSubmit(onSubmit)}
               className='space-y-4 px-0.5'
             >
+              <FormField
+                control={form.control}
+                name='profile_picture'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-end'>
+                      Profile Picture URL
+                    </FormLabel>
+                    <FormControl>
+                      <Input className='col-span-4' autoComplete='off' {...field} />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name='nick_name'
@@ -440,6 +465,19 @@ export function LambInfoActionDialog({
                     <FormLabel className='col-span-2 text-end'>
                       Previous Church
                     </FormLabel>
+                    <FormControl>
+                      <Input className='col-span-4' autoComplete='off' {...field} />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='tags'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-end'>Tags</FormLabel>
                     <FormControl>
                       <Input className='col-span-4' autoComplete='off' {...field} />
                     </FormControl>
