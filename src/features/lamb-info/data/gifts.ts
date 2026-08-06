@@ -1,9 +1,11 @@
-// Data + local persistence for the "Gifts from God" spiritual gifts
-// assessment card. There is no `spiritual_gifts` table in Supabase yet —
-// scores are edited in a form and saved to this browser's localStorage,
-// keyed per lamb. The category grouping below is an editorial judgment
-// call (not from a canonical source); adjust freely once a real
-// assessment/scoring model is defined.
+// Data helpers for the "Gifts from God" spiritual gifts assessment card.
+// Backed by the `gift_from_god` Supabase table (one row per lamb, 25
+// smallint score columns 0-15, keyed by lamb_id). See queries.ts for the
+// actual fetch/upsert hooks.
+//
+// GIFT_DEFINITIONS' order/column mapping matches the original Excel import
+// 1:1 (confirmed against the source spreadsheet) — do not reorder or
+// rename without re-checking that mapping against the spreadsheet.
 
 export const GIFT_CATEGORIES = [
   'Teaching',
@@ -16,80 +18,115 @@ export const GIFT_CATEGORIES = [
 
 export type GiftCategory = (typeof GIFT_CATEGORIES)[number]
 
-export type Gift = {
+export type GiftDefinition = {
+  // Matches a smallint column name on the `gift_from_god` table.
+  column: string
   name: string
   category: GiftCategory
-  // Score on a 0–15 scale, matching the reference detailed-view chart.
-  score: number
 }
 
-// Default/fallback scores — used until a lamb has their own saved scores.
-export const DEFAULT_GIFTS: Gift[] = [
-  { name: 'เผยพระวจนะ', category: 'Prophecy', score: 8 },
-  { name: 'อภิบาล', category: 'Leadership', score: 6 },
-  { name: 'การสอน', category: 'Teaching', score: 11 },
-  { name: 'ถ้อยคำประกอบด้วยสติปัญญา', category: 'Teaching', score: 9 },
-  { name: 'ถ้อยคำประกอบด้วยความรู้', category: 'Teaching', score: 10 },
-  { name: 'การตักเตือนและหนุนใจ', category: 'Compassion', score: 10 },
-  { name: 'การรับใช้วิญญาณ', category: 'Prophecy', score: 6 },
-  { name: 'การบริจาค', category: 'Service', score: 7 },
-  { name: 'การประนีประนอม', category: 'Compassion', score: 9 },
-  { name: 'ความเมตตา', category: 'Compassion', score: 12 },
-  { name: 'มีชัยชนะ', category: 'Leadership', score: 6 },
-  { name: 'ผู้ประกาศ', category: 'Evangelism', score: 10 },
-  { name: 'การรับรองแขก', category: 'Service', score: 8 },
-  { name: 'ความเชื่อ', category: 'Leadership', score: 11 },
-  { name: 'ผู้ครอบครอง', category: 'Leadership', score: 7 },
-  { name: 'ผู้บริหาร', category: 'Leadership', score: 8 },
-  { name: 'การอัศจรรย์', category: 'Prophecy', score: 5 },
-  { name: 'การรักษาโรค', category: 'Compassion', score: 6 },
-  { name: 'การพูดภาษาแปลก', category: 'Prophecy', score: 4 },
-  { name: 'การแปลภาษาแปลก', category: 'Prophecy', score: 4 },
-  { name: 'อัครทูต', category: 'Evangelism', score: 7 },
-  { name: 'การอยู่เป็นโสด', category: 'Service', score: 5 },
-  { name: 'การอธิษฐานอ้อนวอน', category: 'Service', score: 10 },
-  { name: 'การช่วยเหลือ', category: 'Service', score: 9 },
-  { name: 'ผู้อุปถัมภ์', category: 'Compassion', score: 7 },
+export const GIFT_DEFINITIONS: GiftDefinition[] = [
+  { column: 'prophet', name: 'เผยพระวจนะ', category: 'Prophecy' },
+  { column: 'pastoral', name: 'อภิบาล', category: 'Leadership' },
+  { column: 'teaching', name: 'การสอน', category: 'Teaching' },
+  {
+    column: 'word_of_wisdom',
+    name: 'ถ้อยคำประกอบด้วยสติปัญญา',
+    category: 'Teaching',
+  },
+  {
+    column: 'words_with_knowledge',
+    name: 'ถ้อยคำประกอบด้วยความรู้',
+    category: 'Teaching',
+  },
+  {
+    column: 'warning_and_encouragement',
+    name: 'การตักเตือนและหนุนใจ',
+    category: 'Compassion',
+  },
+  {
+    column: 'discernment_of_spirits',
+    name: 'การรับใช้วิญญาณ',
+    category: 'Prophecy',
+  },
+  { column: 'offering', name: 'การบริจาค', category: 'Service' },
+  { column: 'to_serve', name: 'การประนีประนอม', category: 'Compassion' },
+  { column: 'compassion', name: 'ความเมตตา', category: 'Compassion' },
+  { column: 'missionary', name: 'มีชัยชนะ', category: 'Leadership' },
+  { column: 'preacher', name: 'ผู้ประกาศ', category: 'Evangelism' },
+  { column: 'welcoming_guests', name: 'การรับรองแขก', category: 'Service' },
+  { column: 'faith_trust', name: 'ความเชื่อ', category: 'Leadership' },
+  { column: 'ruler', name: 'ผู้ครอบครอง', category: 'Leadership' },
+  { column: 'executive', name: 'ผู้บริหาร', category: 'Leadership' },
+  { column: 'miracle', name: 'การอัศจรรย์', category: 'Prophecy' },
+  { column: 'healing_of_disease', name: 'การรักษาโรค', category: 'Compassion' },
+  {
+    column: 'speaking_in_tongues',
+    name: 'การพูดภาษาแปลก',
+    category: 'Prophecy',
+  },
+  {
+    column: 'interpreting_tongues',
+    name: 'การแปลภาษาแปลก',
+    category: 'Prophecy',
+  },
+  { column: 'ambassador', name: 'อัครทูต', category: 'Evangelism' },
+  { column: 'being_single', name: 'การอยู่เป็นโสด', category: 'Service' },
+  {
+    column: 'blessing_prayer',
+    name: 'การอธิษฐานอ้อนวอน',
+    category: 'Service',
+  },
+  { column: 'exorcism', name: 'การช่วยเหลือ', category: 'Service' },
+  { column: 'supporter', name: 'ผู้อุปถัมภ์', category: 'Compassion' },
 ]
 
 export const GIFT_SCORE_MIN = 0
 export const GIFT_SCORE_MAX = 15
 
-// Gift name -> score. Only the scores are persisted; name/category always
-// come from DEFAULT_GIFTS so the edit form can't drift out of sync with it.
+// column -> score
 export type GiftScores = Record<string, number>
 
-function storageKey(lambId: string) {
-  return `lamb-gifts:${lambId}`
+// Row shape returned by `gift_from_god` (one row per lamb): the fixed
+// metadata columns, plus the 25 score columns from GIFT_DEFINITIONS.
+// Deliberately NOT `GiftScores & {...}` — intersecting a `Record<string,
+// number>` index signature with these string-typed fields would collapse
+// lamb_id/image_url/etc. to `never`. The permissive index signature below
+// avoids that; read scores via mergeGiftScores rather than relying on this
+// type to enforce "number" on score columns.
+export type GiftFromGodRow = {
+  lamb_id: string
+  image_url: string | null
+  note: string | null
+  created_at: string
+  updated_at: string
+} & {
+  [column: string]: number | string | null
 }
 
-export function getStoredGiftScores(lambId: string): GiftScores | null {
-  try {
-    const raw = window.localStorage.getItem(storageKey(lambId))
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (typeof parsed !== 'object' || parsed === null) return null
-    return parsed as GiftScores
-  } catch {
-    return null
-  }
+export type Gift = {
+  column: string
+  name: string
+  category: GiftCategory
+  score: number
 }
 
-export function saveGiftScores(lambId: string, scores: GiftScores) {
-  window.localStorage.setItem(storageKey(lambId), JSON.stringify(scores))
-}
-
-// Merges saved overrides (if any) on top of the default gift list, so the
-// UI always has a complete, ordered 25-item list to render.
-export function mergeGiftScores(scores: GiftScores | null): Gift[] {
-  return DEFAULT_GIFTS.map((gift) => ({
-    ...gift,
-    score: scores?.[gift.name] ?? gift.score,
-  }))
+// Always returns the full 25-item list, even when the lamb has no row yet
+// in `gift_from_god` (row is null/undefined) — missing scores default to 0.
+// Accepts either the raw Supabase row or a plain GiftScores map (e.g. from
+// the edit form) since both key scores by column name.
+export function mergeGiftScores(
+  row: GiftFromGodRow | GiftScores | null | undefined
+): Gift[] {
+  return GIFT_DEFINITIONS.map((def) => {
+    const raw = row?.[def.column]
+    const score = typeof raw === 'number' ? raw : Number(raw ?? 0)
+    return { ...def, score: Number.isFinite(score) ? score : 0 }
+  })
 }
 
 export function getDefaultGiftScores(): GiftScores {
-  return Object.fromEntries(DEFAULT_GIFTS.map((g) => [g.name, g.score]))
+  return Object.fromEntries(GIFT_DEFINITIONS.map((g) => [g.column, 0]))
 }
 
 export function getGiftRadarData(gifts: Gift[]) {

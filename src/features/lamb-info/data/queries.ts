@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
+import { type GiftFromGodRow, type GiftScores } from './gifts'
 import { type LambInfo, type LambInfoRow } from './schema'
 
 const lambInfoKeys = {
@@ -11,6 +12,9 @@ const groupCareKeys = {
 }
 const personalityTypeKeys = {
   list: ['personality-type'] as const,
+}
+const giftFromGodKeys = {
+  detail: (lambId: string) => ['gift-from-god', lambId] as const,
 }
 
 export function useLambInfoList() {
@@ -136,6 +140,54 @@ export function useDeleteLambInfo() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lambInfoKeys.list })
+    },
+  })
+}
+
+// `gift_from_god` has at most one row per lamb (lamb_id is the PK). A lamb
+// with no assessment yet simply has no row — that's expected, not an
+// error, and callers should treat a null result as all-zero scores
+// (see mergeGiftScores in ./gifts).
+export function useGiftFromGod(lambId: string | undefined) {
+  return useQuery({
+    queryKey: giftFromGodKeys.detail(lambId ?? ''),
+    enabled: !!lambId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('gift_from_god')
+        .select('*')
+        .eq('lamb_id', lambId as string)
+        .maybeSingle()
+
+      if (error) throw error
+      return data as GiftFromGodRow | null
+    },
+  })
+}
+
+export function useUpsertGiftFromGod() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      lambId,
+      values,
+    }: {
+      lambId: string
+      values: GiftScores
+    }) => {
+      const { data, error } = await supabase
+        .from('gift_from_god')
+        .upsert({ lamb_id: lambId, ...values }, { onConflict: 'lamb_id' })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data as GiftFromGodRow
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: giftFromGodKeys.detail(variables.lambId),
+      })
     },
   })
 }

@@ -24,8 +24,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import {
-  DEFAULT_GIFTS,
   GIFT_CATEGORIES,
+  GIFT_DEFINITIONS,
   GIFT_SCORE_MAX,
   GIFT_SCORE_MIN,
   getDefaultGiftScores,
@@ -108,8 +108,7 @@ export function GiftsEditSheet({
         <SheetHeader>
           <SheetTitle>Edit Gifts from God</SheetTitle>
           <SheetDescription>
-            Score each gift from {GIFT_SCORE_MIN} to {GIFT_SCORE_MAX}. Saved
-            only in this browser, specific to this lamb.
+            Score each gift from {GIFT_SCORE_MIN} to {GIFT_SCORE_MAX}.
           </SheetDescription>
         </SheetHeader>
 
@@ -123,12 +122,12 @@ export function GiftsEditSheet({
               <div key={category}>
                 <h4 className='mb-2 text-sm font-semibold'>{category}</h4>
                 <div className='space-y-3'>
-                  {DEFAULT_GIFTS.filter((g) => g.category === category).map(
+                  {GIFT_DEFINITIONS.filter((g) => g.category === category).map(
                     (gift) => (
                       <FormField
-                        key={gift.name}
+                        key={gift.column}
                         control={form.control}
-                        name={gift.name}
+                        name={gift.column}
                         render={({ field }) => (
                           <FormItem className='flex flex-row items-center justify-between gap-4 space-y-0'>
                             <FormLabel className='flex-1 font-normal'>
