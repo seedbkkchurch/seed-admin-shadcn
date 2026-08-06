@@ -1,5 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
+import { getTagColorClass } from '@/lib/tag-color'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -102,7 +103,16 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Group' />
     ),
-    cell: ({ row }) => <div>{row.original.group_care_info?.name || '-'}</div>,
+    cell: ({ row }) => {
+      const groupName = row.original.group_care_info?.name
+      return groupName ? (
+        <Badge variant='outline' className={getTagColorClass(groupName)}>
+          {groupName}
+        </Badge>
+      ) : (
+        <div>-</div>
+      )
+    },
     enableSorting: false,
   },
   {
@@ -128,6 +138,23 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     // lamb-info-table.tsx) rather than user-toggled, so no sort-toggle
     // header UI is rendered here.
     enableSorting: true,
+  },
+  {
+    accessorKey: 'tags',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Tags' />
+    ),
+    cell: ({ row }) => {
+      const tags = row.getValue('tags') as string | null
+      return tags ? (
+        <Badge variant='outline' className={getTagColorClass(tags)}>
+          {tags}
+        </Badge>
+      ) : (
+        <div>-</div>
+      )
+    },
+    enableSorting: false,
   },
   {
     id: 'actions',

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getTagColorClass } from '@/lib/tag-color'
 import { cn } from '@/lib/utils'
 import { useLambInfoDetail } from './data/queries'
 import { type LambInfoRow } from './data/schema'
@@ -79,10 +80,7 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
               {row.status ? 'Active' : 'Inactive'}
             </Badge>
             {row.tags && (
-              <Badge
-                variant='outline'
-                className='bg-violet-100/30 text-violet-900 border-violet-200 dark:text-violet-200'
-              >
+              <Badge variant='outline' className={getTagColorClass(row.tags)}>
                 {row.tags}
               </Badge>
             )}
