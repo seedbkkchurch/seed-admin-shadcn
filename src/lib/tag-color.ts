@@ -19,3 +19,14 @@ export function getTagColorClass(text: string): string {
   const index = Math.abs(hash) % TAG_COLORS.length
   return TAG_COLORS[index]
 }
+
+// lamb_info.tags (and similar free-text tag columns) store multiple tags
+// as one comma-separated string per row, e.g. "Pastor, Leader team". Used
+// for faceted filtering — not for display, which still shows the raw
+// string as-is (see lamb-info-columns.tsx).
+export function splitTags(raw: string | null | undefined): string[] {
+  return (raw ?? '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
+}

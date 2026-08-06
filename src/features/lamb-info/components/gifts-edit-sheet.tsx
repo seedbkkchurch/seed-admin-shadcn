@@ -165,9 +165,9 @@ export function GiftsEditSheet({
           >
             Reset to Default
           </Button>
-          <Button type='submit' form='gifts-edit-form'>
+          {/* <Button type='submit' form='gifts-edit-form'>
             Save
-          </Button>
+          </Button> */}
         </SheetFooter>
       </SheetContent>
     </Sheet>

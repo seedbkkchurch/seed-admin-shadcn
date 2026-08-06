@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type SortingState,
   type Updater,
@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { splitTags } from '@/lib/tag-color'
 import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
@@ -54,6 +55,20 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
     })
   }
 
+  // Distinct tags across the currently loaded data, split from
+  // lamb_info.tags' comma-separated strings — there's no fixed lookup
+  // table for tags, so options are derived from whatever's actually in
+  // use rather than hardcoded.
+  const tagOptions = useMemo(() => {
+    const unique = new Set<string>()
+    for (const row of data) {
+      for (const tag of splitTags(row.tags)) unique.add(tag)
+    }
+    return Array.from(unique)
+      .sort((a, b) => a.localeCompare(b, 'th'))
+      .map((tag) => ({ label: tag, value: tag }))
+  }, [data])
+
   const {
     columnFilters,
     onColumnFiltersChange,
@@ -67,6 +82,7 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
     globalFilter: { enabled: false },
     columnFilters: [
       { columnId: 'nick_name', searchKey: 'nickName', type: 'string' },
+      { columnId: 'tags', searchKey: 'tags', type: 'array' },
     ],
   })
 
@@ -110,6 +126,7 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
         table={table}
         searchPlaceholder='Filter by nickname...'
         searchKey='nick_name'
+        filters={[{ columnId: 'tags', title: 'Tags', options: tagOptions }]}
       />
       <div className='overflow-hidden rounded-md border'>
         <Table>

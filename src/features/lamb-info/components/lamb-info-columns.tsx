@@ -1,6 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
-import { getTagColorClass } from '@/lib/tag-color'
+import { getTagColorClass, splitTags } from '@/lib/tag-color'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -140,12 +140,20 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: 'tags',
+    // `lamb_info.tags` is one comma-separated string per row (e.g. "Pastor,
+    // Leader team"), not an array column. The accessorFn below splits it
+    // so the faceted filter can offer/match individual tags (see
+    // lamb-info-table.tsx) — filtering is per-tag, OR'd across whatever's
+    // selected. Display is untouched: still renders the raw, un-split
+    // string as a single badge (row.original.tags), by design — only the
+    // filter behavior changes, not the table's look.
+    id: 'tags',
+    accessorFn: (row) => splitTags(row.tags),
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Tags' />
     ),
     cell: ({ row }) => {
-      const tags = row.getValue('tags') as string | null
+      const tags = row.original.tags
       return tags ? (
         <Badge variant='outline' className={getTagColorClass(tags)}>
           {tags}
@@ -154,6 +162,7 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
         <div>-</div>
       )
     },
+    filterFn: 'arrIncludesSome',
     enableSorting: false,
   },
   {
