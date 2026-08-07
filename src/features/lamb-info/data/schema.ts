@@ -14,6 +14,8 @@ export const lambInfoSchema = z.object({
   birthday: z.string().nullable(),
   job: z.string().nullable(),
   interesting: z.string().nullable(),
+  favorite_food: z.string().nullable(),
+  unfavorite_food: z.string().nullable(),
   is_timote: z.boolean().nullable(),
   status: z.boolean().nullable(),
   // Raw foreign key value stored on lamb_info (references group_care.id).

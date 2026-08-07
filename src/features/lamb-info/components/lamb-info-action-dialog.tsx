@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { DatePicker } from '@/components/date-picker'
+import { AvatarUpload } from '@/components/avatar-upload'
+import { uploadAvatar } from '@/lib/supabase/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -52,6 +54,8 @@ const formSchema = z.object({
   birthday: z.date().optional(),
   job: z.string().optional(),
   interesting: z.string().optional(),
+  favorite_food: z.string().optional(),
+  unfavorite_food: z.string().optional(),
   is_timote: z.boolean(),
   status: z.boolean(),
   group_care: z.string().optional(),
@@ -84,6 +88,8 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       birthday: undefined,
       job: '',
       interesting: '',
+      favorite_food: '',
+      unfavorite_food: '',
       is_timote: false,
       status: true,
       group_care: '',
@@ -107,6 +113,8 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     birthday: currentRow.birthday ? new Date(currentRow.birthday) : undefined,
     job: currentRow.job ?? '',
     interesting: currentRow.interesting ?? '',
+    favorite_food: currentRow.favorite_food ?? '',
+    unfavorite_food: currentRow.unfavorite_food ?? '',
     is_timote: currentRow.is_timote ?? false,
     status: currentRow.status ?? true,
     group_care: currentRow.group_care ?? '',
@@ -134,6 +142,8 @@ export function LambInfoActionDialog({
     usePersonalityTypeOptions()
   const createLambInfo = useCreateLambInfo()
   const updateLambInfo = useUpdateLambInfo()
+  const [pendingAvatar, setPendingAvatar] = useState<Blob | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
   const form = useForm<LambInfoForm>({
     resolver: zodResolver(formSchema),
@@ -143,10 +153,12 @@ export function LambInfoActionDialog({
   // Re-sync the form whenever the row being edited changes.
   useEffect(() => {
     form.reset(toDefaultValues(currentRow))
+    setPendingAvatar(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRow])
 
-  const isSubmitting = createLambInfo.isPending || updateLambInfo.isPending
+  const isSubmitting =
+    createLambInfo.isPending || updateLambInfo.isPending || isUploadingAvatar
 
   const onSubmit = async (values: LambInfoForm) => {
     const payload = {
@@ -161,6 +173,8 @@ export function LambInfoActionDialog({
       birthday: values.birthday ? format(values.birthday, 'yyyy-MM-dd') : null,
       job: values.job || null,
       interesting: values.interesting || null,
+      favorite_food: values.favorite_food || null,
+      unfavorite_food: values.unfavorite_food || null,
       is_timote: values.is_timote,
       status: values.status,
       group_care: values.group_care || null,
@@ -173,19 +187,52 @@ export function LambInfoActionDialog({
       personality_code: values.personality_code || null,
       tags: values.tags || null,
     }
+    const nickname = values.nick_name || values.first_name || 'avatar'
 
     try {
       if (isEdit) {
+        if (pendingAvatar) {
+          setIsUploadingAvatar(true)
+          payload.profile_picture = await uploadAvatar({
+            blob: pendingAvatar,
+            nickname,
+            lambId: currentRow.id,
+            previousUrl: currentRow.profile_picture,
+          })
+          setIsUploadingAvatar(false)
+        }
         await updateLambInfo.mutateAsync({ id: currentRow.id, values: payload })
         toast.success('Lamb info updated.')
       } else {
-        await createLambInfo.mutateAsync(payload)
+        const created = await createLambInfo.mutateAsync(payload)
+        if (pendingAvatar) {
+          setIsUploadingAvatar(true)
+          const url = await uploadAvatar({
+            blob: pendingAvatar,
+            nickname,
+            lambId: created.id,
+          })
+          setIsUploadingAvatar(false)
+          await updateLambInfo.mutateAsync({
+            id: created.id,
+            values: { ...payload, profile_picture: url },
+          })
+        }
         toast.success('Lamb info created.')
       }
       form.reset()
+      setPendingAvatar(null)
       onOpenChange(false)
-    } catch {
-      // Errors surface via the global mutation error handler (toast).
+    } catch (err) {
+      setIsUploadingAvatar(false)
+      // Mutation errors surface via the global mutation error handler
+      // (toast); avatar upload errors don't go through that path, so
+      // surface those explicitly here.
+      if (!(err instanceof Error && 'code' in err)) {
+        toast.error(
+          err instanceof Error ? err.message : 'Failed to upload avatar.'
+        )
+      }
     }
   }
 
@@ -212,6 +259,27 @@ export function LambInfoActionDialog({
               onSubmit={form.handleSubmit(onSubmit)}
               className='space-y-4 px-0.5'
             >
+              <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+                <FormLabel className='col-span-2 text-end'>Photo</FormLabel>
+                <div className='col-span-4'>
+                  <AvatarUpload
+                    mode='deferred'
+                    className='size-20'
+                    imageUrl={
+                      form.watch('profile_picture') ||
+                      currentRow?.profile_picture
+                    }
+                    initials={(
+                      form.watch('nick_name') ||
+                      form.watch('first_name') ||
+                      '?'
+                    )
+                      .slice(0, 2)
+                      .toUpperCase()}
+                    onFileReady={(blob) => setPendingAvatar(blob)}
+                  />
+                </div>
+              </div>
               <FormField
                 control={form.control}
                 name='profile_picture'
@@ -365,6 +433,36 @@ export function LambInfoActionDialog({
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
                       Interesting
+                    </FormLabel>
+                    <FormControl>
+                      <Input className='col-span-4' autoComplete='off' {...field} />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='favorite_food'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-end'>
+                      อาหารที่ชอบ
+                    </FormLabel>
+                    <FormControl>
+                      <Input className='col-span-4' autoComplete='off' {...field} />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='unfavorite_food'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-end'>
+                      อาหารที่ไม่ชอบ
                     </FormLabel>
                     <FormControl>
                       <Input className='col-span-4' autoComplete='off' {...field} />
