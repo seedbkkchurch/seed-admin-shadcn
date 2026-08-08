@@ -52,9 +52,9 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
           params={{ lambId: row.original.id }}
           className='flex items-center gap-2 ps-3 hover:underline'
         >
-          <Avatar>
+          <Avatar className='rounded-md'>
             {profile_picture && <AvatarImage src={profile_picture} alt='' />}
-            <AvatarFallback>{initial}</AvatarFallback>
+            <AvatarFallback className='rounded-md'>{initial}</AvatarFallback>
           </Avatar>
           <LongText className='max-w-36'>{nick_name || '-'}</LongText>
         </Link>
