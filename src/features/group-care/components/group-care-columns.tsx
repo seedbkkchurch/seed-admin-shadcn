@@ -2,10 +2,11 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
-import { type GroupCareRow } from '../data/schema'
+import { type GroupCareRowWithMembers } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
+import { GroupCareMembersCell } from './group-care-members-cell'
 
-export const groupCareColumns: ColumnDef<GroupCareRow>[] = [
+export const groupCareColumns: ColumnDef<GroupCareRowWithMembers>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -41,6 +42,14 @@ export const groupCareColumns: ColumnDef<GroupCareRow>[] = [
     ),
     cell: ({ row }) => <div>{row.getValue('day') || '-'}</div>,
     enableSorting: false,
+  },
+  {
+    id: 'members',
+    accessorFn: (row) => row.members.length,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Members' />
+    ),
+    cell: GroupCareMembersCell,
   },
   {
     id: 'actions',

@@ -22,11 +22,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { type GroupCareRow } from '../data/schema'
+import { type GroupCareRowWithMembers } from '../data/schema'
 import { groupCareColumns as columns } from './group-care-columns'
 
 type DataTableProps = {
-  data: GroupCareRow[]
+  data: GroupCareRowWithMembers[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }

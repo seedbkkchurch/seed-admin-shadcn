@@ -1,21 +1,27 @@
 import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
-import { type GroupCareRow } from '../data/schema'
+import { type GroupCareRowWithMembers } from '../data/schema'
 
-type GroupCareDialogType = 'add' | 'edit' | 'delete'
+type GroupCareDialogType = 'add' | 'edit' | 'delete' | 'members'
 
 type GroupCareContextType = {
   open: GroupCareDialogType | null
   setOpen: (str: GroupCareDialogType | null) => void
-  currentRow: GroupCareRow | null
-  setCurrentRow: React.Dispatch<React.SetStateAction<GroupCareRow | null>>
+  // Rows always carry their members list once table data is loaded (see
+  // index.tsx), so currentRow uses the augmented type even though the
+  // add/edit/delete dialogs only read the base GroupCareRow fields off it.
+  currentRow: GroupCareRowWithMembers | null
+  setCurrentRow: React.Dispatch<
+    React.SetStateAction<GroupCareRowWithMembers | null>
+  >
 }
 
 const GroupCareContext = React.createContext<GroupCareContextType | null>(null)
 
 export function GroupCareProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useDialogState<GroupCareDialogType>(null)
-  const [currentRow, setCurrentRow] = useState<GroupCareRow | null>(null)
+  const [currentRow, setCurrentRow] =
+    useState<GroupCareRowWithMembers | null>(null)
 
   return (
     <GroupCareContext value={{ open, setOpen, currentRow, setCurrentRow }}>

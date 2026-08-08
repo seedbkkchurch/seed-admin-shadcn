@@ -10,11 +10,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { type GroupCareRow } from '../data/schema'
+import { type GroupCareRowWithMembers } from '../data/schema'
 import { useGroupCare } from './group-care-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<GroupCareRow>
+  row: Row<GroupCareRowWithMembers>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {

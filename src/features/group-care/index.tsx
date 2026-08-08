@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { AlertCircle } from 'lucide-react'
 import { ConfigDrawer } from '@/components/config-drawer'
@@ -8,7 +9,8 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useGroupCareList } from './data/queries'
+import { useGroupCareList, useGroupCareMembers } from './data/queries'
+import { type GroupCareRowWithMembers } from './data/schema'
 import { GroupCareDialogs } from './components/group-care-dialogs'
 import { GroupCarePrimaryButtons } from './components/group-care-primary-buttons'
 import { GroupCareProvider } from './components/group-care-provider'
@@ -20,6 +22,20 @@ export function GroupCare() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const { data, isPending, isError, error } = useGroupCareList()
+  // Members are fetched separately (lamb_info, not group_care) and grouped
+  // here client-side per group_care.id. A failure here shouldn't block the
+  // whole page — it just falls back to showing 0 members per group.
+  const { data: membersData, isPending: isMembersPending } =
+    useGroupCareMembers()
+
+  const rows: GroupCareRowWithMembers[] = useMemo(() => {
+    if (!data) return []
+    const members = membersData ?? []
+    return data.map((group) => ({
+      ...group,
+      members: members.filter((member) => member.group_care === group.id),
+    }))
+  }, [data, membersData])
 
   return (
     <GroupCareProvider>
@@ -48,14 +64,14 @@ export function GroupCare() {
               {error instanceof Error ? error.message : 'Something went wrong.'}
             </AlertDescription>
           </Alert>
-        ) : isPending ? (
+        ) : isPending || isMembersPending ? (
           <div className='space-y-2'>
             <Skeleton className='h-8 w-full' />
             <Skeleton className='h-8 w-full' />
             <Skeleton className='h-8 w-full' />
           </div>
         ) : (
-          <GroupCareTable data={data ?? []} search={search} navigate={navigate} />
+          <GroupCareTable data={rows} search={search} navigate={navigate} />
         )}
       </Main>
 

@@ -1,9 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
-import { type GroupCareRow } from './schema'
+import { type GroupCareMember, type GroupCareRow } from './schema'
 
 const groupCareKeys = {
   list: ['group-care', 'admin-list'] as const,
+  // Separate cache entry from lamb-info's own queries (see
+  // features/lamb-info/data/queries.ts) — this fetch is scoped to just the
+  // fields the members dialog needs, not the full lamb_info row.
+  members: ['group-care', 'members'] as const,
 }
 
 export function useGroupCareList() {
@@ -17,6 +21,25 @@ export function useGroupCareList() {
 
       if (error) throw error
       return data as GroupCareRow[]
+    },
+  })
+}
+
+// Every lamb assigned to a care group, regardless of active/inactive
+// status — used to compute each group's member count and roster. Fetched
+// once and grouped client-side per group_care.id (see index.tsx) rather
+// than queried per-row, since the lamb_info table is small.
+export function useGroupCareMembers() {
+  return useQuery({
+    queryKey: groupCareKeys.members,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lamb_info')
+        .select('id, nick_name, first_name, last_name, profile_picture, group_care')
+        .order('nick_name', { ascending: true })
+
+      if (error) throw error
+      return data as GroupCareMember[]
     },
   })
 }
