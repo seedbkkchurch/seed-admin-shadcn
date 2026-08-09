@@ -24,6 +24,7 @@ import {
   GalleryVerticalEnd,
   HeartHandshake,
   BrainCircuit,
+  NotebookPen,
 } from 'lucide-react'
 import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
@@ -85,6 +86,11 @@ export const sidebarData: SidebarData = {
           title: 'Lamb Info',
           url: '/lamb-info',
           icon: IdCard,
+        },
+        {
+          title: 'เฝ้าเดี่ยว',
+          url: '/lamb-info/devotion/new',
+          icon: NotebookPen,
         },
         {
           title: 'Group Care',
