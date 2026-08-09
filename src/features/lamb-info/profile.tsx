@@ -18,6 +18,7 @@ import { getTagColorClass } from '@/lib/tag-color'
 import { cn } from '@/lib/utils'
 import { useLambInfoDetail, useUpdateLambInfo } from './data/queries'
 import { type LambInfoRow } from './data/schema'
+import { DevotionSection } from './components/devotion-section'
 import { GiftsCard } from './components/gifts-card'
 import { GrowthProgressCard } from './components/growth-progress-card'
 import { LambInfoDialogs } from './components/lamb-info-dialogs'
@@ -238,6 +239,7 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
         chapterProgress={row.lamb_lesson_ch18_progress ?? null}
       />
       <GiftsCard key={row.id} lambId={row.id} />
+      <DevotionSection key={row.id} lambId={row.id} />
     </div>
   )
 }
