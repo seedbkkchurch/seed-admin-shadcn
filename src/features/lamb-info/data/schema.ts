@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const lambInfoSchema = z.object({
   id: z.string(),
@@ -34,33 +34,33 @@ export const lambInfoSchema = z.object({
   // and LambInfoInput (Omit<LambInfo, 'id'>) must allow that.
   lamb_lesson_ch18_progress: z.number().nullable().optional(),
   lamb_lesson_life_progress: z.number().nullable().optional(),
-})
-export type LambInfo = z.infer<typeof lambInfoSchema>
+});
+export type LambInfo = z.infer<typeof lambInfoSchema>;
 
 export type GroupCare = {
-  id: string
-  name: string | null
-}
+  id: string;
+  name: string | null;
+};
 
 export type PersonalityType = {
-  code: string
-  description_en: string | null
-  description_th: string | null
-  explain: string | null
-  archetype: string | null
-}
+  code: string;
+  description_en: string | null;
+  description_th: string | null;
+  explain: string | null;
+  archetype: string | null;
+};
 
 // Row shape returned by the list query (lamb_info joined with its
 // related lookup tables via Supabase's embedded resource syntax).
 // The embedded group lookup is aliased to `group_care_info` because the
 // raw FK column on lamb_info is itself named `group_care`.
 export type LambInfoRow = LambInfo & {
-  group_care_info: { id: string; name: string | null } | null
+  group_care_info: { id: string; name: string | null } | null;
   personality_type: {
-    code: string
-    description_en: string | null
-    description_th: string | null
-    explain: string | null
-    archetype: string | null
-  } | null
-}
+    code: string;
+    description_en: string | null;
+    description_th: string | null;
+    explain: string | null;
+    archetype: string | null;
+  } | null;
+};

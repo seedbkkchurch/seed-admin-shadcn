@@ -1,7 +1,7 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { type Row } from '@tanstack/react-table'
-import { Trash2, UserPen } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { type Row } from "@tanstack/react-table";
+import { Trash2, UserPen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,32 +9,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { type GroupCareRowWithMembers } from '../data/schema'
-import { useGroupCare } from './group-care-provider'
+} from "@/components/ui/dropdown-menu";
+import { type GroupCareRowWithMembers } from "../data/schema";
+import { useGroupCare } from "./group-care-provider";
 
 type DataTableRowActionsProps = {
-  row: Row<GroupCareRowWithMembers>
-}
+  row: Row<GroupCareRowWithMembers>;
+};
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useGroupCare()
+  const { setOpen, setCurrentRow } = useGroupCare();
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='ghost'
-          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+          variant="ghost"
+          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
         >
-          <DotsHorizontalIcon className='h-4 w-4' />
-          <span className='sr-only'>Open menu</span>
+          <DotsHorizontalIcon className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-40'>
+      <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('edit')
+            setCurrentRow(row.original);
+            setOpen("edit");
           }}
         >
           Edit
@@ -45,10 +45,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('delete')
+            setCurrentRow(row.original);
+            setOpen("delete");
           }}
-          className='text-red-500!'
+          className="text-red-500!"
         >
           Delete
           <DropdownMenuShortcut>
@@ -57,5 +57,5 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { format } from 'date-fns'
-import { ImageIcon, Loader2, Type as TypeIcon } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { format } from "date-fns";
+import { ImageIcon, Loader2, Type as TypeIcon } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,31 +10,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
-import { uploadDevotionImage } from '@/lib/supabase/devotion-image'
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import {
   DEVOTION_ALREADY_SUBMITTED_CODE,
   useCreateLambDevotion,
-} from '../data/queries'
+} from "../data/queries";
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function escapeHtml(value: string): string {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 type DevotionUploadDialogProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  lambId: string
-  today: Date
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  lambId: string;
+  today: Date;
+};
 
 // Quick-capture "ส่งเฝ้าเดี่ยว" dialog on the lamb's profile page — a
 // lighter-weight alternative to the full Medium-style editor at
@@ -49,153 +49,153 @@ export function DevotionUploadDialog({
   lambId,
   today,
 }: DevotionUploadDialogProps) {
-  const [tab, setTab] = useState<'text' | 'image'>('text')
-  const [text, setText] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
-  const [isPublic, setIsPublic] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [tab, setTab] = useState<"text" | "image">("text");
+  const [text, setText] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createDevotion = useCreateLambDevotion()
+  const createDevotion = useCreateLambDevotion();
 
   const resetForm = () => {
-    setTab('text')
-    setText('')
-    setImageFile(null)
-    setImagePreviewUrl(null)
-    setIsPublic(true)
-  }
+    setTab("text");
+    setText("");
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    setIsPublic(true);
+  };
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) resetForm()
-    onOpenChange(next)
-  }
+    if (!next) resetForm();
+    onOpenChange(next);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      toast.error('รองรับเฉพาะไฟล์ JPG, PNG หรือ WebP เท่านั้น')
-      return
+      toast.error("รองรับเฉพาะไฟล์ JPG, PNG หรือ WebP เท่านั้น");
+      return;
     }
-    setImageFile(file)
-    setImagePreviewUrl(URL.createObjectURL(file))
-  }
+    setImageFile(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
+  };
 
   const canSubmit =
-    (tab === 'text' ? text.trim().length > 0 : imageFile !== null) &&
-    !isSubmitting
+    (tab === "text" ? text.trim().length > 0 : imageFile !== null) &&
+    !isSubmitting;
 
   const handleSubmit = async () => {
-    if (!canSubmit) return
+    if (!canSubmit) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      let contentHtml: string
-      let imageUrls: string[]
+      let contentHtml: string;
+      let imageUrls: string[];
 
-      if (tab === 'text') {
-        contentHtml = `<p>${escapeHtml(text.trim())}</p>`
-        imageUrls = []
+      if (tab === "text") {
+        contentHtml = `<p>${escapeHtml(text.trim())}</p>`;
+        imageUrls = [];
       } else {
-        if (!imageFile) return
-        const url = await uploadDevotionImage(imageFile, isPublic)
-        contentHtml = `<img src="${url}" alt="เฝ้าเดี่ยว" />`
-        imageUrls = [url]
+        if (!imageFile) return;
+        const url = await uploadDevotionImage(imageFile, isPublic);
+        contentHtml = `<img src="${url}" alt="เฝ้าเดี่ยว" />`;
+        imageUrls = [url];
       }
 
       await createDevotion.mutateAsync({
         lamb_id: lambId,
-        devotion_date: format(today, 'yyyy-MM-dd'),
-        title: `เฝ้าเดี่ยว ${format(today, 'd MMMM yyyy')}`,
+        devotion_date: format(today, "yyyy-MM-dd"),
+        title: `เฝ้าเดี่ยว ${format(today, "d MMMM yyyy")}`,
         content_html: contentHtml,
         image_urls: imageUrls,
         is_public: isPublic,
-      })
+      });
 
-      toast.success('บันทึกเฝ้าเดี่ยววันนี้แล้ว')
-      resetForm()
-      onOpenChange(false)
+      toast.success("บันทึกเฝ้าเดี่ยววันนี้แล้ว");
+      resetForm();
+      onOpenChange(false);
     } catch (error: unknown) {
-      const code = (error as { code?: string } | null)?.code
+      const code = (error as { code?: string } | null)?.code;
       if (code === DEVOTION_ALREADY_SUBMITTED_CODE) {
-        toast.error('คนนี้ส่งเฝ้าเดี่ยววันนี้ไปแล้ว', {
-          description: 'ส่งได้วันละ 1 ครั้งต่อคนเท่านั้น',
-        })
+        toast.error("คนนี้ส่งเฝ้าเดี่ยววันนี้ไปแล้ว", {
+          description: "ส่งได้วันละ 1 ครั้งต่อคนเท่านั้น",
+        });
       } else {
-        toast.error('บันทึกไม่สำเร็จ', {
+        toast.error("บันทึกไม่สำเร็จ", {
           description: error instanceof Error ? error.message : undefined,
-        })
+        });
       }
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>ส่งเฝ้าเดี่ยววันนี้</DialogTitle>
           <DialogDescription>
-            {format(today, 'd MMMM yyyy')} — เลือกส่งเป็นข้อความหรือรูปภาพ
+            {format(today, "d MMMM yyyy")} — เลือกส่งเป็นข้อความหรือรูปภาพ
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList>
-            <TabsTrigger value='text'>
+            <TabsTrigger value="text">
               <TypeIcon /> พิมพ์ข้อความ
             </TabsTrigger>
-            <TabsTrigger value='image'>
+            <TabsTrigger value="image">
               <ImageIcon /> อัปโหลดรูป
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='text' className='mt-2'>
+          <TabsContent value="text" className="mt-2">
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder='เขียนสิ่งที่ได้รับจากการเฝ้าเดี่ยววันนี้...'
+              placeholder="เขียนสิ่งที่ได้รับจากการเฝ้าเดี่ยววันนี้..."
               rows={6}
               autoFocus
             />
           </TabsContent>
 
-          <TabsContent value='image' className='mt-2 space-y-3'>
+          <TabsContent value="image" className="mt-2 space-y-3">
             <input
-              type='file'
-              accept={ACCEPTED_IMAGE_TYPES.join(',')}
+              type="file"
+              accept={ACCEPTED_IMAGE_TYPES.join(",")}
               onChange={handleImageChange}
-              className='text-sm'
+              className="text-sm"
             />
             {imagePreviewUrl && (
               <img
                 src={imagePreviewUrl}
-                alt='ตัวอย่างรูปเฝ้าเดี่ยว'
-                className='max-h-64 w-full rounded-md border object-contain'
+                alt="ตัวอย่างรูปเฝ้าเดี่ยว"
+                className="max-h-64 w-full rounded-md border object-contain"
               />
             )}
           </TabsContent>
         </Tabs>
 
-        <label className='flex items-center gap-2 text-sm'>
+        <label className="flex items-center gap-2 text-sm">
           <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           เผยแพร่ในหน้าเฝ้าเดี่ยวสาธารณะ
         </label>
 
         <DialogFooter>
-          <Button variant='outline' onClick={() => handleOpenChange(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             ยกเลิก
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit}>
-            {isSubmitting && <Loader2 className='animate-spin' />}
+            {isSubmitting && <Loader2 className="animate-spin" />}
             บันทึก
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

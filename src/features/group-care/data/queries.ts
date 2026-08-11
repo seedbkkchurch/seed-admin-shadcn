@@ -1,28 +1,28 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase/client'
-import { type GroupCareMember, type GroupCareRow } from './schema'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase/client";
+import { type GroupCareMember, type GroupCareRow } from "./schema";
 
 const groupCareKeys = {
-  list: ['group-care', 'admin-list'] as const,
+  list: ["group-care", "admin-list"] as const,
   // Separate cache entry from lamb-info's own queries (see
   // features/lamb-info/data/queries.ts) — this fetch is scoped to just the
   // fields the members dialog needs, not the full lamb_info row.
-  members: ['group-care', 'members'] as const,
-}
+  members: ["group-care", "members"] as const,
+};
 
 export function useGroupCareList() {
   return useQuery({
     queryKey: groupCareKeys.list,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('group_care')
-        .select('id, name, address, day')
-        .order('name', { ascending: true })
+        .from("group_care")
+        .select("id, name, address, day")
+        .order("name", { ascending: true });
 
-      if (error) throw error
-      return data as GroupCareRow[]
+      if (error) throw error;
+      return data as GroupCareRow[];
     },
-  })
+  });
 }
 
 // Every lamb assigned to a care group, regardless of active/inactive
@@ -34,72 +34,74 @@ export function useGroupCareMembers() {
     queryKey: groupCareKeys.members,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_info')
-        .select('id, nick_name, first_name, last_name, profile_picture, group_care')
-        .order('nick_name', { ascending: true })
+        .from("lamb_info")
+        .select(
+          "id, nick_name, first_name, last_name, profile_picture, group_care",
+        )
+        .order("nick_name", { ascending: true });
 
-      if (error) throw error
-      return data as GroupCareMember[]
+      if (error) throw error;
+      return data as GroupCareMember[];
     },
-  })
+  });
 }
 
-type GroupCareInput = Omit<GroupCareRow, 'id'>
+type GroupCareInput = Omit<GroupCareRow, "id">;
 
 export function useCreateGroupCare() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (values: GroupCareInput) => {
       const { data, error } = await supabase
-        .from('group_care')
+        .from("group_care")
         .insert(values)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupCareKeys.list })
+      queryClient.invalidateQueries({ queryKey: groupCareKeys.list });
     },
-  })
+  });
 }
 
 export function useUpdateGroupCare() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       id,
       values,
     }: {
-      id: string
-      values: GroupCareInput
+      id: string;
+      values: GroupCareInput;
     }) => {
       const { data, error } = await supabase
-        .from('group_care')
+        .from("group_care")
         .update(values)
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupCareKeys.list })
+      queryClient.invalidateQueries({ queryKey: groupCareKeys.list });
     },
-  })
+  });
 }
 
 export function useDeleteGroupCare() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('group_care').delete().eq('id', id)
-      if (error) throw error
+      const { error } = await supabase.from("group_care").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupCareKeys.list })
+      queryClient.invalidateQueries({ queryKey: groupCareKeys.list });
     },
-  })
+  });
 }

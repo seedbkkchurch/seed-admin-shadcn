@@ -21,4 +21,4 @@
  *      --font-roboto: 'Roboto', var(--font-sans);
  *   }
  */
-export const fonts = ['google-sans', 'system'] as const
+export const fonts = ["google-sans", "system"] as const;

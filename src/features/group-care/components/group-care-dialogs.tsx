@@ -1,57 +1,57 @@
-import { GroupCareActionDialog } from './group-care-action-dialog'
-import { GroupCareDeleteDialog } from './group-care-delete-dialog'
-import { GroupCareMembersDialog } from './group-care-members-dialog'
-import { useGroupCare } from './group-care-provider'
+import { GroupCareActionDialog } from "./group-care-action-dialog";
+import { GroupCareDeleteDialog } from "./group-care-delete-dialog";
+import { GroupCareMembersDialog } from "./group-care-members-dialog";
+import { useGroupCare } from "./group-care-provider";
 
 export function GroupCareDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useGroupCare()
+  const { open, setOpen, currentRow, setCurrentRow } = useGroupCare();
   return (
     <>
       <GroupCareActionDialog
-        key='group-care-add'
-        open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
+        key="group-care-add"
+        open={open === "add"}
+        onOpenChange={() => setOpen("add")}
       />
 
       {currentRow && (
         <>
           <GroupCareActionDialog
             key={`group-care-edit-${currentRow.id}`}
-            open={open === 'edit'}
+            open={open === "edit"}
             onOpenChange={() => {
-              setOpen('edit')
+              setOpen("edit");
               setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+                setCurrentRow(null);
+              }, 500);
             }}
             currentRow={currentRow}
           />
 
           <GroupCareDeleteDialog
             key={`group-care-delete-${currentRow.id}`}
-            open={open === 'delete'}
+            open={open === "delete"}
             onOpenChange={() => {
-              setOpen('delete')
+              setOpen("delete");
               setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+                setCurrentRow(null);
+              }, 500);
             }}
             currentRow={currentRow}
           />
 
           <GroupCareMembersDialog
             key={`group-care-members-${currentRow.id}`}
-            open={open === 'members'}
+            open={open === "members"}
             onOpenChange={() => {
-              setOpen('members')
+              setOpen("members");
               setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+                setCurrentRow(null);
+              }, 500);
             }}
             currentRow={currentRow}
           />
         </>
       )}
     </>
-  )
+  );
 }

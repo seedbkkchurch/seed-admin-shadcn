@@ -1,17 +1,17 @@
-import { resizeForArticle } from '@/lib/image-resize'
-import { supabase } from './client'
+import { resizeForArticle } from "@/lib/image-resize";
+import { supabase } from "./client";
 
 // Shares the same bucket as avatars (see avatar.ts) under a separate
 // prefix — per grill-me follow-up (2026-08-09), no need for a dedicated
 // bucket for this volume of data (see docs/devotion-db-design.md).
-const DEVOTION_BUCKET = 'bucket-seed'
+const DEVOTION_BUCKET = "bucket-seed";
 // Bucket was reorganized into top-level public/ and private/ folders (per
 // grill-me follow-up 2026-08-11). The bucket itself is still a public
 // bucket end-to-end — private/ is organizational only, not access-controlled
 // — but keeping public and private เฝ้าเดี่ยว images in separate folders
 // mirrors the is_public flag on the row for easier auditing/cleanup.
-const DEVOTION_PUBLIC_PREFIX = 'public/seedbkk/devotion'
-const DEVOTION_PRIVATE_PREFIX = 'private/seedbkk/devotion'
+const DEVOTION_PUBLIC_PREFIX = "public/seedbkk/devotion";
+const DEVOTION_PRIVATE_PREFIX = "private/seedbkk/devotion";
 
 /**
  * Resizes (max 1600px, JPEG q0.8) and uploads an inline เฝ้าเดี่ยว
@@ -27,25 +27,25 @@ const DEVOTION_PRIVATE_PREFIX = 'private/seedbkk/devotion'
  */
 export async function uploadDevotionImage(
   file: File | Blob,
-  isPublic: boolean
+  isPublic: boolean,
 ): Promise<string> {
-  const resized = await resizeForArticle(file)
-  const prefix = isPublic ? DEVOTION_PUBLIC_PREFIX : DEVOTION_PRIVATE_PREFIX
-  const path = `${prefix}/${crypto.randomUUID()}.jpg`
+  const resized = await resizeForArticle(file);
+  const prefix = isPublic ? DEVOTION_PUBLIC_PREFIX : DEVOTION_PRIVATE_PREFIX;
+  const path = `${prefix}/${crypto.randomUUID()}.jpg`;
 
   const { error: uploadError } = await supabase.storage
     .from(DEVOTION_BUCKET)
     .upload(path, resized, {
-      contentType: 'image/jpeg',
-      cacheControl: '3600',
+      contentType: "image/jpeg",
+      cacheControl: "3600",
       upsert: false,
-    })
+    });
 
-  if (uploadError) throw uploadError
+  if (uploadError) throw uploadError;
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(DEVOTION_BUCKET).getPublicUrl(path)
+  } = supabase.storage.from(DEVOTION_BUCKET).getPublicUrl(path);
 
-  return publicUrl
+  return publicUrl;
 }

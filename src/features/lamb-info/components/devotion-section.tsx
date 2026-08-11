@@ -1,27 +1,27 @@
-import { useMemo, useState } from 'react'
-import { eachDayOfInterval, format, subDays } from 'date-fns'
-import { Upload } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useLambDevotionHistory } from '../data/queries'
-import { DevotionHeatmap, type DevotionHeatmapEntry } from './devotion-heatmap'
-import { DevotionMonthlyChart } from './devotion-monthly-chart'
-import { DevotionRecentList } from './devotion-recent-list'
-import { DevotionUploadDialog } from './devotion-upload-dialog'
+import { useMemo, useState } from "react";
+import { eachDayOfInterval, format, subDays } from "date-fns";
+import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLambDevotionHistory } from "../data/queries";
+import { DevotionHeatmap, type DevotionHeatmapEntry } from "./devotion-heatmap";
+import { DevotionMonthlyChart } from "./devotion-monthly-chart";
+import { DevotionRecentList } from "./devotion-recent-list";
+import { DevotionUploadDialog } from "./devotion-upload-dialog";
 
-type DevotionView = 'day' | 'month' | 'year'
+type DevotionView = "day" | "month" | "year";
 
 // Fixed rolling windows from today (no navigation) — matches the no-nav
 // design already established for the daily heatmap (see
 // devotion-heatmap.tsx doc comment / grill-me follow-up 2026-08-09).
-const ONE_YEAR_DAYS_BACK = 364
-const THREE_YEAR_DAYS_BACK = 3 * 365 - 1
+const ONE_YEAR_DAYS_BACK = 364;
+const THREE_YEAR_DAYS_BACK = 3 * 365 - 1;
 
 type DevotionSectionProps = {
-  lambId: string
-}
+  lambId: string;
+};
 
 // เฝ้าเดี่ยว (personal daily devotion) history for a single lamb — reads
 // the real `lamb_devotion` table (both public and private rows; this is
@@ -34,71 +34,68 @@ type DevotionSectionProps = {
 export function DevotionSection({ lambId }: DevotionSectionProps) {
   // Stable for the component's lifetime so "today" doesn't shift the
   // rolling windows mid-session.
-  const [today] = useState(() => new Date())
-  const [view, setView] = useState<DevotionView>('day')
-  const [uploadOpen, setUploadOpen] = useState(false)
+  const [today] = useState(() => new Date());
+  const [view, setView] = useState<DevotionView>("day");
+  const [uploadOpen, setUploadOpen] = useState(false);
 
-  const { data: entries, isPending } = useLambDevotionHistory(lambId)
+  const { data: entries, isPending } = useLambDevotionHistory(lambId);
 
   const entryByDate = useMemo(() => {
-    const map = new Map<string, DevotionHeatmapEntry>()
+    const map = new Map<string, DevotionHeatmapEntry>();
     for (const entry of entries ?? []) {
       map.set(entry.devotion_date, {
         id: entry.id,
         title: entry.title,
         image_urls: entry.image_urls,
-      })
+      });
     }
-    return map
-  }, [entries])
+    return map;
+  }, [entries]);
 
   const getEntry = (date: Date) =>
-    entryByDate.get(format(date, 'yyyy-MM-dd')) ?? null
+    entryByDate.get(format(date, "yyyy-MM-dd")) ?? null;
 
   // useLambDevotionHistory returns oldest-first (see queries.ts) — reverse
   // for the "ประวัติล่าสุด" list below the graph, which wants newest-first.
   const recentEntries = useMemo(
     () => (entries ?? []).slice().reverse(),
-    [entries]
-  )
+    [entries],
+  );
 
   const oneYearCount = useMemo(() => {
     const days = eachDayOfInterval({
       start: subDays(today, ONE_YEAR_DAYS_BACK),
       end: today,
-    })
-    return days.filter((d) => entryByDate.has(format(d, 'yyyy-MM-dd'))).length
-  }, [today, entryByDate])
+    });
+    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
+  }, [today, entryByDate]);
 
   const threeYearCount = useMemo(() => {
     const days = eachDayOfInterval({
       start: subDays(today, THREE_YEAR_DAYS_BACK),
       end: today,
-    })
-    return days.filter((d) => entryByDate.has(format(d, 'yyyy-MM-dd'))).length
-  }, [today, entryByDate])
+    });
+    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
+  }, [today, entryByDate]);
 
   const statText =
-    view === 'year'
+    view === "year"
       ? `ส่งเฝ้าเดี่ยว ${threeYearCount} ครั้งในรอบ 3 ปีที่ผ่านมา`
-      : `ส่งเฝ้าเดี่ยว ${oneYearCount} ครั้งในรอบ 1 ปีที่ผ่านมา`
+      : `ส่งเฝ้าเดี่ยว ${oneYearCount} ครั้งในรอบ 1 ปีที่ผ่านมา`;
 
   return (
     <Card>
-      <CardHeader className='flex flex-wrap items-center justify-between gap-4'>
+      <CardHeader className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className='font-semibold'>ประวัติเฝ้าเดี่ยว</div>
-          <p className='text-sm text-muted-foreground'>{statText}</p>
+          <div className="font-semibold">ประวัติเฝ้าเดี่ยว</div>
+          <p className="text-sm text-muted-foreground">{statText}</p>
         </div>
-        <div className='flex items-center gap-2'>
-          <Tabs
-            value={view}
-            onValueChange={(v) => setView(v as DevotionView)}
-          >
+        <div className="flex items-center gap-2">
+          <Tabs value={view} onValueChange={(v) => setView(v as DevotionView)}>
             <TabsList>
-              <TabsTrigger value='day'>รายวัน</TabsTrigger>
-              <TabsTrigger value='month'>รายเดือน</TabsTrigger>
-              <TabsTrigger value='year'>รายปี</TabsTrigger>
+              <TabsTrigger value="day">รายวัน</TabsTrigger>
+              <TabsTrigger value="month">รายเดือน</TabsTrigger>
+              <TabsTrigger value="year">รายปี</TabsTrigger>
             </TabsList>
           </Tabs>
           {/* Mobile: icon-only so it doesn't crowd the Tabs on the same
@@ -109,16 +106,16 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
               breakpoint, only its className. Per grill-me follow-up
               (2026-08-11). */}
           <Button
-            size='icon'
-            className='sm:hidden'
-            aria-label='ส่งเฝ้าเดี่ยว'
+            size="icon"
+            className="sm:hidden"
+            aria-label="ส่งเฝ้าเดี่ยว"
             onClick={() => setUploadOpen(true)}
           >
             <Upload />
           </Button>
           <Button
-            size='lg'
-            className='hidden sm:inline-flex'
+            size="lg"
+            className="hidden sm:inline-flex"
             onClick={() => setUploadOpen(true)}
           >
             <Upload /> ส่งเฝ้าเดี่ยว
@@ -127,16 +124,16 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       </CardHeader>
       <CardContent>
         {isPending ? (
-          <Skeleton className='h-40 w-full' />
+          <Skeleton className="h-40 w-full" />
         ) : (
           <>
-            {view === 'day' ? (
+            {view === "day" ? (
               <DevotionHeatmap
                 today={today}
                 daysBack={ONE_YEAR_DAYS_BACK}
                 getEntry={getEntry}
               />
-            ) : view === 'month' ? (
+            ) : view === "month" ? (
               <DevotionMonthlyChart today={today} entries={entries ?? []} />
             ) : (
               <DevotionHeatmap
@@ -158,5 +155,5 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
         today={today}
       />
     </Card>
-  )
+  );
 }

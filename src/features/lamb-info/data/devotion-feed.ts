@@ -4,4 +4,4 @@
 //
 // This file couldn't be deleted (sandbox filesystem permission issue —
 // see chat), so it's left empty as a placeholder. Safe to delete by hand.
-export {}
+export {};

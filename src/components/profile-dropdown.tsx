@@ -1,8 +1,8 @@
-import { Link } from '@tanstack/react-router'
-import useDialogState from '@/hooks/use-dialog-state'
-import { useAuthUser } from '@/hooks/use-auth-user'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Link } from "@tanstack/react-router";
+import useDialogState from "@/hooks/use-dialog-state";
+import { useAuthUser } from "@/hooks/use-auth-user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,53 +12,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { SignOutDialog } from '@/components/sign-out-dialog'
+} from "@/components/ui/dropdown-menu";
+import { SignOutDialog } from "@/components/sign-out-dialog";
 
 export function ProfileDropdown() {
-  const [open, setOpen] = useDialogState()
-  const user = useAuthUser()
-  const email = user?.email ?? ''
-  const initials = email ? email.slice(0, 2).toUpperCase() : '??'
+  const [open, setOpen] = useDialogState();
+  const user = useAuthUser();
+  const email = user?.email ?? "";
+  const initials = email ? email.slice(0, 2).toUpperCase() : "??";
 
   return (
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-            <Avatar className='h-8 w-8'>
-              <AvatarImage src='/avatars/01.png' alt={email} />
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/avatars/01.png" alt={email} />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-56' align='end' forceMount>
-          <DropdownMenuLabel className='font-normal'>
-            <div className='flex flex-col gap-1.5'>
-              <p className='text-xs leading-none text-muted-foreground'>
-                {email || 'Signed in'}
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs leading-none text-muted-foreground">
+                {email || "Signed in"}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link to='/settings'>
+              <Link to="/settings">
                 Profile
                 <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to='/settings'>
+              <Link to="/settings">
                 Settings
                 <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant='destructive' onClick={() => setOpen(true)}>
+          <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
             Sign out
-            <DropdownMenuShortcut className='text-current'>
+            <DropdownMenuShortcut className="text-current">
               ⇧⌘Q
             </DropdownMenuShortcut>
           </DropdownMenuItem>
@@ -67,5 +67,5 @@ export function ProfileDropdown() {
 
       <SignOutDialog open={!!open} onOpenChange={setOpen} />
     </>
-  )
+  );
 }

@@ -1,67 +1,67 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase/client'
-import { type LambDevotion, type LambDevotionRow } from './devotion-schema'
-import { type GiftFromGodRow, type GiftScores } from './gifts'
-import { type LambInfo, type LambInfoRow } from './schema'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase/client";
+import { type LambDevotion, type LambDevotionRow } from "./devotion-schema";
+import { type GiftFromGodRow, type GiftScores } from "./gifts";
+import { type LambInfo, type LambInfoRow } from "./schema";
 
 const lambInfoKeys = {
-  list: ['lamb-info'] as const,
-  detail: (id: string) => ['lamb-info', id] as const,
-}
+  list: ["lamb-info"] as const,
+  detail: (id: string) => ["lamb-info", id] as const,
+};
 const groupCareKeys = {
-  list: ['group-care'] as const,
-}
+  list: ["group-care"] as const,
+};
 const personalityTypeKeys = {
-  list: ['personality-type'] as const,
-}
+  list: ["personality-type"] as const,
+};
 const giftFromGodKeys = {
-  detail: (lambId: string) => ['gift-from-god', lambId] as const,
-}
+  detail: (lambId: string) => ["gift-from-god", lambId] as const,
+};
 const lambDevotionKeys = {
   // Root key — invalidate this to cover feed/table/detail/history at once
   // (they all nest under it), rather than juggling exact sub-keys on every
   // mutation.
-  all: ['lamb-devotion'] as const,
-  feed: ['lamb-devotion', 'feed'] as const,
-  detail: (id: string) => ['lamb-devotion', id] as const,
-  history: (lambId: string) => ['lamb-devotion', 'history', lambId] as const,
-}
+  all: ["lamb-devotion"] as const,
+  feed: ["lamb-devotion", "feed"] as const,
+  detail: (id: string) => ["lamb-devotion", id] as const,
+  history: (lambId: string) => ["lamb-devotion", "history", lambId] as const,
+};
 
 export function useLambInfoList() {
   return useQuery({
     queryKey: lambInfoKeys.list,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_info')
+        .from("lamb_info")
         .select(
-          '*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)'
+          "*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)",
         )
-        .order('status', { ascending: false })
-        .order('first_name', { ascending: true })
+        .order("status", { ascending: false })
+        .order("first_name", { ascending: true });
 
-      if (error) throw error
-      return data as LambInfoRow[]
+      if (error) throw error;
+      return data as LambInfoRow[];
     },
-  })
+  });
 }
 
 export function useLambInfoDetail(id: string | undefined) {
   return useQuery({
-    queryKey: lambInfoKeys.detail(id ?? ''),
+    queryKey: lambInfoKeys.detail(id ?? ""),
     enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_info')
+        .from("lamb_info")
         .select(
-          '*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)'
+          "*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)",
         )
-        .eq('id', id as string)
-        .single()
+        .eq("id", id as string)
+        .single();
 
-      if (error) throw error
-      return data as LambInfoRow
+      if (error) throw error;
+      return data as LambInfoRow;
     },
-  })
+  });
 }
 
 export function useGroupCareOptions() {
@@ -69,14 +69,14 @@ export function useGroupCareOptions() {
     queryKey: groupCareKeys.list,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('group_care')
-        .select('id, name')
-        .order('name', { ascending: true })
+        .from("group_care")
+        .select("id, name")
+        .order("name", { ascending: true });
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
-  })
+  });
 }
 
 export function usePersonalityTypeOptions() {
@@ -84,74 +84,74 @@ export function usePersonalityTypeOptions() {
     queryKey: personalityTypeKeys.list,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('personality_type')
-        .select('code, description_en, description_th, explain, archetype')
-        .order('code', { ascending: true })
+        .from("personality_type")
+        .select("code, description_en, description_th, explain, archetype")
+        .order("code", { ascending: true });
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
-  })
+  });
 }
 
-type LambInfoInput = Omit<LambInfo, 'id'>
+type LambInfoInput = Omit<LambInfo, "id">;
 
 export function useCreateLambInfo() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (values: LambInfoInput) => {
       const { data, error } = await supabase
-        .from('lamb_info')
+        .from("lamb_info")
         .insert(values)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list })
+      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list });
     },
-  })
+  });
 }
 
 export function useUpdateLambInfo() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       id,
       values,
     }: {
-      id: string
-      values: LambInfoInput
+      id: string;
+      values: LambInfoInput;
     }) => {
       const { data, error } = await supabase
-        .from('lamb_info')
+        .from("lamb_info")
         .update(values)
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list })
+      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list });
     },
-  })
+  });
 }
 
 export function useDeleteLambInfo() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('lamb_info').delete().eq('id', id)
-      if (error) throw error
+      const { error } = await supabase.from("lamb_info").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list })
+      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list });
     },
-  })
+  });
 }
 
 // `gift_from_god` has at most one row per lamb (lamb_id is the PK). A lamb
@@ -160,46 +160,46 @@ export function useDeleteLambInfo() {
 // (see mergeGiftScores in ./gifts).
 export function useGiftFromGod(lambId: string | undefined) {
   return useQuery({
-    queryKey: giftFromGodKeys.detail(lambId ?? ''),
+    queryKey: giftFromGodKeys.detail(lambId ?? ""),
     enabled: !!lambId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('gift_from_god')
-        .select('*')
-        .eq('lamb_id', lambId as string)
-        .maybeSingle()
+        .from("gift_from_god")
+        .select("*")
+        .eq("lamb_id", lambId as string)
+        .maybeSingle();
 
-      if (error) throw error
-      return data as GiftFromGodRow | null
+      if (error) throw error;
+      return data as GiftFromGodRow | null;
     },
-  })
+  });
 }
 
 export function useUpsertGiftFromGod() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       lambId,
       values,
     }: {
-      lambId: string
-      values: GiftScores
+      lambId: string;
+      values: GiftScores;
     }) => {
       const { data, error } = await supabase
-        .from('gift_from_god')
-        .upsert({ lamb_id: lambId, ...values }, { onConflict: 'lamb_id' })
+        .from("gift_from_god")
+        .upsert({ lamb_id: lambId, ...values }, { onConflict: "lamb_id" })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as GiftFromGodRow
+      if (error) throw error;
+      return data as GiftFromGodRow;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: giftFromGodKeys.detail(variables.lambId),
-      })
+      });
     },
-  })
+  });
 }
 
 // Lightweight lamb list for the "select which lamb this is for" test
@@ -207,22 +207,22 @@ export function useUpsertGiftFromGod() {
 // joins (unlike useLambInfoList, which the table page needs).
 export function useLambNameOptions() {
   return useQuery({
-    queryKey: [...lambInfoKeys.list, 'name-options'],
+    queryKey: [...lambInfoKeys.list, "name-options"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_info')
-        .select('id, nick_name, first_name, last_name')
-        .order('first_name', { ascending: true })
+        .from("lamb_info")
+        .select("id, nick_name, first_name, last_name")
+        .order("first_name", { ascending: true });
 
-      if (error) throw error
+      if (error) throw error;
       return data as {
-        id: string
-        nick_name: string | null
-        first_name: string
-        last_name: string
-      }[]
+        id: string;
+        nick_name: string | null;
+        first_name: string;
+        last_name: string;
+      }[];
     },
-  })
+  });
 }
 
 export function useLambDevotionFeed() {
@@ -230,18 +230,16 @@ export function useLambDevotionFeed() {
     queryKey: lambDevotionKeys.feed,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_devotion')
-        .select(
-          '*, lamb_info(nick_name, first_name, last_name)'
-        )
-        .eq('is_public', true)
-        .order('devotion_date', { ascending: false })
-        .order('created_at', { ascending: false })
+        .from("lamb_devotion")
+        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .eq("is_public", true)
+        .order("devotion_date", { ascending: false })
+        .order("created_at", { ascending: false });
 
-      if (error) throw error
-      return data as LambDevotionRow[]
+      if (error) throw error;
+      return data as LambDevotionRow[];
     },
-  })
+  });
 }
 
 // Everything, public and private — backs the admin/test table
@@ -255,55 +253,55 @@ export function useLambDevotionFeed() {
 export function useLambDevotionTable(lambId?: string) {
   return useQuery({
     queryKey: lambId
-      ? [...lambDevotionKeys.feed, 'all', lambId]
-      : [...lambDevotionKeys.feed, 'all'],
+      ? [...lambDevotionKeys.feed, "all", lambId]
+      : [...lambDevotionKeys.feed, "all"],
     queryFn: async () => {
       let query = supabase
-        .from('lamb_devotion')
-        .select('*, lamb_info(nick_name, first_name, last_name)')
-        .order('devotion_date', { ascending: false })
-        .order('created_at', { ascending: false })
+        .from("lamb_devotion")
+        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .order("devotion_date", { ascending: false })
+        .order("created_at", { ascending: false });
 
-      if (lambId) query = query.eq('lamb_id', lambId)
+      if (lambId) query = query.eq("lamb_id", lambId);
 
-      const { data, error } = await query
-      if (error) throw error
-      return data as LambDevotionRow[]
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as LambDevotionRow[];
     },
-  })
+  });
 }
 
 export function useDeleteLambDevotions() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ids: string[]) => {
       const { error } = await supabase
-        .from('lamb_devotion')
+        .from("lamb_devotion")
         .delete()
-        .in('id', ids)
-      if (error) throw error
+        .in("id", ids);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all });
     },
-  })
+  });
 }
 
 export function useLambDevotionDetail(id: string | undefined) {
   return useQuery({
-    queryKey: lambDevotionKeys.detail(id ?? ''),
+    queryKey: lambDevotionKeys.detail(id ?? ""),
     enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_devotion')
-        .select('*, lamb_info(nick_name, first_name, last_name)')
-        .eq('id', id as string)
-        .single()
+        .from("lamb_devotion")
+        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .eq("id", id as string)
+        .single();
 
-      if (error) throw error
-      return data as LambDevotionRow
+      if (error) throw error;
+      return data as LambDevotionRow;
     },
-  })
+  });
 }
 
 // Full submission history for one lamb (all lamb_devotion rows, public
@@ -316,48 +314,48 @@ export function useLambDevotionDetail(id: string | undefined) {
 // mock-data-only version (data/devotions.ts).
 export function useLambDevotionHistory(lambId: string | undefined) {
   return useQuery({
-    queryKey: lambDevotionKeys.history(lambId ?? ''),
+    queryKey: lambDevotionKeys.history(lambId ?? ""),
     enabled: !!lambId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('lamb_devotion')
-        .select('id, devotion_date, title, content_html, image_urls, is_public')
-        .eq('lamb_id', lambId as string)
-        .order('devotion_date', { ascending: true })
+        .from("lamb_devotion")
+        .select("id, devotion_date, title, content_html, image_urls, is_public")
+        .eq("lamb_id", lambId as string)
+        .order("devotion_date", { ascending: true });
 
-      if (error) throw error
-      return data as Omit<LambDevotion, 'lamb_id' | 'created_at' | 'updated_at'>[]
+      if (error) throw error;
+      return data as Omit<
+        LambDevotion,
+        "lamb_id" | "created_at" | "updated_at"
+      >[];
     },
-  })
+  });
 }
 
-type LambDevotionInput = Omit<
-  LambDevotion,
-  'id' | 'created_at' | 'updated_at'
->
+type LambDevotionInput = Omit<LambDevotion, "id" | "created_at" | "updated_at">;
 
 // Unique-violation Postgres error code — thrown when the selected lamb
 // already has an entry for `devotion_date` (see the table's
 // lamb_devotion_one_per_day constraint in docs/devotion-db-design.md).
-export const DEVOTION_ALREADY_SUBMITTED_CODE = '23505'
+export const DEVOTION_ALREADY_SUBMITTED_CODE = "23505";
 
 export function useCreateLambDevotion() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (values: LambDevotionInput) => {
       const { data, error } = await supabase
-        .from('lamb_devotion')
+        .from("lamb_devotion")
         .insert(values)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as LambDevotion
+      if (error) throw error;
+      return data as LambDevotion;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all });
     },
-  })
+  });
 }
 
 // Edit surface for the admin test table (devotion-table.tsx) and the
@@ -366,35 +364,35 @@ export function useCreateLambDevotion() {
 // intentionally excluded (fixed at creation) to avoid colliding with the
 // lamb_devotion_one_per_day constraint.
 type LambDevotionUpdateInput = Partial<
-  Pick<LambDevotion, 'title' | 'content_html' | 'image_urls' | 'is_public'>
->
+  Pick<LambDevotion, "title" | "content_html" | "image_urls" | "is_public">
+>;
 
 export function useUpdateLambDevotion() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       id,
       values,
     }: {
-      id: string
-      values: LambDevotionUpdateInput
+      id: string;
+      values: LambDevotionUpdateInput;
     }) => {
       const { data, error } = await supabase
-        .from('lamb_devotion')
+        .from("lamb_devotion")
         .update({ ...values, updated_at: new Date().toISOString() })
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as LambDevotion
+      if (error) throw error;
+      return data as LambDevotion;
     },
     onSuccess: () => {
       // The root key covers feed/table/detail/history at once (they all
       // nest under it) — simpler and safer than juggling exact sub-keys,
       // and this mutation can affect a devotion shown across several of
       // them (test table, detail page, the lamb's own history graph).
-      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all });
     },
-  })
+  });
 }

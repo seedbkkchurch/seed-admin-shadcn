@@ -64,10 +64,10 @@
   /* Site-wide default font. 'IBM Plex Sans Thai Looped' fills in Thai
    * glyphs, which 'Google Sans' does not provide. */
   --font-google-sans:
-    'Google Sans', 'IBM Plex Sans Thai Looped', ui-sans-serif, sans-serif;
+    "Google Sans", "IBM Plex Sans Thai Looped", ui-sans-serif, sans-serif;
   /* Overrides Tailwind's default font-mono utility (used for kbd shortcuts
    * and inline code) so it matches the rest of the site. */
-  --font-mono: 'Google Sans Code', ui-monospace, monospace;
+  --font-mono: "Google Sans Code", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

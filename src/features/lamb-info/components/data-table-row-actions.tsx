@@ -1,8 +1,8 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { useNavigate } from '@tanstack/react-router'
-import { type Row } from '@tanstack/react-table'
-import { Trash2, UserPen, UserRound } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { useNavigate } from "@tanstack/react-router";
+import { type Row } from "@tanstack/react-table";
+import { Trash2, UserPen, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,35 +10,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { type LambInfoRow } from '../data/schema'
-import { useLambInfo } from './lamb-info-provider'
+} from "@/components/ui/dropdown-menu";
+import { type LambInfoRow } from "../data/schema";
+import { useLambInfo } from "./lamb-info-provider";
 
 type DataTableRowActionsProps = {
-  row: Row<LambInfoRow>
-}
+  row: Row<LambInfoRow>;
+};
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useLambInfo()
-  const navigate = useNavigate()
+  const { setOpen, setCurrentRow } = useLambInfo();
+  const navigate = useNavigate();
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='ghost'
-          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+          variant="ghost"
+          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
         >
-          <DotsHorizontalIcon className='h-4 w-4' />
-          <span className='sr-only'>Open menu</span>
+          <DotsHorizontalIcon className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-40'>
+      <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuItem
           onClick={() => {
             navigate({
-              to: '/lamb-info/$lambId',
+              to: "/lamb-info/$lambId",
               params: { lambId: row.original.id },
-            })
+            });
           }}
         >
           View Profile
@@ -48,8 +48,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('edit')
+            setCurrentRow(row.original);
+            setOpen("edit");
           }}
         >
           Edit
@@ -60,10 +60,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(row.original)
-            setOpen('delete')
+            setCurrentRow(row.original);
+            setOpen("delete");
           }}
-          className='text-red-500!'
+          className="text-red-500!"
         >
           Delete
           <DropdownMenuShortcut>
@@ -72,5 +72,5 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

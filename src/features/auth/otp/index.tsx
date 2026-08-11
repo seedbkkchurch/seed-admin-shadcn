@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 import {
   Card,
   CardContent,
@@ -6,16 +6,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { AuthLayout } from '../auth-layout'
-import { OtpForm } from './components/otp-form'
+} from "@/components/ui/card";
+import { AuthLayout } from "../auth-layout";
+import { OtpForm } from "./components/otp-form";
 
 export function Otp() {
   return (
     <AuthLayout>
-      <Card className='max-w-md gap-4'>
+      <Card className="max-w-md gap-4">
         <CardHeader>
-          <CardTitle className='text-base tracking-tight'>
+          <CardTitle className="text-base tracking-tight">
             Two-factor Authentication
           </CardTitle>
           <CardDescription>
@@ -27,11 +27,11 @@ export function Otp() {
           <OtpForm />
         </CardContent>
         <CardFooter>
-          <p className='px-8 text-center text-sm text-muted-foreground'>
-            Haven't received it?{' '}
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            Haven't received it?{" "}
             <Link
-              to='/sign-in'
-              className='underline underline-offset-4 hover:text-primary'
+              to="/sign-in"
+              className="underline underline-offset-4 hover:text-primary"
             >
               Resend a new code.
             </Link>
@@ -40,5 +40,5 @@ export function Otp() {
         </CardFooter>
       </Card>
     </AuthLayout>
-  )
+  );
 }
