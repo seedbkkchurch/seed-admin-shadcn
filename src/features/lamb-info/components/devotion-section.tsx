@@ -90,7 +90,7 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
           <div className='font-semibold'>ประวัติเฝ้าเดี่ยว</div>
           <p className='text-sm text-muted-foreground'>{statText}</p>
         </div>
-        <div className='flex flex-wrap items-center gap-2'>
+        <div className='flex items-center gap-2'>
           <Tabs
             value={view}
             onValueChange={(v) => setView(v as DevotionView)}
@@ -101,7 +101,26 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
               <TabsTrigger value='year'>รายปี</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button size='lg' onClick={() => setUploadOpen(true)}>
+          {/* Mobile: icon-only so it doesn't crowd the Tabs on the same
+              row. sm+: back to the full-text button. Two separate Buttons
+              (rather than one Button with a conditionally-hidden label) so
+              the icon one actually gets `size='icon'`'s square padding —
+              Tailwind can't switch a component's `size` prop per
+              breakpoint, only its className. Per grill-me follow-up
+              (2026-08-11). */}
+          <Button
+            size='icon'
+            className='sm:hidden'
+            aria-label='ส่งเฝ้าเดี่ยว'
+            onClick={() => setUploadOpen(true)}
+          >
+            <Upload />
+          </Button>
+          <Button
+            size='lg'
+            className='hidden sm:inline-flex'
+            onClick={() => setUploadOpen(true)}
+          >
             <Upload /> ส่งเฝ้าเดี่ยว
           </Button>
         </div>

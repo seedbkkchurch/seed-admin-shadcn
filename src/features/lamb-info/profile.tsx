@@ -90,11 +90,18 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
   }
 
   return (
-    <div className='flex flex-wrap items-center justify-between gap-4'>
-      <div className='flex items-center gap-6'>
+    // Mobile: Edit renders full-width above the avatar/name block (achieved
+    // via flex-col-reverse — Button stays last in the DOM, for a11y/tab
+    // order, but paints first). Avatar shrinks and the avatar+name row
+    // stacks vertically, centered. sm+: back to the original side-by-side
+    // layout (avatar left, Edit right) at full size. Per grill-me
+    // follow-up (2026-08-11) — the fixed 125px avatar + text-5xl name had
+    // no responsive fallback and crowded narrow screens.
+    <div className='flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='flex flex-col items-center gap-3 text-center sm:flex-row sm:items-center sm:gap-6 sm:text-start'>
         <AvatarUpload
           mode='immediate'
-          className='size-[125px]'
+          className='size-20 sm:size-[125px]'
           imageUrl={row.profile_picture}
           initials={getInitials(row)}
           nickname={row.nick_name || row.first_name || 'avatar'}
@@ -102,8 +109,8 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
           onUploaded={handleAvatarUploaded}
         />
         <div>
-          <div className='flex flex-wrap items-center gap-3'>
-            <h2 className='text-5xl font-bold tracking-tight'>
+          <div className='flex flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-3'>
+            <h2 className='text-2xl font-bold tracking-tight sm:text-5xl'>
               {row.nick_name || fullName}
             </h2>
             <Badge
@@ -144,10 +151,13 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
               </Badge>
             )}
           </div>
-          <p className='text-muted-foreground text-lg'>{fullName}</p>
+          <p className='text-muted-foreground text-sm sm:text-lg'>
+            {fullName}
+          </p>
         </div>
       </div>
       <Button
+        className='w-full sm:w-auto'
         onClick={() => {
           setCurrentRow(row)
           setOpen('edit')
