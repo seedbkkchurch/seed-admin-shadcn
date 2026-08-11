@@ -1,7 +1,10 @@
 import { supabase } from './client'
 
 const AVATAR_BUCKET = 'bucket-seed'
-const AVATAR_PREFIX = 'profile/seedbkk'
+// Bucket was reorganized into top-level public/ and private/ folders (per
+// grill-me follow-up 2026-08-11) — avatars live under public/ since they're
+// always meant to be publicly visible.
+const AVATAR_PREFIX = 'public/seedbkk/profile'
 
 // Supabase Storage keys must be ASCII-safe — non-ASCII characters (e.g. Thai)
 // are rejected with "Invalid key". Most nicknames in this app are Thai, so
@@ -29,8 +32,8 @@ function publicUrlToPath(url: string): string | null {
 
 /**
  * Uploads a (pre-resized) avatar blob to Supabase Storage at
- * `profile/seedbkk/{nickname}-{lambId}.jpg`, deleting the old file first if
- * one is passed in. Returns the new public URL.
+ * `public/seedbkk/profile/{nickname}-{lambId}.jpg`, deleting the old file
+ * first if one is passed in. Returns the new public URL.
  */
 export async function uploadAvatar({
   blob,

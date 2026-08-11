@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, useEditor } from '@tiptap/react'
@@ -10,11 +10,13 @@ import {
   Italic,
   List,
   ListOrdered,
+  Loader2,
   Quote,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { uploadDevotionImage } from '@/lib/supabase/devotion-image'
 import { cn } from '@/lib/utils'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -22,20 +24,32 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 type ArticleEditorProps = {
   placeholder?: string
   onChangeHtml: (html: string) => void
+  // Lets the parent form (devotion-editor.tsx) disable submit while an
+  // image is mid-upload, so a still-uploading image never gets left out
+  // of what's saved.
+  onUploadingChange?: (uploading: boolean) => void
+  // Public/private state of the form's toggle *right now* — each inserted
+  // image is uploaded to the matching bucket folder at insert time. If the
+  // toggle changes afterward, already-inserted images are left where they
+  // are (see uploadDevotionImage doc comment).
+  isPublic: boolean
   className?: string
 }
 
 // Medium-style rich text editor — bold/italic/headings/lists/quote plus
-// inline image insertion at the cursor. Images are never uploaded
-// anywhere; the file is only turned into a local object URL, so nothing
-// survives a page refresh (matches the rest of the เฝ้าเดี่ยว flow, which
-// is still UI-only — see devotion-section.tsx).
+// inline image insertion at the cursor. Images are resized client-side
+// (see image-resize.ts) and uploaded to Supabase Storage immediately on
+// selection (see devotion-image.ts) — the URL inserted into the editor
+// is the real, persisted public URL, not a local object URL.
 export function ArticleEditor({
   placeholder,
   onChangeHtml,
+  onUploadingChange,
+  isPublic,
   className,
 }: ArticleEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const editor = useEditor({
     extensions: [
@@ -66,7 +80,9 @@ export function ArticleEditor({
 
   const handleImageButtonClick = () => fileInputRef.current?.click()
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file || !editor) return
@@ -76,8 +92,19 @@ export function ArticleEditor({
       return
     }
 
-    const url = URL.createObjectURL(file)
-    editor.chain().focus().setImage({ src: url, alt: file.name }).run()
+    setIsUploading(true)
+    onUploadingChange?.(true)
+    try {
+      const url = await uploadDevotionImage(file, isPublic)
+      editor.chain().focus().setImage({ src: url, alt: file.name }).run()
+    } catch (error) {
+      toast.error('อัปโหลดรูปไม่สำเร็จ', {
+        description: error instanceof Error ? error.message : undefined,
+      })
+    } finally {
+      setIsUploading(false)
+      onUploadingChange?.(false)
+    }
   }
 
   if (!editor) return null
@@ -151,9 +178,10 @@ export function ArticleEditor({
           variant='ghost'
           size='icon'
           onClick={handleImageButtonClick}
+          disabled={isUploading}
           aria-label='แทรกรูปภาพ'
         >
-          <ImageIcon />
+          {isUploading ? <Loader2 className='animate-spin' /> : <ImageIcon />}
         </Button>
         <input
           ref={fileInputRef}

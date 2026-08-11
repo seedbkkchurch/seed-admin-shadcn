@@ -25,6 +25,7 @@ import {
   HeartHandshake,
   BrainCircuit,
   NotebookPen,
+  Table,
 } from 'lucide-react'
 import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
@@ -89,8 +90,13 @@ export const sidebarData: SidebarData = {
         },
         {
           title: 'เฝ้าเดี่ยว',
-          url: '/lamb-info/devotion/new',
+          url: '/lamb-info/devotion',
           icon: NotebookPen,
+        },
+        {
+          title: 'เฝ้าเดี่ยว (ตาราง)',
+          url: '/lamb-info/devotion/table',
+          icon: Table,
         },
         {
           title: 'Group Care',

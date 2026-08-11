@@ -28,7 +28,6 @@ import {
   GIFT_DEFINITIONS,
   GIFT_SCORE_MAX,
   GIFT_SCORE_MIN,
-  getDefaultGiftScores,
   type GiftScores,
 } from '../data/gifts'
 
@@ -157,17 +156,10 @@ export function GiftsEditSheet({
           </form>
         </Form>
 
-        <SheetFooter className='flex-row justify-between'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={() => form.reset(toFormValues(getDefaultGiftScores()))}
-          >
-            Reset to Default
-          </Button>
-          {/* <Button type='submit' form='gifts-edit-form'>
+        <SheetFooter className='flex-row justify-end'>
+          <Button type='submit' form='gifts-edit-form'>
             Save
-          </Button> */}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

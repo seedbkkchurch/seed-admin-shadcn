@@ -3,17 +3,18 @@
 // smallint score columns 0-15, keyed by lamb_id). See queries.ts for the
 // actual fetch/upsert hooks.
 //
-// GIFT_DEFINITIONS' order/column mapping matches the original Excel import
-// 1:1 (confirmed against the source spreadsheet) — do not reorder or
-// rename without re-checking that mapping against the spreadsheet.
+// GIFT_DEFINITIONS' 25 columns match the original Excel import 1:1
+// (confirmed against the source spreadsheet) — do not rename/remove a
+// `column` value without re-checking that mapping against the spreadsheet.
+// The array order and `category` assignment, however, follow a deliberate
+// 5x5 regrouping (see conversation history) rather than the Excel order.
 
 export const GIFT_CATEGORIES = [
-  'Teaching',
-  'Compassion',
-  'Leadership',
-  'Prophecy',
-  'Service',
-  'Evangelism',
+  'Teaching & Knowledge',
+  'Leadership & Governance',
+  'Evangelism & Power',
+  'Service & Compassion',
+  'Devotion & Spiritual Life',
 ] as const
 
 export type GiftCategory = (typeof GIFT_CATEGORIES)[number]
@@ -26,59 +27,96 @@ export type GiftDefinition = {
 }
 
 export const GIFT_DEFINITIONS: GiftDefinition[] = [
-  { column: 'prophet', name: 'เผยพระวจนะ', category: 'Prophecy' },
-  { column: 'pastoral', name: 'อภิบาล', category: 'Leadership' },
-  { column: 'teaching', name: 'การสอน', category: 'Teaching' },
+  // Teaching & Knowledge
+  { column: 'teaching', name: 'การสอน', category: 'Teaching & Knowledge' },
+  { column: 'prophet', name: 'เผยพระวจนะ', category: 'Teaching & Knowledge' },
   {
     column: 'word_of_wisdom',
     name: 'ถ้อยคำประกอบด้วยสติปัญญา',
-    category: 'Teaching',
+    category: 'Teaching & Knowledge',
   },
   {
     column: 'words_with_knowledge',
     name: 'ถ้อยคำประกอบด้วยความรู้',
-    category: 'Teaching',
+    category: 'Teaching & Knowledge',
+  },
+  {
+    column: 'discernment_of_spirits',
+    name: 'การสังเกตวิญญาณ',
+    category: 'Teaching & Knowledge',
+  },
+
+  // Leadership & Governance
+  { column: 'ambassador', name: 'อัครทูต', category: 'Leadership & Governance' },
+  { column: 'pastoral', name: 'อภิบาล', category: 'Leadership & Governance' },
+  { column: 'ruler', name: 'ผู้ครอบครอง', category: 'Leadership & Governance' },
+  {
+    column: 'executive',
+    name: 'ผู้บริหาร',
+    category: 'Leadership & Governance',
+  },
+  {
+    column: 'faith_trust',
+    name: 'ความเชื่อ',
+    category: 'Leadership & Governance',
+  },
+
+  // Evangelism & Power
+  { column: 'preacher', name: 'ผู้ประกาศ', category: 'Evangelism & Power' },
+  { column: 'missionary', name: 'มิชชันนารี', category: 'Evangelism & Power' },
+  { column: 'miracle', name: 'การอัศจรรย์', category: 'Evangelism & Power' },
+  {
+    column: 'healing_of_disease',
+    name: 'การรักษาโรค',
+    category: 'Evangelism & Power',
+  },
+  { column: 'exorcism', name: 'การขับผี', category: 'Evangelism & Power' },
+
+  // Service & Compassion
+  { column: 'compassion', name: 'ความเมตตา', category: 'Service & Compassion' },
+  {
+    column: 'to_serve',
+    name: 'การปรนนิบัติ',
+    category: 'Service & Compassion',
+  },
+  { column: 'offering', name: 'การบริจาค', category: 'Service & Compassion' },
+  {
+    column: 'supporter',
+    name: 'ผู้อุปการะ',
+    category: 'Service & Compassion',
   },
   {
     column: 'warning_and_encouragement',
     name: 'การตักเตือนและหนุนใจ',
-    category: 'Compassion',
+    category: 'Service & Compassion',
+  },
+
+  // Devotion & Spiritual Life
+  {
+    column: 'blessing_prayer',
+    name: 'การอธิษฐานอ้อนวอน',
+    category: 'Devotion & Spiritual Life',
   },
   {
-    column: 'discernment_of_spirits',
-    name: 'การรับใช้วิญญาณ',
-    category: 'Prophecy',
+    column: 'welcoming_guests',
+    name: 'การรับรองแขก',
+    category: 'Devotion & Spiritual Life',
   },
-  { column: 'offering', name: 'การบริจาค', category: 'Service' },
-  { column: 'to_serve', name: 'การประนีประนอม', category: 'Compassion' },
-  { column: 'compassion', name: 'ความเมตตา', category: 'Compassion' },
-  { column: 'missionary', name: 'มีชัยชนะ', category: 'Leadership' },
-  { column: 'preacher', name: 'ผู้ประกาศ', category: 'Evangelism' },
-  { column: 'welcoming_guests', name: 'การรับรองแขก', category: 'Service' },
-  { column: 'faith_trust', name: 'ความเชื่อ', category: 'Leadership' },
-  { column: 'ruler', name: 'ผู้ครอบครอง', category: 'Leadership' },
-  { column: 'executive', name: 'ผู้บริหาร', category: 'Leadership' },
-  { column: 'miracle', name: 'การอัศจรรย์', category: 'Prophecy' },
-  { column: 'healing_of_disease', name: 'การรักษาโรค', category: 'Compassion' },
   {
     column: 'speaking_in_tongues',
     name: 'การพูดภาษาแปลก',
-    category: 'Prophecy',
+    category: 'Devotion & Spiritual Life',
   },
   {
     column: 'interpreting_tongues',
     name: 'การแปลภาษาแปลก',
-    category: 'Prophecy',
+    category: 'Devotion & Spiritual Life',
   },
-  { column: 'ambassador', name: 'อัครทูต', category: 'Evangelism' },
-  { column: 'being_single', name: 'การอยู่เป็นโสด', category: 'Service' },
   {
-    column: 'blessing_prayer',
-    name: 'การอธิษฐานอ้อนวอน',
-    category: 'Service',
+    column: 'being_single',
+    name: 'การอยู่เป็นโสด',
+    category: 'Devotion & Spiritual Life',
   },
-  { column: 'exorcism', name: 'การช่วยเหลือ', category: 'Service' },
-  { column: 'supporter', name: 'ผู้อุปถัมภ์', category: 'Compassion' },
 ]
 
 export const GIFT_SCORE_MIN = 0
