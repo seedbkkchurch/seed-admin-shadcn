@@ -24,7 +24,7 @@ import { GrowthProgressCard } from './components/growth-progress-card'
 import { LambInfoDialogs } from './components/lamb-info-dialogs'
 import { LambInfoProvider, useLambInfo } from './components/lamb-info-provider'
 
-const route = getRouteApi('/_authenticated/lamb-info/$lambId')
+const route = getRouteApi('/_authenticated/lamb-info/$lambId/')
 
 function getInitials(row: LambInfoRow) {
   const source = row.nick_name || row.first_name || '?'

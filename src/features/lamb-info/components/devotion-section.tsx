@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLambDevotionHistory } from '../data/queries'
 import { DevotionHeatmap, type DevotionHeatmapEntry } from './devotion-heatmap'
 import { DevotionMonthlyChart } from './devotion-monthly-chart'
+import { DevotionRecentList } from './devotion-recent-list'
 import { DevotionUploadDialog } from './devotion-upload-dialog'
 
 type DevotionView = 'day' | 'month' | 'year'
@@ -53,6 +54,13 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
 
   const getEntry = (date: Date) =>
     entryByDate.get(format(date, 'yyyy-MM-dd')) ?? null
+
+  // useLambDevotionHistory returns oldest-first (see queries.ts) — reverse
+  // for the "ประวัติล่าสุด" list below the graph, which wants newest-first.
+  const recentEntries = useMemo(
+    () => (entries ?? []).slice().reverse(),
+    [entries]
+  )
 
   const oneYearCount = useMemo(() => {
     const days = eachDayOfInterval({
@@ -101,20 +109,26 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       <CardContent>
         {isPending ? (
           <Skeleton className='h-40 w-full' />
-        ) : view === 'day' ? (
-          <DevotionHeatmap
-            today={today}
-            daysBack={ONE_YEAR_DAYS_BACK}
-            getEntry={getEntry}
-          />
-        ) : view === 'month' ? (
-          <DevotionMonthlyChart today={today} entries={entries ?? []} />
         ) : (
-          <DevotionHeatmap
-            today={today}
-            daysBack={THREE_YEAR_DAYS_BACK}
-            getEntry={getEntry}
-          />
+          <>
+            {view === 'day' ? (
+              <DevotionHeatmap
+                today={today}
+                daysBack={ONE_YEAR_DAYS_BACK}
+                getEntry={getEntry}
+              />
+            ) : view === 'month' ? (
+              <DevotionMonthlyChart today={today} entries={entries ?? []} />
+            ) : (
+              <DevotionHeatmap
+                today={today}
+                daysBack={THREE_YEAR_DAYS_BACK}
+                getEntry={getEntry}
+              />
+            )}
+
+            <DevotionRecentList lambId={lambId} entries={recentEntries} />
+          </>
         )}
       </CardContent>
 

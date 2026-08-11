@@ -26,6 +26,7 @@
       href="/images/favicon_light.png"
       media="(prefers-color-scheme: dark)"
     />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary Meta Tags -->
@@ -71,6 +72,15 @@
     />
 
     <meta name="theme-color" content="#fff" />
+
+    <!-- PWA / "Add to Home Screen" (grill-me follow-up, 2026-08-11) -->
+    <!-- iOS Safari ignores manifest.webmanifest for install metadata, so
+         these meta tags are needed in addition to the manifest that
+         vite-plugin-pwa injects at build time. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Shadcn Admin" />
   </head>
 
   <body>

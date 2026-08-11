@@ -246,19 +246,27 @@ export function useLambDevotionFeed() {
 
 // Everything, public and private — backs the admin/test table
 // (devotion-table.tsx), unlike useLambDevotionFeed which only shows
-// is_public rows.
-export function useLambDevotionTable() {
+// is_public rows. Optional `lambId` scopes it to one lamb — backs the
+// per-lamb full-history table (lamb-devotion-table.tsx) opened via
+// "ดูทั้งหมด" on the profile page, per grill-me follow-up (2026-08-11).
+// Still joins lamb_info (redundant when scoped to one lamb, but keeps the
+// row type — and every downstream component built on it, e.g. bulk
+// delete/row actions — identical between both tables).
+export function useLambDevotionTable(lambId?: string) {
   return useQuery({
-    queryKey: [...lambDevotionKeys.feed, 'all'],
+    queryKey: lambId
+      ? [...lambDevotionKeys.feed, 'all', lambId]
+      : [...lambDevotionKeys.feed, 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('lamb_devotion')
-        .select(
-          '*, lamb_info(nick_name, first_name, last_name)'
-        )
+        .select('*, lamb_info(nick_name, first_name, last_name)')
         .order('devotion_date', { ascending: false })
         .order('created_at', { ascending: false })
 
+      if (lambId) query = query.eq('lamb_id', lambId)
+
+      const { data, error } = await query
       if (error) throw error
       return data as LambDevotionRow[]
     },
