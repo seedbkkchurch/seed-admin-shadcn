@@ -1,6 +1,6 @@
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { format, parseISO } from 'date-fns'
-import { AlertCircle, ArrowLeft } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Pencil } from 'lucide-react'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -18,7 +18,7 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase()
 }
 
-const route = getRouteApi('/_authenticated/lamb-info/devotion/$devotionId')
+const route = getRouteApi('/_authenticated/lamb-info/devotion/$devotionId/')
 
 // Full-article read view for a single feed entry — opened by clicking a
 // card in devotion-feed.tsx. Reads the real `lamb_devotion` table.
@@ -41,12 +41,22 @@ export function DevotionDetail() {
       </Header>
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <div>
+        <div className='flex items-center justify-between'>
           <Button variant='ghost' size='sm' asChild>
             <Link to='/lamb-info/devotion'>
               <ArrowLeft /> กลับไปหน้าเฝ้าเดี่ยว
             </Link>
           </Button>
+          {entry && (
+            <Button variant='outline' size='sm' asChild>
+              <Link
+                to='/lamb-info/devotion/$devotionId/edit'
+                params={{ devotionId }}
+              >
+                <Pencil /> แก้ไข
+              </Link>
+            </Button>
+          )}
         </div>
 
         {isError ? (

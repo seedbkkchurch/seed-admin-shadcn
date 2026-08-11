@@ -11,38 +11,59 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { type DevotionEntry } from '../data/devotions'
+import { uploadDevotionImage } from '@/lib/supabase/devotion-image'
+import {
+  DEVOTION_ALREADY_SUBMITTED_CODE,
+  useCreateLambDevotion,
+} from '../data/queries'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
 
 type DevotionUploadDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  lambId: string
   today: Date
-  // Only ever updates local, in-memory state (see devotion-section.tsx) —
-  // there is no lamb_devotion table yet, so nothing here is persisted.
-  onSubmit: (entry: DevotionEntry) => void
 }
 
+// Quick-capture "ส่งเฝ้าเดี่ยว" dialog on the lamb's profile page — a
+// lighter-weight alternative to the full Medium-style editor at
+// /lamb-info/devotion/new: plain text OR a single photo, no separate
+// title field (title is auto-filled from the date, since this dialog is
+// meant for a quick daily check-in rather than writing an article).
+// Persists to the real `lamb_devotion` table per grill-me follow-up
+// (2026-08-11) — it used to only touch local component state.
 export function DevotionUploadDialog({
   open,
   onOpenChange,
+  lambId,
   today,
-  onSubmit,
 }: DevotionUploadDialogProps) {
   const [tab, setTab] = useState<'text' | 'image'>('text')
   const [text, setText] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [isPublic, setIsPublic] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const createDevotion = useCreateLambDevotion()
 
   const resetForm = () => {
     setTab('text')
     setText('')
     setImageFile(null)
     setImagePreviewUrl(null)
+    setIsPublic(true)
   }
 
   const handleOpenChange = (next: boolean) => {
@@ -64,30 +85,53 @@ export function DevotionUploadDialog({
   }
 
   const canSubmit =
-    tab === 'text' ? text.trim().length > 0 : imageFile !== null
+    (tab === 'text' ? text.trim().length > 0 : imageFile !== null) &&
+    !isSubmitting
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!canSubmit) return
 
     setIsSubmitting(true)
-    const dateKey = format(today, 'yyyy-MM-dd')
-    const entry: DevotionEntry =
-      tab === 'text'
-        ? { date: dateKey, type: 'text', content: text.trim(), imageUrl: null }
-        : {
-            date: dateKey,
-            type: 'image',
-            content: null,
-            imageUrl: imagePreviewUrl,
-          }
+    try {
+      let contentHtml: string
+      let imageUrls: string[]
 
-    onSubmit(entry)
-    toast.success('บันทึกเฝ้าเดี่ยววันนี้แล้ว', {
-      description: 'ตัวอย่าง UI เท่านั้น — ยังไม่เชื่อมระบบจริง ข้อมูลจะหายเมื่อรีเฟรชหน้า',
-    })
-    setIsSubmitting(false)
-    resetForm()
-    onOpenChange(false)
+      if (tab === 'text') {
+        contentHtml = `<p>${escapeHtml(text.trim())}</p>`
+        imageUrls = []
+      } else {
+        if (!imageFile) return
+        const url = await uploadDevotionImage(imageFile, isPublic)
+        contentHtml = `<img src="${url}" alt="เฝ้าเดี่ยว" />`
+        imageUrls = [url]
+      }
+
+      await createDevotion.mutateAsync({
+        lamb_id: lambId,
+        devotion_date: format(today, 'yyyy-MM-dd'),
+        title: `เฝ้าเดี่ยว ${format(today, 'd MMMM yyyy')}`,
+        content_html: contentHtml,
+        image_urls: imageUrls,
+        is_public: isPublic,
+      })
+
+      toast.success('บันทึกเฝ้าเดี่ยววันนี้แล้ว')
+      resetForm()
+      onOpenChange(false)
+    } catch (error: unknown) {
+      const code = (error as { code?: string } | null)?.code
+      if (code === DEVOTION_ALREADY_SUBMITTED_CODE) {
+        toast.error('คนนี้ส่งเฝ้าเดี่ยววันนี้ไปแล้ว', {
+          description: 'ส่งได้วันละ 1 ครั้งต่อคนเท่านั้น',
+        })
+      } else {
+        toast.error('บันทึกไม่สำเร็จ', {
+          description: error instanceof Error ? error.message : undefined,
+        })
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -137,15 +181,16 @@ export function DevotionUploadDialog({
           </TabsContent>
         </Tabs>
 
-        <p className='text-muted-foreground text-xs'>
-          ฟีเจอร์นี้ยังเป็นตัวอย่าง UI เท่านั้น — ยังไม่บันทึกลงฐานข้อมูลจริง
-        </p>
+        <label className='flex items-center gap-2 text-sm'>
+          <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          เผยแพร่ในหน้าเฝ้าเดี่ยวสาธารณะ
+        </label>
 
         <DialogFooter>
           <Button variant='outline' onClick={() => handleOpenChange(false)}>
             ยกเลิก
           </Button>
-          <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting}>
+          <Button onClick={handleSubmit} disabled={!canSubmit}>
             {isSubmitting && <Loader2 className='animate-spin' />}
             บันทึก
           </Button>

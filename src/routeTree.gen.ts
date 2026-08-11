@@ -44,9 +44,10 @@ import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as AuthenticatedLambInfoDevotionIndexRouteImport } from './routes/_authenticated/lamb-info/devotion/index'
-import { Route as AuthenticatedLambInfoDevotionDevotionIdRouteImport } from './routes/_authenticated/lamb-info/devotion/$devotionId'
 import { Route as AuthenticatedLambInfoDevotionNewRouteImport } from './routes/_authenticated/lamb-info/devotion/new'
 import { Route as AuthenticatedLambInfoDevotionTableRouteImport } from './routes/_authenticated/lamb-info/devotion/table'
+import { Route as AuthenticatedLambInfoDevotionDevotionIdIndexRouteImport } from './routes/_authenticated/lamb-info/devotion/$devotionId/index'
+import { Route as AuthenticatedLambInfoDevotionDevotionIdEditRouteImport } from './routes/_authenticated/lamb-info/devotion/$devotionId/edit'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -234,12 +235,6 @@ const AuthenticatedLambInfoDevotionIndexRoute =
     path: '/lamb-info/devotion/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedLambInfoDevotionDevotionIdRoute =
-  AuthenticatedLambInfoDevotionDevotionIdRouteImport.update({
-    id: '/lamb-info/devotion/$devotionId',
-    path: '/lamb-info/devotion/$devotionId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedLambInfoDevotionNewRoute =
   AuthenticatedLambInfoDevotionNewRouteImport.update({
     id: '/lamb-info/devotion/new',
@@ -250,6 +245,18 @@ const AuthenticatedLambInfoDevotionTableRoute =
   AuthenticatedLambInfoDevotionTableRouteImport.update({
     id: '/lamb-info/devotion/table',
     path: '/lamb-info/devotion/table',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLambInfoDevotionDevotionIdIndexRoute =
+  AuthenticatedLambInfoDevotionDevotionIdIndexRouteImport.update({
+    id: '/lamb-info/devotion/$devotionId/',
+    path: '/lamb-info/devotion/$devotionId/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLambInfoDevotionDevotionIdEditRoute =
+  AuthenticatedLambInfoDevotionDevotionIdEditRouteImport.update({
+    id: '/lamb-info/devotion/$devotionId/edit',
+    path: '/lamb-info/devotion/$devotionId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -285,10 +292,11 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
-  '/lamb-info/devotion/$devotionId': typeof AuthenticatedLambInfoDevotionDevotionIdRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
   '/lamb-info/devotion/': typeof AuthenticatedLambInfoDevotionIndexRoute
+  '/lamb-info/devotion/$devotionId/edit': typeof AuthenticatedLambInfoDevotionDevotionIdEditRoute
+  '/lamb-info/devotion/$devotionId/': typeof AuthenticatedLambInfoDevotionDevotionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkauthRouteRouteWithChildren
@@ -321,10 +329,11 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/lamb-info/devotion/$devotionId': typeof AuthenticatedLambInfoDevotionDevotionIdRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
   '/lamb-info/devotion': typeof AuthenticatedLambInfoDevotionIndexRoute
+  '/lamb-info/devotion/$devotionId/edit': typeof AuthenticatedLambInfoDevotionDevotionIdEditRoute
+  '/lamb-info/devotion/$devotionId': typeof AuthenticatedLambInfoDevotionDevotionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -362,10 +371,11 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/lamb-info/devotion/$devotionId': typeof AuthenticatedLambInfoDevotionDevotionIdRoute
   '/_authenticated/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/_authenticated/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
   '/_authenticated/lamb-info/devotion/': typeof AuthenticatedLambInfoDevotionIndexRoute
+  '/_authenticated/lamb-info/devotion/$devotionId/edit': typeof AuthenticatedLambInfoDevotionDevotionIdEditRoute
+  '/_authenticated/lamb-info/devotion/$devotionId/': typeof AuthenticatedLambInfoDevotionDevotionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -401,10 +411,11 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks/'
     | '/users/'
-    | '/lamb-info/devotion/$devotionId'
     | '/lamb-info/devotion/new'
     | '/lamb-info/devotion/table'
     | '/lamb-info/devotion/'
+    | '/lamb-info/devotion/$devotionId/edit'
+    | '/lamb-info/devotion/$devotionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -437,10 +448,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
-    | '/lamb-info/devotion/$devotionId'
     | '/lamb-info/devotion/new'
     | '/lamb-info/devotion/table'
     | '/lamb-info/devotion'
+    | '/lamb-info/devotion/$devotionId/edit'
+    | '/lamb-info/devotion/$devotionId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -477,10 +489,11 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
-    | '/_authenticated/lamb-info/devotion/$devotionId'
     | '/_authenticated/lamb-info/devotion/new'
     | '/_authenticated/lamb-info/devotion/table'
     | '/_authenticated/lamb-info/devotion/'
+    | '/_authenticated/lamb-info/devotion/$devotionId/edit'
+    | '/_authenticated/lamb-info/devotion/$devotionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -745,13 +758,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLambInfoDevotionIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/lamb-info/devotion/$devotionId': {
-      id: '/_authenticated/lamb-info/devotion/$devotionId'
-      path: '/lamb-info/devotion/$devotionId'
-      fullPath: '/lamb-info/devotion/$devotionId'
-      preLoaderRoute: typeof AuthenticatedLambInfoDevotionDevotionIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/lamb-info/devotion/new': {
       id: '/_authenticated/lamb-info/devotion/new'
       path: '/lamb-info/devotion/new'
@@ -764,6 +770,20 @@ declare module '@tanstack/react-router' {
       path: '/lamb-info/devotion/table'
       fullPath: '/lamb-info/devotion/table'
       preLoaderRoute: typeof AuthenticatedLambInfoDevotionTableRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lamb-info/devotion/$devotionId/': {
+      id: '/_authenticated/lamb-info/devotion/$devotionId/'
+      path: '/lamb-info/devotion/$devotionId'
+      fullPath: '/lamb-info/devotion/$devotionId/'
+      preLoaderRoute: typeof AuthenticatedLambInfoDevotionDevotionIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lamb-info/devotion/$devotionId/edit': {
+      id: '/_authenticated/lamb-info/devotion/$devotionId/edit'
+      path: '/lamb-info/devotion/$devotionId/edit'
+      fullPath: '/lamb-info/devotion/$devotionId/edit'
+      preLoaderRoute: typeof AuthenticatedLambInfoDevotionDevotionIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -805,10 +825,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
-  AuthenticatedLambInfoDevotionDevotionIdRoute: typeof AuthenticatedLambInfoDevotionDevotionIdRoute
   AuthenticatedLambInfoDevotionNewRoute: typeof AuthenticatedLambInfoDevotionNewRoute
   AuthenticatedLambInfoDevotionTableRoute: typeof AuthenticatedLambInfoDevotionTableRoute
   AuthenticatedLambInfoDevotionIndexRoute: typeof AuthenticatedLambInfoDevotionIndexRoute
+  AuthenticatedLambInfoDevotionDevotionIdEditRoute: typeof AuthenticatedLambInfoDevotionDevotionIdEditRoute
+  AuthenticatedLambInfoDevotionDevotionIdIndexRoute: typeof AuthenticatedLambInfoDevotionDevotionIdIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -825,13 +846,15 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalityTypeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
-  AuthenticatedLambInfoDevotionDevotionIdRoute:
-    AuthenticatedLambInfoDevotionDevotionIdRoute,
   AuthenticatedLambInfoDevotionNewRoute: AuthenticatedLambInfoDevotionNewRoute,
   AuthenticatedLambInfoDevotionTableRoute:
     AuthenticatedLambInfoDevotionTableRoute,
   AuthenticatedLambInfoDevotionIndexRoute:
     AuthenticatedLambInfoDevotionIndexRoute,
+  AuthenticatedLambInfoDevotionDevotionIdEditRoute:
+    AuthenticatedLambInfoDevotionDevotionIdEditRoute,
+  AuthenticatedLambInfoDevotionDevotionIdIndexRoute:
+    AuthenticatedLambInfoDevotionDevotionIdIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

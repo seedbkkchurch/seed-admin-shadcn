@@ -18,8 +18,13 @@ const giftFromGodKeys = {
   detail: (lambId: string) => ['gift-from-god', lambId] as const,
 }
 const lambDevotionKeys = {
+  // Root key — invalidate this to cover feed/table/detail/history at once
+  // (they all nest under it), rather than juggling exact sub-keys on every
+  // mutation.
+  all: ['lamb-devotion'] as const,
   feed: ['lamb-devotion', 'feed'] as const,
   detail: (id: string) => ['lamb-devotion', id] as const,
+  history: (lambId: string) => ['lamb-devotion', 'history', lambId] as const,
 }
 
 export function useLambInfoList() {
@@ -271,7 +276,7 @@ export function useDeleteLambDevotions() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.feed })
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
     },
   })
 }
@@ -289,6 +294,31 @@ export function useLambDevotionDetail(id: string | undefined) {
 
       if (error) throw error
       return data as LambDevotionRow
+    },
+  })
+}
+
+// Full submission history for one lamb (all lamb_devotion rows, public
+// and private alike) — backs the "ประวัติเฝ้าเดี่ยว" section on their
+// profile page (devotion-section.tsx). No lamb_info join needed (the lamb
+// is already known from context) and no date-range filter — per
+// docs/devotion-db-design.md the table stays tiny for decades even
+// unfiltered, so client-side windowing (day/month/year views) is fine.
+// Per grill-me follow-up (2026-08-11) — replaces the earlier
+// mock-data-only version (data/devotions.ts).
+export function useLambDevotionHistory(lambId: string | undefined) {
+  return useQuery({
+    queryKey: lambDevotionKeys.history(lambId ?? ''),
+    enabled: !!lambId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lamb_devotion')
+        .select('id, devotion_date, title, content_html, image_urls, is_public')
+        .eq('lamb_id', lambId as string)
+        .order('devotion_date', { ascending: true })
+
+      if (error) throw error
+      return data as Omit<LambDevotion, 'lamb_id' | 'created_at' | 'updated_at'>[]
     },
   })
 }
@@ -317,7 +347,46 @@ export function useCreateLambDevotion() {
       return data as LambDevotion
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.feed })
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
+    },
+  })
+}
+
+// Edit surface for the admin test table (devotion-table.tsx) and the
+// detail page — per grill-me follow-up (2026-08-11), only
+// title/content/status are editable; lamb_id and devotion_date are
+// intentionally excluded (fixed at creation) to avoid colliding with the
+// lamb_devotion_one_per_day constraint.
+type LambDevotionUpdateInput = Partial<
+  Pick<LambDevotion, 'title' | 'content_html' | 'image_urls' | 'is_public'>
+>
+
+export function useUpdateLambDevotion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string
+      values: LambDevotionUpdateInput
+    }) => {
+      const { data, error } = await supabase
+        .from('lamb_devotion')
+        .update({ ...values, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data as LambDevotion
+    },
+    onSuccess: () => {
+      // The root key covers feed/table/detail/history at once (they all
+      // nest under it) — simpler and safer than juggling exact sub-keys,
+      // and this mutation can affect a devotion shown across several of
+      // them (test table, detail page, the lamb's own history graph).
+      queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all })
     },
   })
 }

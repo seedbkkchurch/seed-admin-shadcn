@@ -1,80 +1,128 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { eachDayOfInterval, format, subDays } from 'date-fns'
 import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { getMockDevotionForDate, type DevotionEntry } from '../data/devotions'
-import { DevotionHeatmap } from './devotion-heatmap'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLambDevotionHistory } from '../data/queries'
+import { DevotionHeatmap, type DevotionHeatmapEntry } from './devotion-heatmap'
+import { DevotionMonthlyChart } from './devotion-monthly-chart'
 import { DevotionUploadDialog } from './devotion-upload-dialog'
 
-// เฝ้าเดี่ยว (personal daily devotion) history for a single lamb.
-//
-// No `lamb_devotion`-style table exists yet, so the graph below is
-// backed by deterministic mock data (see data/devotions.ts) rather than a
-// query. Anything submitted through the upload dialog is layered on top
-// as local component state (`overrides`) — it lets the graph/total count
-// react immediately to a submission, but it is not persisted: refreshing
-// the page drops it and falls back to the mock history again.
-//
-// Layout is a GitHub-contribution-graph-style rolling 365-day strip (see
-// devotion-heatmap.tsx) — no month navigation, no per-period stat tiles,
-// just a single "X ครั้งในรอบ 1 ปีที่ผ่านมา" total, per grill-me
-// follow-up (2026-08-09).
+type DevotionView = 'day' | 'month' | 'year'
+
+// Fixed rolling windows from today (no navigation) — matches the no-nav
+// design already established for the daily heatmap (see
+// devotion-heatmap.tsx doc comment / grill-me follow-up 2026-08-09).
+const ONE_YEAR_DAYS_BACK = 364
+const THREE_YEAR_DAYS_BACK = 3 * 365 - 1
+
 type DevotionSectionProps = {
   lambId: string
 }
 
+// เฝ้าเดี่ยว (personal daily devotion) history for a single lamb — reads
+// the real `lamb_devotion` table (both public and private rows; this is
+// the admin's own view of the lamb's full history, so status doesn't
+// change how a day reads here) with three switchable views: รายวัน
+// (GitHub-style daily dots, ~1yr), รายเดือน (bar chart, rolling 12
+// months), รายปี (GitHub-style daily dots, ~3yr). Per grill-me follow-up
+// (2026-08-11) — replaces the earlier mock-data-only version
+// (data/devotions.ts).
 export function DevotionSection({ lambId }: DevotionSectionProps) {
-  // Stable for the component's lifetime so the mock data and "today"
-  // ring/in-range logic don't shift mid-session.
+  // Stable for the component's lifetime so "today" doesn't shift the
+  // rolling windows mid-session.
   const [today] = useState(() => new Date())
-  const [overrides, setOverrides] = useState<Record<string, DevotionEntry>>(
-    {}
-  )
+  const [view, setView] = useState<DevotionView>('day')
   const [uploadOpen, setUploadOpen] = useState(false)
 
-  const getEntry = useCallback(
-    (date: Date): DevotionEntry | null => {
-      const key = format(date, 'yyyy-MM-dd')
-      return overrides[key] ?? getMockDevotionForDate(lambId, date, today)
-    },
-    [overrides, lambId, today]
-  )
+  const { data: entries, isPending } = useLambDevotionHistory(lambId)
 
-  const handleSubmit = (entry: DevotionEntry) => {
-    setOverrides((prev) => ({ ...prev, [entry.date]: entry }))
-  }
+  const entryByDate = useMemo(() => {
+    const map = new Map<string, DevotionHeatmapEntry>()
+    for (const entry of entries ?? []) {
+      map.set(entry.devotion_date, {
+        id: entry.id,
+        title: entry.title,
+        image_urls: entry.image_urls,
+      })
+    }
+    return map
+  }, [entries])
 
-  const yearCount = useMemo(() => {
-    const days = eachDayOfInterval({ start: subDays(today, 364), end: today })
-    return days.filter((d) => getEntry(d)).length
-  }, [today, getEntry])
+  const getEntry = (date: Date) =>
+    entryByDate.get(format(date, 'yyyy-MM-dd')) ?? null
+
+  const oneYearCount = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: subDays(today, ONE_YEAR_DAYS_BACK),
+      end: today,
+    })
+    return days.filter((d) => entryByDate.has(format(d, 'yyyy-MM-dd'))).length
+  }, [today, entryByDate])
+
+  const threeYearCount = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: subDays(today, THREE_YEAR_DAYS_BACK),
+      end: today,
+    })
+    return days.filter((d) => entryByDate.has(format(d, 'yyyy-MM-dd'))).length
+  }, [today, entryByDate])
+
+  const statText =
+    view === 'year'
+      ? `ส่งเฝ้าเดี่ยว ${threeYearCount} ครั้งในรอบ 3 ปีที่ผ่านมา`
+      : `ส่งเฝ้าเดี่ยว ${oneYearCount} ครั้งในรอบ 1 ปีที่ผ่านมา`
 
   return (
     <Card>
       <CardHeader className='flex flex-wrap items-center justify-between gap-4'>
         <div>
           <div className='font-semibold'>ประวัติเฝ้าเดี่ยว</div>
-          <p className='text-sm text-muted-foreground'>
-            ส่งเฝ้าเดี่ยว {yearCount} ครั้งในรอบ 1 ปีที่ผ่านมา — ข้อมูลตัวอย่าง
-            ยังไม่เชื่อมฐานข้อมูลจริง
-          </p>
+          <p className='text-sm text-muted-foreground'>{statText}</p>
         </div>
-        {/* Kept full-size — this stays the page's main call-to-action even
-            though the graph next to it is small/dense. */}
-        <Button size='lg' onClick={() => setUploadOpen(true)}>
-          <Upload /> ส่งเฝ้าเดี่ยว
-        </Button>
+        <div className='flex flex-wrap items-center gap-2'>
+          <Tabs
+            value={view}
+            onValueChange={(v) => setView(v as DevotionView)}
+          >
+            <TabsList>
+              <TabsTrigger value='day'>รายวัน</TabsTrigger>
+              <TabsTrigger value='month'>รายเดือน</TabsTrigger>
+              <TabsTrigger value='year'>รายปี</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button size='lg' onClick={() => setUploadOpen(true)}>
+            <Upload /> ส่งเฝ้าเดี่ยว
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        <DevotionHeatmap today={today} getEntry={getEntry} />
+        {isPending ? (
+          <Skeleton className='h-40 w-full' />
+        ) : view === 'day' ? (
+          <DevotionHeatmap
+            today={today}
+            daysBack={ONE_YEAR_DAYS_BACK}
+            getEntry={getEntry}
+          />
+        ) : view === 'month' ? (
+          <DevotionMonthlyChart today={today} entries={entries ?? []} />
+        ) : (
+          <DevotionHeatmap
+            today={today}
+            daysBack={THREE_YEAR_DAYS_BACK}
+            getEntry={getEntry}
+          />
+        )}
       </CardContent>
 
       <DevotionUploadDialog
         open={uploadOpen}
         onOpenChange={setUploadOpen}
+        lambId={lambId}
         today={today}
-        onSubmit={handleSubmit}
       />
     </Card>
   )

@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { Link } from '@tanstack/react-router'
 import {
   eachDayOfInterval,
   endOfWeek,
@@ -7,35 +8,46 @@ import {
   startOfWeek,
   subDays,
 } from 'date-fns'
-import { ImageIcon, Type as TypeIcon } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { type DevotionEntry } from '../data/devotions'
 
-// Continuous 365-day GitHub-contribution-style strip (per grill-me
-// follow-up, 2026-08-09) — replaces the earlier single-month calendar +
-// prev/next nav entirely. Weeks are columns (Sun row0 .. Sat row6), a
-// month label appears above the first column of each new month, and
-// there's no navigation: it always shows "today back 365 days", full
-// stop, same as github.com's own graph.
+// GitHub-contribution-style dot strip, rolling `daysBack + 1` days back
+// from `today` — used for both the "รายวัน" (daysBack ≈ 1yr) and "รายปี"
+// (daysBack ≈ 3yr) views on devotion-section.tsx, per grill-me follow-up
+// (2026-08-11). Weeks are columns (Sun row0 .. Sat row6), a month label
+// appears above the first column of each new month, and there's no
+// navigation: always "today back N days", full stop, same as github.com's
+// own graph.
 const WEEKDAY_LABELS_TH: Record<number, string> = { 1: 'จ', 3: 'พ', 5: 'ศ' }
-// Sized up ~40% and centered per grill-me follow-up, 2026-08-09.
 const CELL_PX = 14
 const GAP_PX = 4
 const LABEL_COL_PX = 20
 const MONTH_ROW_PX = 18
 
-type DevotionHeatmapProps = {
-  today: Date
-  getEntry: (date: Date) => DevotionEntry | null
+export type DevotionHeatmapEntry = {
+  id: string
+  title: string
+  image_urls: string[]
 }
 
-export function DevotionHeatmap({ today, getEntry }: DevotionHeatmapProps) {
-  const rangeStart = subDays(today, 364)
+type DevotionHeatmapProps = {
+  today: Date
+  daysBack: number
+  getEntry: (date: Date) => DevotionHeatmapEntry | null
+}
+
+export function DevotionHeatmap({
+  today,
+  daysBack,
+  getEntry,
+}: DevotionHeatmapProps) {
+  const rangeStart = subDays(today, daysBack)
   const gridStart = startOfWeek(rangeStart, { weekStartsOn: 0 })
   const gridEnd = endOfWeek(today, { weekStartsOn: 0 })
   const allDays = eachDayOfInterval({ start: gridStart, end: gridEnd })
@@ -120,27 +132,32 @@ export function DevotionHeatmap({ today, getEntry }: DevotionHeatmapProps) {
                     <Popover key={di}>
                       <PopoverTrigger asChild>{cell}</PopoverTrigger>
                       <PopoverContent className='w-64'>
-                        <div className='mb-2 flex items-center gap-1.5 text-sm font-medium'>
-                          {entry.type === 'text' ? (
-                            <TypeIcon className='size-3.5 text-green-600' />
-                          ) : (
-                            <ImageIcon className='size-3.5 text-green-600' />
-                          )}
+                        <div className='mb-1 text-sm font-medium'>
                           {format(day, 'd MMMM yyyy')}
                         </div>
-                        {entry.type === 'text' ? (
-                          <p className='text-sm text-muted-foreground'>
-                            {entry.content}
-                          </p>
-                        ) : (
-                          entry.imageUrl && (
-                            <img
-                              src={entry.imageUrl}
-                              alt='เฝ้าเดี่ยว'
-                              className='w-full rounded-md border object-contain'
-                            />
-                          )
+                        <p className='mb-2 line-clamp-2 text-sm text-muted-foreground'>
+                          {entry.title}
+                        </p>
+                        {entry.image_urls[0] && (
+                          <img
+                            src={entry.image_urls[0]}
+                            alt={entry.title}
+                            className='mb-2 max-h-40 w-full rounded-md border object-cover'
+                          />
                         )}
+                        <Button
+                          asChild
+                          variant='link'
+                          size='sm'
+                          className='h-auto p-0'
+                        >
+                          <Link
+                            to='/lamb-info/devotion/$devotionId'
+                            params={{ devotionId: entry.id }}
+                          >
+                            อ่านเต็ม <ArrowRight className='size-3.5' />
+                          </Link>
+                        </Button>
                       </PopoverContent>
                     </Popover>
                   )

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { lambDisplayName, type LambDevotionRow } from '../data/devotion-schema'
+import { DevotionTableRowActions } from './devotion-table-row-actions'
 
 export const devotionVisibilityOptions = [
   { label: 'สาธารณะ', value: 'public' },
@@ -111,5 +112,9 @@ export const devotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     ),
     cell: ({ row }) =>
       format(parseISO(row.original.created_at), 'd MMM yyyy HH:mm'),
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => <DevotionTableRowActions row={row} />,
   },
 ]

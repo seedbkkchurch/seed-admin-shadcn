@@ -23,6 +23,13 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 type ArticleEditorProps = {
   placeholder?: string
+  // Pre-fills the editor with existing HTML — used by the edit form
+  // (devotion-editor.tsx's DevotionEditForm) to load a devotion's current
+  // content_html. Only read at mount; the parent only renders
+  // ArticleEditor once this value is ready (see DevotionEditForm), so no
+  // async re-sync is needed. Omit/undefined for a blank editor (create
+  // flow).
+  initialContent?: string
   onChangeHtml: (html: string) => void
   // Lets the parent form (devotion-editor.tsx) disable submit while an
   // image is mid-upload, so a still-uploading image never gets left out
@@ -43,6 +50,7 @@ type ArticleEditorProps = {
 // is the real, persisted public URL, not a local object URL.
 export function ArticleEditor({
   placeholder,
+  initialContent,
   onChangeHtml,
   onUploadingChange,
   isPublic,
@@ -52,6 +60,7 @@ export function ArticleEditor({
   const [isUploading, setIsUploading] = useState(false)
 
   const editor = useEditor({
+    content: initialContent,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
