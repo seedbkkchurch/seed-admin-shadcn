@@ -116,6 +116,24 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     enableSorting: false,
   },
   {
+    id: "leader",
+    header: "Leader",
+    cell: ({ row }) => {
+      const isLeader = row.original.is_leader_group_care;
+      return isLeader ? (
+        <Badge
+          variant="outline"
+          className="bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200"
+        >
+          หัวหน้าแคร์
+        </Badge>
+      ) : (
+        <div>-</div>
+      );
+    },
+    enableSorting: false,
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {

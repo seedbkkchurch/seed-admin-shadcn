@@ -118,6 +118,14 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
             >
               {row.status ? "Active" : "Inactive"}
             </Badge>
+            {row.is_leader_group_care && (
+              <Badge
+                variant="outline"
+                className="bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200 px-3 py-1 text-sm"
+              >
+                หัวหน้าแคร์
+              </Badge>
+            )}
             {row.tags && (
               <Badge
                 variant="outline"
