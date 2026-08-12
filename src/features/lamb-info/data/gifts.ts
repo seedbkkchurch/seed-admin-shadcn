@@ -9,6 +9,8 @@
 // The array order and `category` assignment, however, follow a deliberate
 // 5x5 regrouping (see conversation history) rather than the Excel order.
 
+import type { Tables } from "@/lib/supabase/database.types";
+
 export const GIFT_CATEGORIES = [
   "Teaching & Knowledge",
   "Leadership & Governance",
@@ -130,19 +132,17 @@ export const GIFT_SCORE_MAX = 15;
 export type GiftScores = Record<string, number>;
 
 // Row shape returned by `gift_from_god` (one row per lamb): the fixed
-// metadata columns, plus the 25 score columns from GIFT_DEFINITIONS.
+// metadata columns (sourced from the generated schema so they stay in
+// sync with the DB), plus the 25 score columns from GIFT_DEFINITIONS.
 // Deliberately NOT `GiftScores & {...}` — intersecting a `Record<string,
 // number>` index signature with these string-typed fields would collapse
 // lamb_id/image_url/etc. to `never`. The permissive index signature below
 // avoids that; read scores via mergeGiftScores rather than relying on this
 // type to enforce "number" on score columns.
-export type GiftFromGodRow = {
-  lamb_id: string;
-  image_url: string | null;
-  note: string | null;
-  created_at: string;
-  updated_at: string;
-} & {
+export type GiftFromGodRow = Pick<
+  Tables<"gift_from_god">,
+  "lamb_id" | "image_url" | "note" | "created_at" | "updated_at"
+> & {
   [column: string]: number | string | null;
 };
 

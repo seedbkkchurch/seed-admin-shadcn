@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { type LambDevotion, type LambDevotionRow } from "./devotion-schema";
 import { type GiftFromGodRow, type GiftScores } from "./gifts";
 import { type LambInfo, type LambInfoRow } from "./schema";
@@ -94,7 +95,12 @@ export function usePersonalityTypeOptions() {
   });
 }
 
-type LambInfoInput = Omit<LambInfo, "id">;
+// Mirrors `TablesInsert<"lamb_info">` (generated from the DB schema) — all
+// fields optional/nullable, matching the real Insert/Update shape. Used
+// for both create and update payloads; the create/edit form intentionally
+// omits lamb_lesson_ch18_progress/lamb_lesson_life_progress (see
+// data/schema.ts LambInfo doc comment), which this type allows.
+type LambInfoInput = TablesInsert<"lamb_info">;
 
 export function useCreateLambInfo() {
   const queryClient = useQueryClient();
@@ -215,12 +221,10 @@ export function useLambNameOptions() {
         .order("first_name", { ascending: true });
 
       if (error) throw error;
-      return data as {
-        id: string;
-        nick_name: string | null;
-        first_name: string;
-        last_name: string;
-      }[];
+      return data as Pick<
+        LambInfo,
+        "id" | "nick_name" | "first_name" | "last_name"
+      >[];
     },
   });
 }

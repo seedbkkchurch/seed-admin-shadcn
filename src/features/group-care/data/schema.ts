@@ -1,22 +1,18 @@
-import { z } from "zod";
+import type { Tables } from "@/lib/supabase/database.types";
 
-export const groupCareSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  address: z.string().nullable(),
-  day: z.string().nullable(),
-});
-export type GroupCareRow = z.infer<typeof groupCareSchema>;
+export type GroupCareRow = Tables<"group_care">;
 
 // Minimal lamb_info projection used to render a group's member roster
-// (see useGroupCareMembers in data/queries.ts).
-export type GroupCareMember = {
-  id: string;
-  nick_name: string | null;
+// (see useGroupCareMembers in data/queries.ts). first_name/last_name
+// overridden to non-null — DB allows NULL, app has always assumed
+// non-null here (see grill-me 2026-08-12, `supabase_generated_types`
+// project memory).
+export type GroupCareMember = Pick<
+  Tables<"lamb_info">,
+  "id" | "nick_name" | "profile_picture" | "group_care"
+> & {
   first_name: string;
   last_name: string;
-  profile_picture: string | null;
-  group_care: string | null;
 };
 
 // GroupCareRow augmented, client-side, with the members assigned to it —
