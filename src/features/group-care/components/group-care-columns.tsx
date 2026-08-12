@@ -50,6 +50,24 @@ export const groupCareColumns: ColumnDef<GroupCareRowWithMembers>[] = [
     cell: GroupCareMembersCell,
   },
   {
+    id: "leader",
+    // Names of every member with is_leader_group_care = true, joined for
+    // display; sortable via the same joined string (see grill-me
+    // 2026-08-12, `group_care_leader` project memory).
+    accessorFn: (row) =>
+      row.leaders
+        .map((leader) => leader.nick_name || leader.first_name)
+        .join(", "),
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Leader" />
+    ),
+    cell: ({ row }) => (
+      <LongText className="max-w-48">
+        {row.getValue("leader") || "-"}
+      </LongText>
+    ),
+  },
+  {
     id: "actions",
     cell: DataTableRowActions,
   },

@@ -31,10 +31,18 @@ export function GroupCare() {
   const rows: GroupCareRowWithMembers[] = useMemo(() => {
     if (!data) return [];
     const members = membersData ?? [];
-    return data.map((group) => ({
-      ...group,
-      members: members.filter((member) => member.group_care === group.id),
-    }));
+    return data.map((group) => {
+      const groupMembers = members.filter(
+        (member) => member.group_care === group.id,
+      );
+      return {
+        ...group,
+        members: groupMembers,
+        leaders: groupMembers.filter(
+          (member) => member.is_leader_group_care,
+        ),
+      };
+    });
   }, [data, membersData]);
 
   return (

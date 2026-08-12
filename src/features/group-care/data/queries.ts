@@ -36,7 +36,7 @@ export function useGroupCareMembers() {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "id, nick_name, first_name, last_name, profile_picture, group_care",
+          "id, nick_name, first_name, last_name, profile_picture, group_care, is_leader_group_care",
         )
         .order("nick_name", { ascending: true });
 
