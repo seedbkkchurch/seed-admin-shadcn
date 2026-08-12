@@ -22,8 +22,21 @@ export default defineConfig({
     // precache still caches the built JS/CSS/icons (faster repeat loads as
     // a side effect), but no runtimeCaching is configured for Supabase API
     // calls, so those always hit the network as before.
+    //
+    // push/notificationclick handlers for the เฝ้าเดี่ยว reminder feature
+    // (grill-me follow-up, 2026-08-12) are loaded via Workbox's
+    // `importScripts` below (public/push-sw.js), NOT the injectManifest
+    // strategy — vite-plugin-pwa@1.3.0's injectManifest runs its own nested
+    // Vite/Rolldown build to bundle a custom sw.ts, and that inner build
+    // currently throws ("rolldown/experimental does not provide an export
+    // named viteWasmFallbackPlugin") against this project's Vite 8 install.
+    // importScripts sidesteps that broken code path entirely — it just
+    // concatenates a plain JS file into the generated service worker.
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        importScripts: ["/push-sw.js"],
+      },
       manifest: {
         name: "Shadcn Admin",
         short_name: "Shadcn Admin",

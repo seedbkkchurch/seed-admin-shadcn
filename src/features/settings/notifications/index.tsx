@@ -1,4 +1,6 @@
+import { Separator } from "@/components/ui/separator";
 import { ContentSection } from "../components/content-section";
+import { DevotionReminderSettingsForm } from "./devotion-reminder-settings-form";
 import { NotificationsForm } from "./notifications-form";
 
 export function SettingsNotifications() {
@@ -7,7 +9,11 @@ export function SettingsNotifications() {
       title="Notifications"
       desc="Configure how you receive notifications."
     >
-      <NotificationsForm />
+      <div className="space-y-8">
+        <DevotionReminderSettingsForm />
+        <Separator />
+        <NotificationsForm />
+      </div>
     </ContentSection>
   );
 }

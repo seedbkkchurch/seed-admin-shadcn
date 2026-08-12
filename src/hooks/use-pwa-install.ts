@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { isIos, isStandalone } from "@/lib/pwa";
 
 // `beforeinstallprompt` isn't in the standard DOM lib typings yet.
 interface BeforeInstallPromptEvent extends Event {
@@ -14,21 +15,6 @@ declare global {
   interface WindowEventMap {
     beforeinstallprompt: BeforeInstallPromptEvent;
   }
-}
-
-function isStandalone() {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia?.("(display-mode: standalone)").matches ||
-    // iOS Safari exposes this instead of the display-mode media query.
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true
-  );
-}
-
-function isIos() {
-  if (typeof navigator === "undefined") return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
 /**
