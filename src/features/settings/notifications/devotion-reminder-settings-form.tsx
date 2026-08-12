@@ -2,9 +2,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
+import { useAdminTestPush } from "@/hooks/use-admin-test-push-subscription";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -124,6 +125,33 @@ export function DevotionReminderSettingsForm() {
     onError: () => toast.error("ส่งแจ้งเตือนไม่สำเร็จ ลองใหม่อีกครั้ง"),
   });
 
+  const { sendTest, status: testStatus } = useAdminTestPush();
+
+  // Called directly from the button's onClick with no `await` before it —
+  // requesting notification permission only reliably shows a dialog while
+  // still inside the click's "recent user gesture" window.
+  const handleTest = () => {
+    void (async () => {
+      const result = await sendTest();
+      if (!result.ok) {
+        const messages: Record<string, string> = {
+          "permission-denied": "ต้องอนุญาตการแจ้งเตือนในเบราว์เซอร์นี้ก่อน",
+          unsupported: "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ push",
+          error: "ทดสอบไม่สำเร็จ ลองใหม่อีกครั้ง",
+        };
+        toast.error(messages[result.reason]);
+        return;
+      }
+      if (result.sent > 0) {
+        toast.success("ส่งแจ้งเตือนทดสอบไปที่เครื่องนี้แล้ว รอดูการแจ้งเตือนได้เลย");
+      } else {
+        toast.error(
+          "สมัครรับแจ้งเตือนทดสอบสำเร็จ แต่ส่งไม่สำเร็จ — ลองกดอีกครั้ง",
+        );
+      }
+    })();
+  };
+
   return (
     <div className="space-y-6 rounded-lg border p-4">
       <div className="space-y-0.5">
@@ -223,7 +251,24 @@ export function DevotionReminderSettingsForm() {
               )}
               ส่งเดี๋ยวนี้
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleTest}
+              disabled={testStatus === "sending"}
+            >
+              {testStatus === "sending" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Zap className="size-4" />
+              )}
+              ทดสอบ
+            </Button>
           </div>
+          <p className="text-muted-foreground text-xs">
+            &quot;ทดสอบ&quot; ส่ง push จริงมาที่เครื่องนี้เท่านั้น ไม่เกี่ยวกับว่าใครส่งเฝ้าเดี่ยวแล้วหรือยัง
+            — ใช้เช็คว่าระบบแจ้งเตือนทำงานอยู่
+          </p>
         </form>
       </Form>
     </div>

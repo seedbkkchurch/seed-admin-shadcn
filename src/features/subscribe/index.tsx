@@ -6,12 +6,10 @@ import { supabase } from "@/lib/supabase/client";
 import { isIos, isStandalone } from "@/lib/pwa";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -31,9 +29,11 @@ type LambOption = {
 };
 
 // Public "who are you" page for the เฝ้าเดี่ยว push reminder (grill-me
-// follow-up, 2026-08-12). Lambs don't have accounts yet, so this is a
-// deliberately low-security stand-in: pick your name from the church's ~50
-// members, grant notification permission, done. Reads from the
+// follow-up, 2026-08-12; simplified to one tap 2026-08-12). Lambs don't
+// have accounts yet, so this is a deliberately low-security stand-in: pick
+// your name from the church's ~50 members — that single selection *is* the
+// user gesture that lets the browser show its permission dialog, so there's
+// no separate "subscribe" button to tap afterward. Reads from the
 // `lamb_directory` view (id + display name only — not the full lamb_info
 // table, which stays authenticated-only) so this works for the anon role.
 export function Subscribe() {
@@ -54,28 +54,30 @@ export function Subscribe() {
 
   const iosNotInstalled = isIos() && !isStandalone();
 
-  const handleSubscribe = async () => {
-    if (!lambId) {
-      toast.error("เลือกชื่อของคุณก่อน");
-      return;
-    }
-
-    const result = await subscribe(lambId);
-    switch (result) {
-      case "subscribed":
-        setSubscribed(true);
-        toast.success("รับการแจ้งเตือนแล้ว");
-        break;
-      case "permission-denied":
-        toast.error("ต้องอนุญาตการแจ้งเตือนในเบราว์เซอร์ก่อนถึงจะใช้ได้");
-        break;
-      case "unsupported":
-        toast.error("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ push");
-        break;
-      case "error":
-        toast.error("เกิดข้อผิดพลาด ลองใหม่อีกครั้ง");
-        break;
-    }
+  // Called straight from the Select's onValueChange — this MUST run with no
+  // `await` before the permission request inside `subscribe()`, since that
+  // request only reliably shows a dialog while still inside the browser's
+  // "recent user gesture" window that the selection click just opened.
+  const handleSelect = (value: string) => {
+    setLambId(value);
+    void (async () => {
+      const result = await subscribe(value);
+      switch (result) {
+        case "subscribed":
+          setSubscribed(true);
+          toast.success("รับการแจ้งเตือนแล้ว");
+          break;
+        case "permission-denied":
+          toast.error("ต้องอนุญาตการแจ้งเตือนในเบราว์เซอร์ก่อนถึงจะใช้ได้");
+          break;
+        case "unsupported":
+          toast.error("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบ push");
+          break;
+        case "error":
+          toast.error("เกิดข้อผิดพลาด ลองใหม่อีกครั้ง");
+          break;
+      }
+    })();
   };
 
   return (
@@ -84,8 +86,8 @@ export function Subscribe() {
         <CardHeader>
           <CardTitle>รับแจ้งเตือนเฝ้าเดี่ยว</CardTitle>
           <CardDescription>
-            เลือกชื่อของคุณแล้วกดรับการแจ้งเตือน จะมีข้อความเตือนตอนเช้าและเย็น
-            ถ้ายังไม่ได้ส่งเฝ้าเดี่ยววันนั้น
+            เลือกชื่อของคุณ ระบบจะขออนุญาตแจ้งเตือนให้ทันที — จะมีข้อความเตือน
+            ตอนเช้าและเย็น ถ้ายังไม่ได้ส่งเฝ้าเดี่ยววันนั้น
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -102,11 +104,22 @@ export function Subscribe() {
               รับการแจ้งเตือนเรียบร้อยแล้ว
             </div>
           ) : (
-            <Select value={lambId} onValueChange={setLambId} disabled={isPending}>
+            <Select
+              value={lambId}
+              onValueChange={handleSelect}
+              disabled={isPending || status === "subscribing"}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={isPending ? "กำลังโหลด..." : "เลือกชื่อของคุณ"}
-                />
+                {status === "subscribing" ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    กำลังสมัคร...
+                  </span>
+                ) : (
+                  <SelectValue
+                    placeholder={isPending ? "กำลังโหลด..." : "เลือกชื่อของคุณ"}
+                  />
+                )}
               </SelectTrigger>
               <SelectContent>
                 {lambs?.map((lamb) => (
@@ -118,20 +131,6 @@ export function Subscribe() {
             </Select>
           )}
         </CardContent>
-        {!subscribed && (
-          <CardFooter>
-            <Button
-              className="w-full"
-              onClick={handleSubscribe}
-              disabled={status === "subscribing"}
-            >
-              {status === "subscribing" && (
-                <Loader2 className="size-4 animate-spin" />
-              )}
-              รับการแจ้งเตือน
-            </Button>
-          </CardFooter>
-        )}
       </Card>
     </div>
   );

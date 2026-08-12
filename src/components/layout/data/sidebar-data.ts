@@ -26,6 +26,7 @@ import {
   BrainCircuit,
   NotebookPen,
   Table,
+  BellPlus,
 } from "lucide-react";
 import { ClerkLogo } from "@/assets/clerk-logo";
 import { type SidebarData } from "../types";
@@ -97,6 +98,15 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว (ตาราง)",
           url: "/lamb-info/devotion/table",
           icon: Table,
+        },
+        // Public page (no login) where a lamb picks their name and
+        // subscribes to push reminders — linked here so staff can reach it
+        // quickly to test or share the link (grill-me follow-up,
+        // 2026-08-12).
+        {
+          title: "สมัครรับแจ้งเตือนเฝ้าเดี่ยว",
+          url: "/subscribe",
+          icon: BellPlus,
         },
         {
           title: "Group Care",
