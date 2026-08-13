@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MessageSquareText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,12 +15,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import {
   useAttendanceMembers,
   useAttendanceWeek,
   useUpsertAttendance,
 } from "../data/queries";
 import { type AttendanceMember } from "../data/schema";
+import { AttendanceNoteDialog } from "./attendance-note-dialog";
 
 type AttendanceTableProps = {
   groupId: string;
@@ -38,10 +42,17 @@ export function AttendanceTable({ groupId, weekStart }: AttendanceTableProps) {
     isError: isAttendanceError,
   } = useAttendanceWeek(groupId, weekStart);
   const upsertAttendance = useUpsertAttendance(groupId);
+  const isMobile = useIsMobile();
 
-  // ค่า note ที่กำลังพิมพ์อยู่ก่อน blur — เก็บแยกจาก query cache เพื่อไม่ให้ค่า
+  // ค่า note ที่กำลังพิมพ์อยู่ก่อน blur (desktop) — เก็บแยกจาก query cache เพื่อไม่ให้ค่า
   // กระโดดกลับตอนพิมพ์ (query จะ refetch ทุกครั้งที่ upsert สำเร็จ)
   const [draftNotes, setDraftNotes] = useState<Record<string, string>>({});
+
+  // สมาชิกที่กำลังเปิด dialog เขียน note อยู่ (มือถือ) — null = ปิดอยู่ ดู grill-me
+  // 2026-08-13 (attendance mobile layout): คอลัมน์ note ถูกซ่อนบนมือถือ เข้าถึงผ่านปุ่ม
+  // ไอคอนท้ายแถว + dialog แทน inline input
+  const [noteDialogMember, setNoteDialogMember] =
+    useState<AttendanceMember | null>(null);
 
   const attendanceByLambId = useMemo(() => {
     const map = new Map<
@@ -111,29 +122,45 @@ export function AttendanceTable({ groupId, weekStart }: AttendanceTableProps) {
     });
   };
 
-  const handleNoteBlur = (member: AttendanceMember) => {
+  // บันทึก note ตรงๆ (ไม่ผ่าน draftNotes) — ใช้ร่วมกันทั้ง desktop (handleNoteBlur) และ
+  // มือถือ (AttendanceNoteDialog onSave)
+  const saveNote = (member: AttendanceMember, noteValue: string) => {
     const existing = attendanceByLambId.get(member.id);
-    const draft = draftNotes[member.id];
-    if (draft === undefined || draft === (existing?.note ?? "")) return;
-
     upsertAttendance.mutate({
       lambId: member.id,
       weekStart,
       cameToChurch: existing?.came_to_church ?? false,
       cameToGroupCare: existing?.came_to_group_care ?? false,
-      note: draft.trim() === "" ? null : draft,
+      note: noteValue.trim() === "" ? null : noteValue,
     });
+  };
+
+  const handleNoteBlur = (member: AttendanceMember) => {
+    const existing = attendanceByLambId.get(member.id);
+    const draft = draftNotes[member.id];
+    if (draft === undefined || draft === (existing?.note ?? "")) return;
+    saveNote(member, draft);
   };
 
   return (
     <div className="overflow-hidden rounded-md border">
-      <Table>
+      <Table className={cn(isMobile && "table-fixed")}>
         <TableHeader>
           <TableRow>
             <TableHead>สมาชิก</TableHead>
-            <TableHead className="text-center">มาโบสถ์</TableHead>
-            <TableHead className="text-center">มากลุ่มแคร์</TableHead>
-            <TableHead>หมายเหตุ</TableHead>
+            <TableHead className={cn("text-center", isMobile && "w-16")}>
+              {isMobile ? "มาโบส" : "มาโบสถ์"}
+            </TableHead>
+            <TableHead className={cn("text-center", isMobile && "w-16")}>
+              {isMobile ? "มาแคร์" : "มากลุ่มแคร์"}
+            </TableHead>
+            <TableHead className={isMobile ? "w-10" : undefined}>
+              {isMobile ? (
+                <span className="sr-only">หมายเหตุ</span>
+              ) : (
+                "หมายเหตุ"
+              )}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -142,19 +169,20 @@ export function AttendanceTable({ groupId, weekStart }: AttendanceTableProps) {
             const noteValue = draftNotes[member.id] ?? existing?.note ?? "";
             const displayName =
               member.nick_name || `${member.first_name} ${member.last_name}`;
+            const hasNote = !!(existing?.note && existing.note.trim() !== "");
 
             return (
               <TableRow key={member.id}>
-                <TableCell>
+                <TableCell className={isMobile ? "max-w-0" : undefined}>
                   {/* ลิงก์ไปหน้าโปรไฟล์แกะ — pattern เดียวกับ
                   lamb-info-columns.tsx (เปิดหน้าเดียวกัน ไม่เปิดแท็บใหม่;
                   ดู grill-me 2026-08-13) */}
                   <Link
                     to="/lamb-info/$lambId"
                     params={{ lambId: member.id }}
-                    className="flex items-center gap-2 hover:underline"
+                    className="flex min-w-0 items-center gap-2 hover:underline"
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={member.profile_picture ?? undefined} />
                       <AvatarFallback>
                         {(member.nick_name || member.first_name || "?")
@@ -162,19 +190,43 @@ export function AttendanceTable({ groupId, weekStart }: AttendanceTableProps) {
                           .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{displayName}</span>
+                    <span className="truncate font-medium">
+                      {displayName}
+                    </span>
                   </Link>
                 </TableCell>
-                <TableCell className="text-center">
+                {/* ขยายพื้นที่แตะให้เต็ม cell — Checkbox เริ่มต้นมีแค่ 16x16px เล็กกว่า
+                touch target มาตรฐาน (44x44px) กดพลาดง่ายบนมือถือ (ดู grill-me
+                2026-08-13, attendance mobile layout) */}
+                <TableCell
+                  className="cursor-pointer p-2 text-center"
+                  onClick={() =>
+                    handleToggle(
+                      member,
+                      "came_to_church",
+                      !(existing?.came_to_church ?? false),
+                    )
+                  }
+                >
                   <Checkbox
                     checked={existing?.came_to_church ?? false}
                     onCheckedChange={(checked) =>
                       handleToggle(member, "came_to_church", checked === true)
                     }
+                    onClick={(e) => e.stopPropagation()}
                     aria-label={`${displayName} มาโบสถ์`}
                   />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell
+                  className="cursor-pointer p-2 text-center"
+                  onClick={() =>
+                    handleToggle(
+                      member,
+                      "came_to_group_care",
+                      !(existing?.came_to_group_care ?? false),
+                    )
+                  }
+                >
                   <Checkbox
                     checked={existing?.came_to_group_care ?? false}
                     onCheckedChange={(checked) =>
@@ -184,28 +236,70 @@ export function AttendanceTable({ groupId, weekStart }: AttendanceTableProps) {
                         checked === true,
                       )
                     }
+                    onClick={(e) => e.stopPropagation()}
                     aria-label={`${displayName} มากลุ่มแคร์`}
                   />
                 </TableCell>
-                <TableCell>
-                  <Input
-                    value={noteValue}
-                    placeholder="เช่น ลาป่วย, ติดธุระ"
-                    onChange={(e) =>
-                      setDraftNotes((prev) => ({
-                        ...prev,
-                        [member.id]: e.target.value,
-                      }))
-                    }
-                    onBlur={() => handleNoteBlur(member)}
-                    className="h-8"
-                  />
-                </TableCell>
+                {isMobile ? (
+                  <TableCell className="p-1 text-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      onClick={() => setNoteDialogMember(member)}
+                      aria-label={
+                        hasNote
+                          ? `แก้ไขหมายเหตุของ ${displayName}`
+                          : `เพิ่มหมายเหตุของ ${displayName}`
+                      }
+                    >
+                      <MessageSquareText
+                        className={cn(
+                          "size-4",
+                          hasNote
+                            ? "fill-primary/20 text-primary"
+                            : "text-muted-foreground",
+                        )}
+                      />
+                    </Button>
+                  </TableCell>
+                ) : (
+                  <TableCell>
+                    <Input
+                      value={noteValue}
+                      placeholder="เช่น ลาป่วย, ติดธุระ"
+                      onChange={(e) =>
+                        setDraftNotes((prev) => ({
+                          ...prev,
+                          [member.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={() => handleNoteBlur(member)}
+                      className="h-8"
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
+
+      {noteDialogMember && (
+        <AttendanceNoteDialog
+          open={!!noteDialogMember}
+          onOpenChange={(open) => {
+            if (!open) setNoteDialogMember(null);
+          }}
+          memberName={
+            noteDialogMember.nick_name ||
+            `${noteDialogMember.first_name} ${noteDialogMember.last_name}`
+          }
+          note={attendanceByLambId.get(noteDialogMember.id)?.note ?? ""}
+          onSave={(note) => saveNote(noteDialogMember, note)}
+          isSaving={upsertAttendance.isPending}
+        />
+      )}
     </div>
   );
 }
