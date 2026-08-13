@@ -8,6 +8,7 @@ const attendanceKeys = {
     ["attendance", "members", groupId] as const,
   week: (groupId: string | undefined, weekStart: string) =>
     ["attendance", "week", groupId, weekStart] as const,
+  summary: (weekStart: string) => ["attendance", "summary", weekStart] as const,
 };
 
 // สมาชิกทั้งหมดของกลุ่มแคร์ที่เลือก (ไม่ผูกกับสัปดาห์ใดสัปดาห์หนึ่ง)
@@ -61,6 +62,50 @@ export function useAttendanceWeek(
 
       if (error) throw error;
       return data as AttendanceRow[];
+    },
+  });
+}
+
+export type AttendanceSummary = {
+  totalMembers: number;
+  cameToChurch: number;
+  cameToGroupCare: number;
+};
+
+// สรุปยอดรวมทุกกลุ่มแคร์ของสัปดาห์ที่เลือก ("แสดงทั้งหมด" mode) — ขอบเขตสมาชิก
+// เดียวกับที่เช็คชื่อได้ทีละกลุ่ม คือ status=true AND group_care IS NOT NULL
+// (ดู docs/attendance-db-design.md, grill-me 2026-08-13)
+export function useAttendanceSummary(weekStart: string) {
+  return useQuery({
+    queryKey: attendanceKeys.summary(weekStart),
+    queryFn: async (): Promise<AttendanceSummary> => {
+      const { data: members, error: membersError } = await supabase
+        .from("lamb_info")
+        .select("id")
+        .eq("status", true)
+        .not("group_care", "is", null);
+
+      if (membersError) throw membersError;
+
+      const lambIds = (members ?? []).map((member) => member.id);
+      if (lambIds.length === 0) {
+        return { totalMembers: 0, cameToChurch: 0, cameToGroupCare: 0 };
+      }
+
+      const { data, error } = await supabase
+        .from("lamb_attendance_log")
+        .select("came_to_church, came_to_group_care")
+        .in("lamb_id", lambIds)
+        .eq("week_start", weekStart);
+
+      if (error) throw error;
+
+      return {
+        totalMembers: lambIds.length,
+        cameToChurch: (data ?? []).filter((row) => row.came_to_church).length,
+        cameToGroupCare: (data ?? []).filter((row) => row.came_to_group_care)
+          .length,
+      };
     },
   });
 }

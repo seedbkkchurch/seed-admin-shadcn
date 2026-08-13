@@ -244,6 +244,7 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
       <SpiritualInfoCard row={row} />
       <GrowthProgressCard
         chapterProgress={row.lamb_lesson_ch18_progress ?? null}
+        lifeProgress={row.lamb_lesson_life_progress ?? null}
       />
       <GiftsCard key={row.id} lambId={row.id} />
       <DevotionSection key={row.id} lambId={row.id} />

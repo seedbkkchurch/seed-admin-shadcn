@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { eachDayOfInterval, format, subDays } from "date-fns";
+import {
+  eachDayOfInterval,
+  endOfWeek,
+  format,
+  startOfWeek,
+  subDays,
+} from "date-fns";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -78,10 +84,20 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
     return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
   }, [today, entryByDate]);
 
+  // อาทิตย์นี้ = สัปดาห์ปฏิทิน อา-ส (weekStartsOn: 0) ที่ครอบ "today" — เดียวกับ
+  // week_start ที่หน้าเช็คชื่อรายสัปดาห์ (attendance) ใช้ ดู grill-me 2026-08-13
+  const thisWeekCount = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: startOfWeek(today, { weekStartsOn: 0 }),
+      end: endOfWeek(today, { weekStartsOn: 0 }),
+    });
+    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
+  }, [today, entryByDate]);
+
   const statText =
     view === "year"
-      ? `ส่งเฝ้าเดี่ยว ${threeYearCount} ครั้งในรอบ 3 ปีที่ผ่านมา`
-      : `ส่งเฝ้าเดี่ยว ${oneYearCount} ครั้งในรอบ 1 ปีที่ผ่านมา`;
+      ? `ส่งเฝ้าเดี่ยว ${threeYearCount} ครั้งในรอบ 3 ปีที่ผ่านมา • อาทิตย์นี้ ${thisWeekCount} ครั้ง`
+      : `ส่งเฝ้าเดี่ยว ${oneYearCount} ครั้งในรอบ 1 ปีที่ผ่านมา • อาทิตย์นี้ ${thisWeekCount} ครั้ง`;
 
   return (
     <Card>

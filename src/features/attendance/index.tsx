@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek } from "date-fns";
 import { getRouteApi } from "@tanstack/react-router";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LayoutGrid, List } from "lucide-react";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { DatePicker } from "@/components/date-picker";
 import { Header } from "@/components/layout/header";
@@ -10,6 +10,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGroupCareList } from "@/features/group-care/data/queries";
+import { AttendanceSummary } from "./components/attendance-summary";
 import { AttendanceTable } from "./components/attendance-table";
 
 const route = getRouteApi("/_authenticated/attendance/");
@@ -39,6 +41,7 @@ export function Attendance() {
   // React state เฉยๆ — เพื่อไม่ให้เสีย state ตอนกด link ไปดูโปรไฟล์แกะแล้วกด
   // back กลับมา (ดู grill-me 2026-08-13, `docs/attendance-db-design.md`)
   const activeGroupId = search.group ?? groups?.[0]?.id;
+  const showAll = search.all ?? false;
   const selectedDate = useMemo(
     () => toWeekStart(search.week ? parseISO(search.week) : new Date()),
     [search.week],
@@ -62,6 +65,12 @@ export function Attendance() {
     });
   };
 
+  // โหมด "แสดงทั้งหมด" เป็นอิสระจาก Select กลุ่มแคร์ — สลับแทนที่ตารางรายคน
+  // ด้วยสรุปยอดรวมทุกกลุ่ม สัปดาห์ยังใช้ตัวเดียวกัน ดู grill-me 2026-08-13
+  const handleToggleAll = () => {
+    navigate({ search: (prev) => ({ ...prev, all: !showAll || undefined }) });
+  };
+
   return (
     <>
       <Header fixed>
@@ -81,7 +90,62 @@ export function Attendance() {
           </p>
         </div>
 
-        {isError ? (
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            {!showAll && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">กลุ่มแคร์</span>
+                {isError ? (
+                  <p className="text-sm text-destructive">
+                    โหลดรายชื่อกลุ่มแคร์ไม่สำเร็จ
+                  </p>
+                ) : isPending ? (
+                  <Skeleton className="h-9 w-60" />
+                ) : (
+                  <Select
+                    value={activeGroupId}
+                    onValueChange={handleGroupChange}
+                  >
+                    <SelectTrigger className="w-60">
+                      <SelectValue placeholder="เลือกกลุ่มแคร์" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(groups ?? []).map((group) => (
+                        <SelectItem key={group.id} value={group.id}>
+                          {group.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">
+                สัปดาห์ (นับจากวันอาทิตย์ {weekStart})
+              </span>
+              <DatePicker selected={selectedDate} onSelect={handleDateSelect} />
+            </div>
+          </div>
+
+          {/* ปุ่ม "แสดงทั้งหมด" เป็นอิสระจาก Select กลุ่มแคร์ — สลับไปโหมดสรุปยอด
+          รวมทุกกลุ่ม แทนที่ตารางรายคน (ดู grill-me 2026-08-13) */}
+          <Button variant="outline" onClick={handleToggleAll}>
+            {showAll ? (
+              <>
+                <List /> ดูรายกลุ่ม
+              </>
+            ) : (
+              <>
+                <LayoutGrid /> แสดงทั้งหมด
+              </>
+            )}
+          </Button>
+        </div>
+
+        {showAll ? (
+          <AttendanceSummary weekStart={weekStart} />
+        ) : isError ? (
           <Alert variant="destructive">
             <AlertCircle />
             <AlertTitle>โหลดรายชื่อกลุ่มแคร์ไม่สำเร็จ</AlertTitle>
@@ -90,44 +154,15 @@ export function Attendance() {
             </AlertDescription>
           </Alert>
         ) : isPending ? (
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full" />
         ) : !groups || groups.length === 0 ? (
           <p className="text-muted-foreground py-8 text-center text-sm">
             ยังไม่มีกลุ่มแคร์ในระบบ — ไปสร้างกลุ่มแคร์ก่อนที่หน้า Group Care
           </p>
         ) : (
-          <>
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">กลุ่มแคร์</span>
-                <Select value={activeGroupId} onValueChange={handleGroupChange}>
-                  <SelectTrigger className="w-60">
-                    <SelectValue placeholder="เลือกกลุ่มแคร์" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groups.map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">
-                  สัปดาห์ (นับจากวันอาทิตย์ {weekStart})
-                </span>
-                <DatePicker
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                />
-              </div>
-            </div>
-
-            {activeGroupId && (
-              <AttendanceTable groupId={activeGroupId} weekStart={weekStart} />
-            )}
-          </>
+          activeGroupId && (
+            <AttendanceTable groupId={activeGroupId} weekStart={weekStart} />
+          )
         )}
       </Main>
     </>
