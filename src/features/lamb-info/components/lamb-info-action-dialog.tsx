@@ -60,7 +60,6 @@ const formSchema = z.object({
   is_leader_group_care: z.boolean(),
   status: z.boolean(),
   group_care: z.string().optional(),
-  is_leader_group_care: z.boolean(),
   age: z.string().optional(),
   years_of_faith: z.string().optional(),
   remark: z.string().optional(),
@@ -96,7 +95,6 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       is_leader_group_care: false,
       status: true,
       group_care: "",
-      is_leader_group_care: false,
       age: "",
       years_of_faith: "",
       remark: "",
@@ -123,7 +121,6 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     is_leader_group_care: currentRow.is_leader_group_care ?? false,
     status: currentRow.status ?? true,
     group_care: currentRow.group_care ?? "",
-    is_leader_group_care: currentRow.is_leader_group_care ?? false,
     age: currentRow.age != null ? String(currentRow.age) : "",
     years_of_faith:
       currentRow.years_of_faith != null
@@ -185,7 +182,6 @@ export function LambInfoActionDialog({
       is_leader_group_care: values.is_leader_group_care,
       status: values.status,
       group_care: values.group_care || null,
-      is_leader_group_care: values.is_leader_group_care,
       age: values.age ? Number(values.age) : null,
       years_of_faith: values.years_of_faith
         ? Number(values.years_of_faith)
@@ -691,25 +687,6 @@ export function LambInfoActionDialog({
                   <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
                     <FormLabel className="col-span-2 text-end">
                       Is Timote
-                    </FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="col-span-4 justify-self-start"
-                      />
-                    </FormControl>
-                    <FormMessage className="col-span-4 col-start-3" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="is_leader_group_care"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
-                    <FormLabel className="col-span-2 text-end">
-                      Group Care Leader
                     </FormLabel>
                     <FormControl>
                       <Switch
