@@ -28,6 +28,7 @@ import {
   Table,
   BellPlus,
   ClipboardCheck,
+  BookOpen,
 } from "lucide-react";
 import { ClerkLogo } from "@/assets/clerk-logo";
 import { type SidebarData } from "../types";
@@ -118,6 +119,13 @@ export const sidebarData: SidebarData = {
           title: "เช็คชื่อรายสัปดาห์",
           url: "/attendance",
           icon: ClipboardCheck,
+        },
+        // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
+        // 2026-08-13 + เปลี่ยนใจ 2026-08-13)
+        {
+          title: "พระคัมภีร์ (KJV)",
+          url: "/bible/1/1",
+          icon: BookOpen,
         },
         {
           title: "Personality Type",

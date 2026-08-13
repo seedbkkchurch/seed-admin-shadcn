@@ -28,6 +28,7 @@ import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
+import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
@@ -44,6 +45,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
+import { Route as AuthenticatedBibleBookChapterRouteImport } from './routes/_authenticated/bible/$book/$chapter'
 import { Route as AuthenticatedLambInfoLambIdIndexRouteImport } from './routes/_authenticated/lamb-info/$lambId/index'
 import { Route as AuthenticatedLambInfoLambIdDevotionRouteImport } from './routes/_authenticated/lamb-info/$lambId/devotion'
 import { Route as AuthenticatedLambInfoDevotionIndexRouteImport } from './routes/_authenticated/lamb-info/devotion/index'
@@ -146,6 +148,11 @@ const AuthenticatedAttendanceIndexRoute =
     path: '/attendance/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBibleIndexRoute = AuthenticatedBibleIndexRouteImport.update({
+  id: '/bible/',
+  path: '/bible/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -237,6 +244,12 @@ const ClerkAuthenticatedUserManagementRoute =
     path: '/user-management',
     getParentRoute: () => ClerkAuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBibleBookChapterRoute =
+  AuthenticatedBibleBookChapterRouteImport.update({
+    id: '/bible/$book/$chapter',
+    path: '/bible/$book/$chapter',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLambInfoLambIdIndexRoute =
   AuthenticatedLambInfoLambIdIndexRouteImport.update({
     id: '/lamb-info/$lambId/',
@@ -305,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps/': typeof AuthenticatedAppsIndexRoute
   '/attendance/': typeof AuthenticatedAttendanceIndexRoute
+  '/bible/': typeof AuthenticatedBibleIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -313,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
@@ -345,6 +360,7 @@ export interface FileRoutesByTo {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/attendance': typeof AuthenticatedAttendanceIndexRoute
+  '/bible': typeof AuthenticatedBibleIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -353,6 +369,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
@@ -390,6 +407,7 @@ export interface FileRoutesById {
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
+  '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -398,6 +416,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/_authenticated/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/_authenticated/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
   '/_authenticated/lamb-info/devotion/table': typeof AuthenticatedLambInfoDevotionTableRoute
@@ -433,6 +452,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps/'
     | '/attendance/'
+    | '/bible/'
     | '/chats/'
     | '/group-care/'
     | '/help-center/'
@@ -441,6 +461,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks/'
     | '/users/'
+    | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
     | '/lamb-info/devotion/new'
     | '/lamb-info/devotion/table'
@@ -473,6 +494,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/attendance'
+    | '/bible'
     | '/chats'
     | '/group-care'
     | '/help-center'
@@ -481,6 +503,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
     | '/lamb-info/devotion/new'
     | '/lamb-info/devotion/table'
@@ -517,6 +540,7 @@ export interface FileRouteTypes {
     | '/clerk/_authenticated/user-management'
     | '/_authenticated/apps/'
     | '/_authenticated/attendance/'
+    | '/_authenticated/bible/'
     | '/_authenticated/chats/'
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
@@ -525,6 +549,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/bible/$book/$chapter'
     | '/_authenticated/lamb-info/$lambId/devotion'
     | '/_authenticated/lamb-info/devotion/new'
     | '/_authenticated/lamb-info/devotion/table'
@@ -685,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAttendanceIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bible/': {
+      id: '/_authenticated/bible/'
+      path: '/bible'
+      fullPath: '/bible/'
+      preLoaderRoute: typeof AuthenticatedBibleIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -797,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkAuthenticatedUserManagementRouteImport
       parentRoute: typeof ClerkAuthenticatedRouteRoute
     }
+    '/_authenticated/bible/$book/$chapter': {
+      id: '/_authenticated/bible/$book/$chapter'
+      path: '/bible/$book/$chapter'
+      fullPath: '/bible/$book/$chapter'
+      preLoaderRoute: typeof AuthenticatedBibleBookChapterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lamb-info/$lambId/': {
       id: '/_authenticated/lamb-info/$lambId/'
       path: '/lamb-info/$lambId'
@@ -878,6 +917,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
+  AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
@@ -885,6 +925,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedBibleBookChapterRoute: typeof AuthenticatedBibleBookChapterRoute
   AuthenticatedLambInfoLambIdDevotionRoute: typeof AuthenticatedLambInfoLambIdDevotionRoute
   AuthenticatedLambInfoDevotionNewRoute: typeof AuthenticatedLambInfoDevotionNewRoute
   AuthenticatedLambInfoDevotionTableRoute: typeof AuthenticatedLambInfoDevotionTableRoute
@@ -900,6 +941,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
+  AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
@@ -908,6 +950,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalityTypeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedBibleBookChapterRoute: AuthenticatedBibleBookChapterRoute,
   AuthenticatedLambInfoLambIdDevotionRoute:
     AuthenticatedLambInfoLambIdDevotionRoute,
   AuthenticatedLambInfoDevotionNewRoute: AuthenticatedLambInfoDevotionNewRoute,

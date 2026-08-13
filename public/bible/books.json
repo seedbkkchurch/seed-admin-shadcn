@@ -1,0 +1,398 @@
+[
+  {
+    "number": 1,
+    "nameEn": "Genesis",
+    "nameTh": "ปฐมกาล",
+    "chapterCount": 50
+  },
+  {
+    "number": 2,
+    "nameEn": "Exodus",
+    "nameTh": "อพยพ",
+    "chapterCount": 40
+  },
+  {
+    "number": 3,
+    "nameEn": "Leviticus",
+    "nameTh": "เลวีนิติ",
+    "chapterCount": 27
+  },
+  {
+    "number": 4,
+    "nameEn": "Numbers",
+    "nameTh": "กันดารวิถี",
+    "chapterCount": 36
+  },
+  {
+    "number": 5,
+    "nameEn": "Deuteronomy",
+    "nameTh": "เฉลยธรมบัญญัติ",
+    "chapterCount": 34
+  },
+  {
+    "number": 6,
+    "nameEn": "Joshua",
+    "nameTh": "โยชูว",
+    "chapterCount": 24
+  },
+  {
+    "number": 7,
+    "nameEn": "Judges",
+    "nameTh": "ผู้วินิจฉัย",
+    "chapterCount": 21
+  },
+  {
+    "number": 8,
+    "nameEn": "Ruth",
+    "nameTh": "นางรูธ",
+    "chapterCount": 4
+  },
+  {
+    "number": 9,
+    "nameEn": "1 Samuel",
+    "nameTh": "1 ซามูเอล",
+    "chapterCount": 31
+  },
+  {
+    "number": 10,
+    "nameEn": "2 Samuel",
+    "nameTh": "2 ซามูเอล",
+    "chapterCount": 24
+  },
+  {
+    "number": 11,
+    "nameEn": "1 Kings",
+    "nameTh": "1 พงศ์กษัตริย์",
+    "chapterCount": 22
+  },
+  {
+    "number": 12,
+    "nameEn": "2 Kings",
+    "nameTh": "2 พงศ์กษัตริย์",
+    "chapterCount": 25
+  },
+  {
+    "number": 13,
+    "nameEn": "1 Chronicles",
+    "nameTh": "1 พงศาวดาร",
+    "chapterCount": 29
+  },
+  {
+    "number": 14,
+    "nameEn": "2 Chronicles",
+    "nameTh": "2 พงศาวดาร",
+    "chapterCount": 36
+  },
+  {
+    "number": 15,
+    "nameEn": "Ezra",
+    "nameTh": "เอสรา",
+    "chapterCount": 10
+  },
+  {
+    "number": 16,
+    "nameEn": "Nehemiah",
+    "nameTh": "เนหะมีย์",
+    "chapterCount": 13
+  },
+  {
+    "number": 17,
+    "nameEn": "Esther",
+    "nameTh": "เอสเธอร์",
+    "chapterCount": 10
+  },
+  {
+    "number": 18,
+    "nameEn": "Job",
+    "nameTh": "โยบ",
+    "chapterCount": 42
+  },
+  {
+    "number": 19,
+    "nameEn": "Psalms",
+    "nameTh": "สดุดี",
+    "chapterCount": 150
+  },
+  {
+    "number": 20,
+    "nameEn": "Proverbs",
+    "nameTh": "สุภาษิต",
+    "chapterCount": 31
+  },
+  {
+    "number": 21,
+    "nameEn": "Ecclesiastes",
+    "nameTh": "ปัญญาจารย์",
+    "chapterCount": 12
+  },
+  {
+    "number": 22,
+    "nameEn": "Song of Solomon",
+    "nameTh": "เพลงซาโลมอน",
+    "chapterCount": 8
+  },
+  {
+    "number": 23,
+    "nameEn": "Isaiah",
+    "nameTh": "อิสยาห์",
+    "chapterCount": 66
+  },
+  {
+    "number": 24,
+    "nameEn": "Jeremiah",
+    "nameTh": "เยเรมีย์",
+    "chapterCount": 52
+  },
+  {
+    "number": 25,
+    "nameEn": "Lamentations",
+    "nameTh": "เพลงคร่ำครวญ",
+    "chapterCount": 5
+  },
+  {
+    "number": 26,
+    "nameEn": "Ezekiel",
+    "nameTh": "เอเสเคียล",
+    "chapterCount": 48
+  },
+  {
+    "number": 27,
+    "nameEn": "Daniel",
+    "nameTh": "ดาเนียล",
+    "chapterCount": 12
+  },
+  {
+    "number": 28,
+    "nameEn": "Hosea",
+    "nameTh": "โฮเชยา",
+    "chapterCount": 14
+  },
+  {
+    "number": 29,
+    "nameEn": "Joel",
+    "nameTh": "โยเอล",
+    "chapterCount": 3
+  },
+  {
+    "number": 30,
+    "nameEn": "Amos",
+    "nameTh": "อาโมส",
+    "chapterCount": 9
+  },
+  {
+    "number": 31,
+    "nameEn": "Obadiah",
+    "nameTh": "โอบาดีย์",
+    "chapterCount": 1
+  },
+  {
+    "number": 32,
+    "nameEn": "Jonah",
+    "nameTh": "โยนาห์",
+    "chapterCount": 4
+  },
+  {
+    "number": 33,
+    "nameEn": "Micah",
+    "nameTh": "มีคาห์",
+    "chapterCount": 7
+  },
+  {
+    "number": 34,
+    "nameEn": "Nahum",
+    "nameTh": "นาฮูม",
+    "chapterCount": 3
+  },
+  {
+    "number": 35,
+    "nameEn": "Habakkuk",
+    "nameTh": "ฮะบากุก",
+    "chapterCount": 3
+  },
+  {
+    "number": 36,
+    "nameEn": "Zephaniah",
+    "nameTh": "เศฟันยาห์",
+    "chapterCount": 3
+  },
+  {
+    "number": 37,
+    "nameEn": "Haggai",
+    "nameTh": "ฮักกัย",
+    "chapterCount": 2
+  },
+  {
+    "number": 38,
+    "nameEn": "Zechariah",
+    "nameTh": "เศคาริยาห์",
+    "chapterCount": 14
+  },
+  {
+    "number": 39,
+    "nameEn": "Malachi",
+    "nameTh": "มาลาคี",
+    "chapterCount": 4
+  },
+  {
+    "number": 40,
+    "nameEn": "Matthew",
+    "nameTh": "มัทธิว",
+    "chapterCount": 28
+  },
+  {
+    "number": 41,
+    "nameEn": "Mark",
+    "nameTh": "มาระโก",
+    "chapterCount": 16
+  },
+  {
+    "number": 42,
+    "nameEn": "Luke",
+    "nameTh": "ลูกา",
+    "chapterCount": 24
+  },
+  {
+    "number": 43,
+    "nameEn": "John",
+    "nameTh": "ยอห์น",
+    "chapterCount": 21
+  },
+  {
+    "number": 44,
+    "nameEn": "Acts",
+    "nameTh": "กิจการของอัครทูต",
+    "chapterCount": 28
+  },
+  {
+    "number": 45,
+    "nameEn": "Romans",
+    "nameTh": "โรม",
+    "chapterCount": 16
+  },
+  {
+    "number": 46,
+    "nameEn": "1 Corinthians",
+    "nameTh": "1 โครินธ์",
+    "chapterCount": 16
+  },
+  {
+    "number": 47,
+    "nameEn": "2 Corinthians",
+    "nameTh": "2 โครินธ์",
+    "chapterCount": 13
+  },
+  {
+    "number": 48,
+    "nameEn": "Galatians",
+    "nameTh": "กาลาเทีย",
+    "chapterCount": 6
+  },
+  {
+    "number": 49,
+    "nameEn": "Ephesians",
+    "nameTh": "เอเฟซัส",
+    "chapterCount": 6
+  },
+  {
+    "number": 50,
+    "nameEn": "Philippians",
+    "nameTh": "ฟิลิปปี",
+    "chapterCount": 4
+  },
+  {
+    "number": 51,
+    "nameEn": "Colossians",
+    "nameTh": "โคโลสี",
+    "chapterCount": 4
+  },
+  {
+    "number": 52,
+    "nameEn": "1 Thessalonians",
+    "nameTh": "1 สะโลนิกา",
+    "chapterCount": 5
+  },
+  {
+    "number": 53,
+    "nameEn": "2 Thessalonians",
+    "nameTh": "2 สะโลนิกา",
+    "chapterCount": 3
+  },
+  {
+    "number": 54,
+    "nameEn": "1 Timothy",
+    "nameTh": "1 ทิโมธี",
+    "chapterCount": 6
+  },
+  {
+    "number": 55,
+    "nameEn": "2 Timothy",
+    "nameTh": "2 ทิโมธี",
+    "chapterCount": 4
+  },
+  {
+    "number": 56,
+    "nameEn": "Titus",
+    "nameTh": "ทิตัส",
+    "chapterCount": 3
+  },
+  {
+    "number": 57,
+    "nameEn": "Philemon",
+    "nameTh": "ฟีเลโมน",
+    "chapterCount": 1
+  },
+  {
+    "number": 58,
+    "nameEn": "Hebrews",
+    "nameTh": "ฮีบรู",
+    "chapterCount": 13
+  },
+  {
+    "number": 59,
+    "nameEn": "James",
+    "nameTh": "ยากอบ",
+    "chapterCount": 5
+  },
+  {
+    "number": 60,
+    "nameEn": "1 Peter",
+    "nameTh": "1 ปโตร",
+    "chapterCount": 5
+  },
+  {
+    "number": 61,
+    "nameEn": "2 Peter",
+    "nameTh": "2 เปโตร",
+    "chapterCount": 3
+  },
+  {
+    "number": 62,
+    "nameEn": "1 John",
+    "nameTh": "1 ยอห์น",
+    "chapterCount": 5
+  },
+  {
+    "number": 63,
+    "nameEn": "2 John",
+    "nameTh": "2 ยอห์น",
+    "chapterCount": 1
+  },
+  {
+    "number": 64,
+    "nameEn": "3 John",
+    "nameTh": "3 ยอห์น",
+    "chapterCount": 1
+  },
+  {
+    "number": 65,
+    "nameEn": "Jude",
+    "nameTh": "ยูดา",
+    "chapterCount": 1
+  },
+  {
+    "number": 66,
+    "nameEn": "Revelation",
+    "nameTh": "วิวรณ์",
+    "chapterCount": 22
+  }
+]
