@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { AlertCircle, Save, Send } from "lucide-react";
@@ -21,7 +21,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { ArticleEditor } from "./components/article-editor";
+import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
+import { cn } from "@/lib/utils";
+import { ArticleEditor, type ArticleEditorHandle } from "./components/article-editor";
 import {
   DEVOTION_ALREADY_SUBMITTED_CODE,
   useCreateLambDevotion,
@@ -53,8 +55,13 @@ function isEmptyHtml(value: string) {
 // affordance, not the final submission flow.
 export function DevotionEditor() {
   const navigate = useNavigate();
+  const editorRef = useRef<ArticleEditorHandle>(null);
   const [lambId, setLambId] = useState<string | undefined>();
   const [title, setTitle] = useState("");
+  // เพิ่งออกจากช่องหัวข้อไปครั้งแรกหรือยัง — ใช้คุมว่าข้อความเตือน "ลืมใส่
+  // หัวข้อ" ควรโผล่หรือไม่ (โผล่หลัง blur ครั้งแรกที่ยังว่างอยู่เท่านั้น
+  // ไม่ใช่ตั้งแต่เปิดหน้ามา จะได้ไม่น่ารำคาญ — ดู grill-me 2026-08-13)
+  const [titleTouched, setTitleTouched] = useState(false);
   const [html, setHtml] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -63,6 +70,7 @@ export function DevotionEditor() {
     useLambNameOptions();
   const createDevotion = useCreateLambDevotion();
 
+  const showTitleError = titleTouched && title.trim().length === 0;
   const canSubmit =
     !!lambId &&
     title.trim().length > 0 &&
@@ -156,12 +164,26 @@ export function DevotionEditor() {
             </Select>
           </div>
 
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="หัวข้อบทความ..."
-            className="h-auto border-none px-0 text-3xl font-bold shadow-none focus-visible:ring-0 md:text-4xl"
-          />
+          <div className="space-y-1.5">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => setTitleTouched(true)}
+              placeholder="หัวข้อบทความ..."
+              aria-invalid={showTitleError}
+              className={cn(
+                "h-auto text-3xl font-bold shadow-none focus-visible:ring-0 md:text-4xl",
+                showTitleError
+                  ? "rounded-md border border-destructive px-3 focus-visible:ring-destructive/40"
+                  : "border-none px-0",
+              )}
+            />
+            {showTitleError && (
+              <p className="text-sm text-destructive">
+                กรุณาใส่หัวข้อบทความก่อนส่ง
+              </p>
+            )}
+          </div>
 
           <label className="flex items-center gap-2 text-sm">
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
@@ -169,12 +191,19 @@ export function DevotionEditor() {
           </label>
 
           <ArticleEditor
+            ref={editorRef}
             onChangeHtml={setHtml}
             onUploadingChange={setIsUploadingImage}
             isPublic={isPublic}
           />
         </div>
       </Main>
+
+      <BibleQuickReferenceSheet
+        onInsertHtml={(insertedHtml) =>
+          editorRef.current?.insertHtml(insertedHtml)
+        }
+      />
     </>
   );
 }
@@ -245,12 +274,17 @@ type DevotionEditFormLoadedProps = {
 function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
   const navigate = useNavigate();
   const updateDevotion = useUpdateLambDevotion();
+  const editorRef = useRef<ArticleEditorHandle>(null);
 
   const [title, setTitle] = useState(entry.title);
+  // ดูหมายเหตุเดียวกับ DevotionEditor ด้านบน — โผล่เตือนหลัง blur ครั้งแรก
+  // ที่ยังว่างอยู่เท่านั้น (ดู grill-me 2026-08-13)
+  const [titleTouched, setTitleTouched] = useState(false);
   const [html, setHtml] = useState(entry.content_html);
   const [isPublic, setIsPublic] = useState(entry.is_public);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const showTitleError = titleTouched && title.trim().length === 0;
   const canSubmit =
     title.trim().length > 0 && !isEmptyHtml(html) && !isUploadingImage;
 
@@ -305,12 +339,26 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
       </div>
 
       <div className="mx-auto w-full max-w-3xl space-y-4">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="หัวข้อบทความ..."
-          className="h-auto border-none px-0 text-3xl font-bold shadow-none focus-visible:ring-0 md:text-4xl"
-        />
+        <div className="space-y-1.5">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => setTitleTouched(true)}
+            placeholder="หัวข้อบทความ..."
+            aria-invalid={showTitleError}
+            className={cn(
+              "h-auto text-3xl font-bold shadow-none focus-visible:ring-0 md:text-4xl",
+              showTitleError
+                ? "rounded-md border border-destructive px-3 focus-visible:ring-destructive/40"
+                : "border-none px-0",
+            )}
+          />
+          {showTitleError && (
+            <p className="text-sm text-destructive">
+              กรุณาใส่หัวข้อบทความก่อนบันทึก
+            </p>
+          )}
+        </div>
 
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={isPublic} onCheckedChange={setIsPublic} />
@@ -318,12 +366,19 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
         </label>
 
         <ArticleEditor
+          ref={editorRef}
           initialContent={entry.content_html}
           onChangeHtml={setHtml}
           onUploadingChange={setIsUploadingImage}
           isPublic={isPublic}
         />
       </div>
+
+      <BibleQuickReferenceSheet
+        onInsertHtml={(insertedHtml) =>
+          editorRef.current?.insertHtml(insertedHtml)
+        }
+      />
     </>
   );
 }

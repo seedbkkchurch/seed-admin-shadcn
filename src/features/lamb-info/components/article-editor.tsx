@@ -1,4 +1,9 @@
-import { useRef, useState } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -43,19 +48,31 @@ type ArticleEditorProps = {
   className?: string;
 };
 
+// Imperative handle เปิดให้ parent (devotion-editor.tsx) แทรก HTML เข้า
+// editor ได้จากภายนอก โดยไม่ต้องเปลี่ยน flow onChangeHtml เดิม — ใช้กับ
+// ปุ่ม "แทรกข้อที่เลือก" ใน BibleQuickReferenceSheet (ดู grill-me
+// 2026-08-13 "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว")
+export type ArticleEditorHandle = {
+  insertHtml: (html: string) => void;
+};
+
 // Medium-style rich text editor — bold/italic/headings/lists/quote plus
 // inline image insertion at the cursor. Images are resized client-side
 // (see image-resize.ts) and uploaded to Supabase Storage immediately on
 // selection (see devotion-image.ts) — the URL inserted into the editor
 // is the real, persisted public URL, not a local object URL.
-export function ArticleEditor({
-  placeholder,
-  initialContent,
-  onChangeHtml,
-  onUploadingChange,
-  isPublic,
-  className,
-}: ArticleEditorProps) {
+export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>(
+  function ArticleEditor(
+    {
+      placeholder,
+      initialContent,
+      onChangeHtml,
+      onUploadingChange,
+      isPublic,
+      className,
+    },
+    ref,
+  ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -86,6 +103,19 @@ export function ArticleEditor({
     },
     onUpdate: ({ editor }) => onChangeHtml(editor.getHTML()),
   });
+
+  // แทรก HTML ที่ท้ายเอกสารเสมอ (ไม่ใช่ตำแหน่ง cursor เดิม) เพราะผู้ใช้เพิ่ง
+  // สลับโฟกัสไปที่ bottom sheet คัมภีร์มา cursor เดิมใน editor จึงไม่มี
+  // ความหมายแล้ว — เขียนต่อจากข้อที่แทรกได้เลย (ดู grill-me 2026-08-13)
+  useImperativeHandle(
+    ref,
+    () => ({
+      insertHtml: (html: string) => {
+        editor?.chain().focus("end").insertContent(html).run();
+      },
+    }),
+    [editor],
+  );
 
   const handleImageButtonClick = () => fileInputRef.current?.click();
 
@@ -204,4 +234,5 @@ export function ArticleEditor({
       </div>
     </div>
   );
-}
+  },
+);
