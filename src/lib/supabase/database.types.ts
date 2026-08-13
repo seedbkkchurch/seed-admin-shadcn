@@ -4,770 +4,824 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
-  }
+    PostgrestVersion: "12.2.3 (519615d)";
+  };
   public: {
     Tables: {
       admin_test_push_subscription: {
         Row: {
-          auth: string
-          created_at: string
-          endpoint: string
-          id: string
-          p256dh: string
-          updated_at: string
-          user_agent: string | null
-        }
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          updated_at: string;
+          user_agent: string | null;
+        };
         Insert: {
-          auth: string
-          created_at?: string
-          endpoint: string
-          id?: string
-          p256dh: string
-          updated_at?: string
-          user_agent?: string | null
-        }
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
         Update: {
-          auth?: string
-          created_at?: string
-          endpoint?: string
-          id?: string
-          p256dh?: string
-          updated_at?: string
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       courses: {
         Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string | null
-        }
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          name: string | null;
+        };
         Insert: {
-          created_at?: string | null
-          description?: string | null
-          id: string
-          name?: string | null
-        }
+          created_at?: string | null;
+          description?: string | null;
+          id: string;
+          name?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          name?: string | null;
+        };
+        Relationships: [];
+      };
       devotion_reminder_settings: {
         Row: {
-          evening_enabled: boolean
-          evening_time: string
-          id: boolean
-          last_evening_sent_date: string | null
-          last_morning_sent_date: string | null
-          morning_enabled: boolean
-          morning_time: string
-          updated_at: string
-        }
+          evening_enabled: boolean;
+          evening_time: string;
+          id: boolean;
+          last_evening_sent_date: string | null;
+          last_morning_sent_date: string | null;
+          morning_enabled: boolean;
+          morning_time: string;
+          updated_at: string;
+        };
         Insert: {
-          evening_enabled?: boolean
-          evening_time?: string
-          id?: boolean
-          last_evening_sent_date?: string | null
-          last_morning_sent_date?: string | null
-          morning_enabled?: boolean
-          morning_time?: string
-          updated_at?: string
-        }
+          evening_enabled?: boolean;
+          evening_time?: string;
+          id?: boolean;
+          last_evening_sent_date?: string | null;
+          last_morning_sent_date?: string | null;
+          morning_enabled?: boolean;
+          morning_time?: string;
+          updated_at?: string;
+        };
         Update: {
-          evening_enabled?: boolean
-          evening_time?: string
-          id?: boolean
-          last_evening_sent_date?: string | null
-          last_morning_sent_date?: string | null
-          morning_enabled?: boolean
-          morning_time?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          evening_enabled?: boolean;
+          evening_time?: string;
+          id?: boolean;
+          last_evening_sent_date?: string | null;
+          last_morning_sent_date?: string | null;
+          morning_enabled?: boolean;
+          morning_time?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       gift_from_god: {
         Row: {
-          ambassador: number
-          being_single: number
-          blessing_prayer: number
-          compassion: number
-          created_at: string
-          discernment_of_spirits: number
-          executive: number
-          exorcism: number
-          faith_trust: number
-          healing_of_disease: number
-          image_url: string | null
-          interpreting_tongues: number
-          lamb_id: string
-          miracle: number
-          missionary: number
-          note: string | null
-          offering: number
-          pastoral: number
-          preacher: number
-          prophet: number
-          ruler: number
-          speaking_in_tongues: number
-          supporter: number
-          teaching: number
-          to_serve: number
-          updated_at: string
-          warning_and_encouragement: number
-          welcoming_guests: number
-          word_of_wisdom: number
-          words_with_knowledge: number
-        }
+          ambassador: number;
+          being_single: number;
+          blessing_prayer: number;
+          compassion: number;
+          created_at: string;
+          discernment_of_spirits: number;
+          executive: number;
+          exorcism: number;
+          faith_trust: number;
+          healing_of_disease: number;
+          image_url: string | null;
+          interpreting_tongues: number;
+          lamb_id: string;
+          miracle: number;
+          missionary: number;
+          note: string | null;
+          offering: number;
+          pastoral: number;
+          preacher: number;
+          prophet: number;
+          ruler: number;
+          speaking_in_tongues: number;
+          supporter: number;
+          teaching: number;
+          to_serve: number;
+          updated_at: string;
+          warning_and_encouragement: number;
+          welcoming_guests: number;
+          word_of_wisdom: number;
+          words_with_knowledge: number;
+        };
         Insert: {
-          ambassador?: number
-          being_single?: number
-          blessing_prayer?: number
-          compassion?: number
-          created_at?: string
-          discernment_of_spirits?: number
-          executive?: number
-          exorcism?: number
-          faith_trust?: number
-          healing_of_disease?: number
-          image_url?: string | null
-          interpreting_tongues?: number
-          lamb_id: string
-          miracle?: number
-          missionary?: number
-          note?: string | null
-          offering?: number
-          pastoral?: number
-          preacher?: number
-          prophet?: number
-          ruler?: number
-          speaking_in_tongues?: number
-          supporter?: number
-          teaching?: number
-          to_serve?: number
-          updated_at?: string
-          warning_and_encouragement?: number
-          welcoming_guests?: number
-          word_of_wisdom?: number
-          words_with_knowledge?: number
-        }
+          ambassador?: number;
+          being_single?: number;
+          blessing_prayer?: number;
+          compassion?: number;
+          created_at?: string;
+          discernment_of_spirits?: number;
+          executive?: number;
+          exorcism?: number;
+          faith_trust?: number;
+          healing_of_disease?: number;
+          image_url?: string | null;
+          interpreting_tongues?: number;
+          lamb_id: string;
+          miracle?: number;
+          missionary?: number;
+          note?: string | null;
+          offering?: number;
+          pastoral?: number;
+          preacher?: number;
+          prophet?: number;
+          ruler?: number;
+          speaking_in_tongues?: number;
+          supporter?: number;
+          teaching?: number;
+          to_serve?: number;
+          updated_at?: string;
+          warning_and_encouragement?: number;
+          welcoming_guests?: number;
+          word_of_wisdom?: number;
+          words_with_knowledge?: number;
+        };
         Update: {
-          ambassador?: number
-          being_single?: number
-          blessing_prayer?: number
-          compassion?: number
-          created_at?: string
-          discernment_of_spirits?: number
-          executive?: number
-          exorcism?: number
-          faith_trust?: number
-          healing_of_disease?: number
-          image_url?: string | null
-          interpreting_tongues?: number
-          lamb_id?: string
-          miracle?: number
-          missionary?: number
-          note?: string | null
-          offering?: number
-          pastoral?: number
-          preacher?: number
-          prophet?: number
-          ruler?: number
-          speaking_in_tongues?: number
-          supporter?: number
-          teaching?: number
-          to_serve?: number
-          updated_at?: string
-          warning_and_encouragement?: number
-          welcoming_guests?: number
-          word_of_wisdom?: number
-          words_with_knowledge?: number
-        }
+          ambassador?: number;
+          being_single?: number;
+          blessing_prayer?: number;
+          compassion?: number;
+          created_at?: string;
+          discernment_of_spirits?: number;
+          executive?: number;
+          exorcism?: number;
+          faith_trust?: number;
+          healing_of_disease?: number;
+          image_url?: string | null;
+          interpreting_tongues?: number;
+          lamb_id?: string;
+          miracle?: number;
+          missionary?: number;
+          note?: string | null;
+          offering?: number;
+          pastoral?: number;
+          preacher?: number;
+          prophet?: number;
+          ruler?: number;
+          speaking_in_tongues?: number;
+          supporter?: number;
+          teaching?: number;
+          to_serve?: number;
+          updated_at?: string;
+          warning_and_encouragement?: number;
+          welcoming_guests?: number;
+          word_of_wisdom?: number;
+          words_with_knowledge?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "gift_from_god_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: true
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "gift_from_god_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: true;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "gift_from_god_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: true
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "gift_from_god_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: true;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       group_care: {
         Row: {
-          address: string | null
-          day: string | null
-          id: string
-          name: string
-        }
+          address: string | null;
+          day: string | null;
+          id: string;
+          name: string;
+        };
         Insert: {
-          address?: string | null
-          day?: string | null
-          id?: string
-          name: string
-        }
+          address?: string | null;
+          day?: string | null;
+          id?: string;
+          name: string;
+        };
         Update: {
-          address?: string | null
-          day?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
+          address?: string | null;
+          day?: string | null;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      lamb_attendance_log: {
+        Row: {
+          came_to_church: boolean;
+          came_to_group_care: boolean;
+          created_at: string;
+          id: string;
+          lamb_id: string;
+          note: string | null;
+          recorded_by: string | null;
+          updated_at: string;
+          week_start: string;
+        };
+        Insert: {
+          came_to_church?: boolean;
+          came_to_group_care?: boolean;
+          created_at?: string;
+          id?: string;
+          lamb_id: string;
+          note?: string | null;
+          recorded_by?: string | null;
+          updated_at?: string;
+          week_start: string;
+        };
+        Update: {
+          came_to_church?: boolean;
+          came_to_group_care?: boolean;
+          created_at?: string;
+          id?: string;
+          lamb_id?: string;
+          note?: string | null;
+          recorded_by?: string | null;
+          updated_at?: string;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lamb_attendance_log_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lamb_attendance_log_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lamb_devotion: {
         Row: {
-          content_html: string
-          created_at: string
-          devotion_date: string
-          id: string
-          image_urls: string[]
-          is_public: boolean | null
-          lamb_id: string
-          title: string
-          updated_at: string
-        }
+          content_html: string;
+          created_at: string;
+          devotion_date: string;
+          id: string;
+          image_urls: string[];
+          is_public: boolean | null;
+          lamb_id: string;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          content_html: string
-          created_at?: string
-          devotion_date: string
-          id?: string
-          image_urls?: string[]
-          is_public?: boolean | null
-          lamb_id: string
-          title: string
-          updated_at?: string
-        }
+          content_html: string;
+          created_at?: string;
+          devotion_date: string;
+          id?: string;
+          image_urls?: string[];
+          is_public?: boolean | null;
+          lamb_id: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          content_html?: string
-          created_at?: string
-          devotion_date?: string
-          id?: string
-          image_urls?: string[]
-          is_public?: boolean | null
-          lamb_id?: string
-          title?: string
-          updated_at?: string
-        }
+          content_html?: string;
+          created_at?: string;
+          devotion_date?: string;
+          id?: string;
+          image_urls?: string[];
+          is_public?: boolean | null;
+          lamb_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "lamb_devotion_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_devotion_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_devotion_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_devotion_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       lamb_info: {
         Row: {
-          address: string | null
-          age: number | null
-          birthday: string | null
-          class: string | null
-          email: string | null
-          favorite_food: string | null
-          first_name: string | null
-          gender: string | null
-          group_care: string | null
-          id: string
-          interesting: string | null
-          is_leader_group_care: boolean | null
-          is_timote: boolean | null
-          job: string | null
-          lamb_lesson_ch18_progress: number | null
-          lamb_lesson_life_progress: number | null
-          last_name: string | null
-          nick_name: string | null
-          personality_code: string | null
-          phone: string | null
-          previous_church: string | null
-          profile_picture: string | null
-          remark: string | null
-          status: boolean | null
-          tags: string | null
-          unfavorite_food: string | null
-          years_of_faith: number | null
-        }
+          address: string | null;
+          age: number | null;
+          birthday: string | null;
+          class: string | null;
+          email: string | null;
+          favorite_food: string | null;
+          first_name: string | null;
+          gender: string | null;
+          group_care: string | null;
+          id: string;
+          interesting: string | null;
+          is_leader_group_care: boolean | null;
+          is_timote: boolean | null;
+          job: string | null;
+          lamb_lesson_ch18_progress: number | null;
+          lamb_lesson_life_progress: number | null;
+          last_name: string | null;
+          nick_name: string | null;
+          personality_code: string | null;
+          phone: string | null;
+          previous_church: string | null;
+          profile_picture: string | null;
+          remark: string | null;
+          status: boolean | null;
+          tags: string | null;
+          unfavorite_food: string | null;
+          years_of_faith: number | null;
+        };
         Insert: {
-          address?: string | null
-          age?: number | null
-          birthday?: string | null
-          class?: string | null
-          email?: string | null
-          favorite_food?: string | null
-          first_name?: string | null
-          gender?: string | null
-          group_care?: string | null
-          id?: string
-          interesting?: string | null
-          is_leader_group_care?: boolean | null
-          is_timote?: boolean | null
-          job?: string | null
-          lamb_lesson_ch18_progress?: number | null
-          lamb_lesson_life_progress?: number | null
-          last_name?: string | null
-          nick_name?: string | null
-          personality_code?: string | null
-          phone?: string | null
-          previous_church?: string | null
-          profile_picture?: string | null
-          remark?: string | null
-          status?: boolean | null
-          tags?: string | null
-          unfavorite_food?: string | null
-          years_of_faith?: number | null
-        }
+          address?: string | null;
+          age?: number | null;
+          birthday?: string | null;
+          class?: string | null;
+          email?: string | null;
+          favorite_food?: string | null;
+          first_name?: string | null;
+          gender?: string | null;
+          group_care?: string | null;
+          id?: string;
+          interesting?: string | null;
+          is_leader_group_care?: boolean | null;
+          is_timote?: boolean | null;
+          job?: string | null;
+          lamb_lesson_ch18_progress?: number | null;
+          lamb_lesson_life_progress?: number | null;
+          last_name?: string | null;
+          nick_name?: string | null;
+          personality_code?: string | null;
+          phone?: string | null;
+          previous_church?: string | null;
+          profile_picture?: string | null;
+          remark?: string | null;
+          status?: boolean | null;
+          tags?: string | null;
+          unfavorite_food?: string | null;
+          years_of_faith?: number | null;
+        };
         Update: {
-          address?: string | null
-          age?: number | null
-          birthday?: string | null
-          class?: string | null
-          email?: string | null
-          favorite_food?: string | null
-          first_name?: string | null
-          gender?: string | null
-          group_care?: string | null
-          id?: string
-          interesting?: string | null
-          is_leader_group_care?: boolean | null
-          is_timote?: boolean | null
-          job?: string | null
-          lamb_lesson_ch18_progress?: number | null
-          lamb_lesson_life_progress?: number | null
-          last_name?: string | null
-          nick_name?: string | null
-          personality_code?: string | null
-          phone?: string | null
-          previous_church?: string | null
-          profile_picture?: string | null
-          remark?: string | null
-          status?: boolean | null
-          tags?: string | null
-          unfavorite_food?: string | null
-          years_of_faith?: number | null
-        }
+          address?: string | null;
+          age?: number | null;
+          birthday?: string | null;
+          class?: string | null;
+          email?: string | null;
+          favorite_food?: string | null;
+          first_name?: string | null;
+          gender?: string | null;
+          group_care?: string | null;
+          id?: string;
+          interesting?: string | null;
+          is_leader_group_care?: boolean | null;
+          is_timote?: boolean | null;
+          job?: string | null;
+          lamb_lesson_ch18_progress?: number | null;
+          lamb_lesson_life_progress?: number | null;
+          last_name?: string | null;
+          nick_name?: string | null;
+          personality_code?: string | null;
+          phone?: string | null;
+          previous_church?: string | null;
+          profile_picture?: string | null;
+          remark?: string | null;
+          status?: boolean | null;
+          tags?: string | null;
+          unfavorite_food?: string | null;
+          years_of_faith?: number | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "lamb_info_group_care_fkey"
-            columns: ["group_care"]
-            isOneToOne: false
-            referencedRelation: "group_care"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_info_group_care_fkey";
+            columns: ["group_care"];
+            isOneToOne: false;
+            referencedRelation: "group_care";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_info_personality_code_fkey"
-            columns: ["personality_code"]
-            isOneToOne: false
-            referencedRelation: "personality_type"
-            referencedColumns: ["code"]
+            foreignKeyName: "lamb_info_personality_code_fkey";
+            columns: ["personality_code"];
+            isOneToOne: false;
+            referencedRelation: "personality_type";
+            referencedColumns: ["code"];
           },
-        ]
-      }
+        ];
+      };
       lamb_lesson_progress: {
         Row: {
-          completed_at: string | null
-          id: string
-          is_completed: boolean | null
-          lamb_id: string | null
-          lesson_id: string | null
-        }
+          completed_at: string | null;
+          id: string;
+          is_completed: boolean | null;
+          lamb_id: string | null;
+          lesson_id: string | null;
+        };
         Insert: {
-          completed_at?: string | null
-          id: string
-          is_completed?: boolean | null
-          lamb_id?: string | null
-          lesson_id?: string | null
-        }
+          completed_at?: string | null;
+          id: string;
+          is_completed?: boolean | null;
+          lamb_id?: string | null;
+          lesson_id?: string | null;
+        };
         Update: {
-          completed_at?: string | null
-          id?: string
-          is_completed?: boolean | null
-          lamb_id?: string | null
-          lesson_id?: string | null
-        }
+          completed_at?: string | null;
+          id?: string;
+          is_completed?: boolean | null;
+          lamb_id?: string | null;
+          lesson_id?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "lamb_lesson_progress_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_lesson_progress_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_lesson_progress_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_lesson_progress_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_lesson_progress_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_lesson_progress_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       lamb_push_subscription: {
         Row: {
-          auth: string
-          created_at: string
-          endpoint: string
-          id: string
-          lamb_id: string
-          p256dh: string
-          updated_at: string
-          user_agent: string | null
-        }
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          lamb_id: string;
+          p256dh: string;
+          updated_at: string;
+          user_agent: string | null;
+        };
         Insert: {
-          auth: string
-          created_at?: string
-          endpoint: string
-          id?: string
-          lamb_id: string
-          p256dh: string
-          updated_at?: string
-          user_agent?: string | null
-        }
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          lamb_id: string;
+          p256dh: string;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
         Update: {
-          auth?: string
-          created_at?: string
-          endpoint?: string
-          id?: string
-          lamb_id?: string
-          p256dh?: string
-          updated_at?: string
-          user_agent?: string | null
-        }
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          lamb_id?: string;
+          p256dh?: string;
+          updated_at?: string;
+          user_agent?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "lamb_push_subscription_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_push_subscription_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_push_subscription_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_push_subscription_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       lamb_time_logs: {
         Row: {
-          created_at: string | null
-          duration_minutes: number | null
-          id: string
-          lamb_id: string | null
-          meeting_type: string | null
-          note: string | null
-          recorded_by: string | null
-          response_score: number | null
-          topic: string | null
-          updated_at: string | null
-          visit_date: string | null
-        }
+          created_at: string | null;
+          duration_minutes: number | null;
+          id: string;
+          lamb_id: string | null;
+          meeting_type: string | null;
+          note: string | null;
+          recorded_by: string | null;
+          response_score: number | null;
+          topic: string | null;
+          updated_at: string | null;
+          visit_date: string | null;
+        };
         Insert: {
-          created_at?: string | null
-          duration_minutes?: number | null
-          id: string
-          lamb_id?: string | null
-          meeting_type?: string | null
-          note?: string | null
-          recorded_by?: string | null
-          response_score?: number | null
-          topic?: string | null
-          updated_at?: string | null
-          visit_date?: string | null
-        }
+          created_at?: string | null;
+          duration_minutes?: number | null;
+          id: string;
+          lamb_id?: string | null;
+          meeting_type?: string | null;
+          note?: string | null;
+          recorded_by?: string | null;
+          response_score?: number | null;
+          topic?: string | null;
+          updated_at?: string | null;
+          visit_date?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          duration_minutes?: number | null
-          id?: string
-          lamb_id?: string | null
-          meeting_type?: string | null
-          note?: string | null
-          recorded_by?: string | null
-          response_score?: number | null
-          topic?: string | null
-          updated_at?: string | null
-          visit_date?: string | null
-        }
+          created_at?: string | null;
+          duration_minutes?: number | null;
+          id?: string;
+          lamb_id?: string | null;
+          meeting_type?: string | null;
+          note?: string | null;
+          recorded_by?: string | null;
+          response_score?: number | null;
+          topic?: string | null;
+          updated_at?: string | null;
+          visit_date?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "lamb_time_logs_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_time_logs_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_time_logs_lamb_id_fkey"
-            columns: ["lamb_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_time_logs_lamb_id_fkey";
+            columns: ["lamb_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_time_logs_recorded_by_fkey"
-            columns: ["recorded_by"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_time_logs_recorded_by_fkey";
+            columns: ["recorded_by"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "lamb_time_logs_recorded_by_fkey"
-            columns: ["recorded_by"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "lamb_time_logs_recorded_by_fkey";
+            columns: ["recorded_by"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       lessons: {
         Row: {
-          course_id: string | null
-          id: string
-          order_no: number | null
-          title: string | null
-        }
+          course_id: string | null;
+          id: string;
+          order_no: number | null;
+          title: string | null;
+        };
         Insert: {
-          course_id?: string | null
-          id: string
-          order_no?: number | null
-          title?: string | null
-        }
+          course_id?: string | null;
+          id: string;
+          order_no?: number | null;
+          title?: string | null;
+        };
         Update: {
-          course_id?: string | null
-          id?: string
-          order_no?: number | null
-          title?: string | null
-        }
+          course_id?: string | null;
+          id?: string;
+          order_no?: number | null;
+          title?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "lessons_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
+            foreignKeyName: "lessons_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       payment_slips: {
         Row: {
-          extracted_amount: number | null
-          file_size: number | null
-          id: string
-          mime_type: string | null
-          original_name: string
-          path: string
-          person_id: string | null
-          updated_at: string | null
-          uploaded_at: string | null
-          user_id: string | null
-        }
+          extracted_amount: number | null;
+          file_size: number | null;
+          id: string;
+          mime_type: string | null;
+          original_name: string;
+          path: string;
+          person_id: string | null;
+          updated_at: string | null;
+          uploaded_at: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          extracted_amount?: number | null
-          file_size?: number | null
-          id?: string
-          mime_type?: string | null
-          original_name: string
-          path: string
-          person_id?: string | null
-          updated_at?: string | null
-          uploaded_at?: string | null
-          user_id?: string | null
-        }
+          extracted_amount?: number | null;
+          file_size?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          original_name: string;
+          path: string;
+          person_id?: string | null;
+          updated_at?: string | null;
+          uploaded_at?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          extracted_amount?: number | null
-          file_size?: number | null
-          id?: string
-          mime_type?: string | null
-          original_name?: string
-          path?: string
-          person_id?: string | null
-          updated_at?: string | null
-          uploaded_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          extracted_amount?: number | null;
+          file_size?: number | null;
+          id?: string;
+          mime_type?: string | null;
+          original_name?: string;
+          path?: string;
+          person_id?: string | null;
+          updated_at?: string | null;
+          uploaded_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       personality_type: {
         Row: {
-          archetype: string | null
-          code: string
-          description_en: string | null
-          description_th: string | null
-          explain: string | null
-        }
+          archetype: string | null;
+          code: string;
+          description_en: string | null;
+          description_th: string | null;
+          explain: string | null;
+        };
         Insert: {
-          archetype?: string | null
-          code: string
-          description_en?: string | null
-          description_th?: string | null
-          explain?: string | null
-        }
+          archetype?: string | null;
+          code: string;
+          description_en?: string | null;
+          description_th?: string | null;
+          explain?: string | null;
+        };
         Update: {
-          archetype?: string | null
-          code?: string
-          description_en?: string | null
-          description_th?: string | null
-          explain?: string | null
-        }
-        Relationships: []
-      }
+          archetype?: string | null;
+          code?: string;
+          description_en?: string | null;
+          description_th?: string | null;
+          explain?: string | null;
+        };
+        Relationships: [];
+      };
       quiet_time_weekly_log: {
         Row: {
-          created_at: string | null
-          id: string
-          member_id: string | null
-          month: number | null
-          soft_delete: boolean | null
-          weekly_logs: number[]
-          year: number | null
-        }
+          created_at: string | null;
+          id: string;
+          member_id: string | null;
+          month: number | null;
+          soft_delete: boolean | null;
+          weekly_logs: number[];
+          year: number | null;
+        };
         Insert: {
-          created_at?: string | null
-          id?: string
-          member_id?: string | null
-          month?: number | null
-          soft_delete?: boolean | null
-          weekly_logs?: number[]
-          year?: number | null
-        }
+          created_at?: string | null;
+          id?: string;
+          member_id?: string | null;
+          month?: number | null;
+          soft_delete?: boolean | null;
+          weekly_logs?: number[];
+          year?: number | null;
+        };
         Update: {
-          created_at?: string | null
-          id?: string
-          member_id?: string | null
-          month?: number | null
-          soft_delete?: boolean | null
-          weekly_logs?: number[]
-          year?: number | null
-        }
+          created_at?: string | null;
+          id?: string;
+          member_id?: string | null;
+          month?: number | null;
+          soft_delete?: boolean | null;
+          weekly_logs?: number[];
+          year?: number | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "quiet_time_weekly_log_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "quiet_time_weekly_log_member_id_fkey";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "quiet_time_weekly_log_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "quiet_time_weekly_log_member_id_fkey";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "quiet_time_weekly_log_member_id_fkey1"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_directory"
-            referencedColumns: ["id"]
+            foreignKeyName: "quiet_time_weekly_log_member_id_fkey1";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_directory";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "quiet_time_weekly_log_member_id_fkey1"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "lamb_info"
-            referencedColumns: ["id"]
+            foreignKeyName: "quiet_time_weekly_log_member_id_fkey1";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "lamb_info";
+            referencedColumns: ["id"];
           },
-        ]
-      }
-    }
+        ];
+      };
+    };
     Views: {
       lamb_directory: {
         Row: {
-          first_name: string | null
-          id: string | null
-          last_name: string | null
-          nick_name: string | null
-        }
+          first_name: string | null;
+          id: string | null;
+          last_name: string | null;
+          nick_name: string | null;
+        };
         Insert: {
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          nick_name?: string | null
-        }
+          first_name?: string | null;
+          id?: string | null;
+          last_name?: string | null;
+          nick_name?: string | null;
+        };
         Update: {
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          nick_name?: string | null
-        }
-        Relationships: []
-      }
-    }
+          first_name?: string | null;
+          id?: string | null;
+          last_name?: string | null;
+          nick_name?: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       get_group_payment_analysis: {
-        Args: never
+        Args: never;
         Returns: {
-          group_care: string
-          payment_slip_count: number
-          total_extracted_amount: number
-        }[]
-      }
-    }
+          group_care: string;
+          payment_slip_count: number;
+          total_extracted_amount: number;
+        }[];
+      };
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  "public"
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
@@ -775,98 +829,95 @@ export type Tables<
         DefaultSchema["Views"])
     ? (DefaultSchema["Tables"] &
         DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
     Enums: {},
   },
-} as const
+} as const;

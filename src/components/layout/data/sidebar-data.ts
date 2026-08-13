@@ -27,6 +27,7 @@ import {
   NotebookPen,
   Table,
   BellPlus,
+  ClipboardCheck,
 } from "lucide-react";
 import { ClerkLogo } from "@/assets/clerk-logo";
 import { type SidebarData } from "../types";
@@ -112,6 +113,11 @@ export const sidebarData: SidebarData = {
           title: "Group Care",
           url: "/group-care",
           icon: HeartHandshake,
+        },
+        {
+          title: "เช็คชื่อรายสัปดาห์",
+          url: "/attendance",
+          icon: ClipboardCheck,
         },
         {
           title: "Personality Type",
