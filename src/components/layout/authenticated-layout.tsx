@@ -5,6 +5,7 @@ import { LayoutProvider } from "@/context/layout-provider";
 import { SearchProvider } from "@/context/search-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { SkipToMain } from "@/components/skip-to-main";
 
 type AuthenticatedLayoutProps = {
@@ -31,10 +32,15 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               // If layout is fixed and sidebar is inset,
               // set the height to 100svh - spacing (total margins) to prevent overflow
               "peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]",
+
+              // กันเนื้อหาโดน MobileTabBar (fixed ด้านล่าง, จอ < 768px) บัง —
+              // ความสูง bar ~56px + label + safe-area, ปัดขึ้นเป็น 4.5rem
+              "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
             )}
           >
             {children ?? <Outlet />}
           </SidebarInset>
+          <MobileTabBar />
         </SidebarProvider>
       </LayoutProvider>
     </SearchProvider>
