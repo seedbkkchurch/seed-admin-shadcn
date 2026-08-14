@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { lambDisplayName } from "./data/devotion-schema";
 import { useLambDevotionFeed } from "./data/queries";
 
 function getInitials(name: string) {
@@ -79,8 +78,10 @@ export function DevotionFeed() {
             </p>
           ) : (
             entries.map((entry) => {
+              // Card shows nickname only (falls back to first name) — no
+              // last name here. Per grill-me follow-up (2026-08-14).
               const lambName = entry.lamb_info
-                ? lambDisplayName(entry.lamb_info)
+                ? (entry.lamb_info.nick_name ?? entry.lamb_info.first_name)
                 : "ไม่ทราบชื่อ";
               const coverImage = entry.image_urls[0] ?? null;
 
@@ -91,10 +92,17 @@ export function DevotionFeed() {
                   params={{ devotionId: entry.id }}
                   className="block"
                 >
-                  <Card className="transition-colors hover:bg-muted/50">
-                    <CardContent className="flex gap-4">
+                  <Card className="overflow-hidden py-0 transition-colors hover:bg-muted/50 sm:py-6">
+                    {coverImage && (
+                      <img
+                        src={coverImage}
+                        alt={entry.title}
+                        className="aspect-video w-full object-cover sm:hidden"
+                      />
+                    )}
+                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:py-0">
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Avatar className="size-6">
                             <AvatarFallback className="text-[10px]">
                               {getInitials(lambName)}
@@ -119,7 +127,7 @@ export function DevotionFeed() {
                         <img
                           src={coverImage}
                           alt={entry.title}
-                          className="h-24 w-32 shrink-0 rounded-md object-cover"
+                          className="hidden h-24 w-32 shrink-0 rounded-md object-cover sm:block"
                         />
                       )}
                     </CardContent>

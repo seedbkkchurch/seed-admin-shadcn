@@ -30,6 +30,7 @@ import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
 import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedDevotionOverviewIndexRouteImport } from './routes/_authenticated/devotion-overview/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
@@ -158,6 +159,12 @@ const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   path: '/chats/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDevotionOverviewIndexRoute =
+  AuthenticatedDevotionOverviewIndexRouteImport.update({
+    id: '/devotion-overview/',
+    path: '/devotion-overview/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -320,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/bible/': typeof AuthenticatedBibleIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/devotion-overview/': typeof AuthenticatedDevotionOverviewIndexRoute
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
@@ -362,6 +370,7 @@ export interface FileRoutesByTo {
   '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/bible': typeof AuthenticatedBibleIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/devotion-overview': typeof AuthenticatedDevotionOverviewIndexRoute
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
@@ -409,6 +418,7 @@ export interface FileRoutesById {
   '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/devotion-overview/': typeof AuthenticatedDevotionOverviewIndexRoute
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
@@ -454,6 +464,7 @@ export interface FileRouteTypes {
     | '/attendance/'
     | '/bible/'
     | '/chats/'
+    | '/devotion-overview/'
     | '/group-care/'
     | '/help-center/'
     | '/lamb-info/'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/bible'
     | '/chats'
+    | '/devotion-overview'
     | '/group-care'
     | '/help-center'
     | '/lamb-info'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/_authenticated/attendance/'
     | '/_authenticated/bible/'
     | '/_authenticated/chats/'
+    | '/_authenticated/devotion-overview/'
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
     | '/_authenticated/lamb-info/'
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/chats'
       fullPath: '/chats/'
       preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devotion-overview/': {
+      id: '/_authenticated/devotion-overview/'
+      path: '/devotion-overview'
+      fullPath: '/devotion-overview/'
+      preLoaderRoute: typeof AuthenticatedDevotionOverviewIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/errors/$error': {
@@ -919,6 +939,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
   AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedDevotionOverviewIndexRoute: typeof AuthenticatedDevotionOverviewIndexRoute
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
@@ -943,6 +964,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
   AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedDevotionOverviewIndexRoute:
+    AuthenticatedDevotionOverviewIndexRoute,
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedLambInfoIndexRoute: AuthenticatedLambInfoIndexRoute,

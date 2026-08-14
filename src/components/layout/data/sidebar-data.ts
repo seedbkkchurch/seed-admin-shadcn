@@ -29,6 +29,7 @@ import {
   BellPlus,
   ClipboardCheck,
   BookOpen,
+  BarChart3,
 } from "lucide-react";
 import { ClerkLogo } from "@/assets/clerk-logo";
 import { type SidebarData } from "../types";
@@ -100,6 +101,15 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว (ตาราง)",
           url: "/lamb-info/devotion/table",
           icon: Table,
+        },
+        // ภาพรวมเฝ้าเดี่ยวของทุกคนทั้งโบส — ต่างจาก "เฝ้าเดี่ยว" ด้านบน
+        // (feed สาธารณะรายโพสต์) และ "เฝ้าเดี่ยว (ตาราง)" (ตาราง admin
+        // รายโพสต์) หน้านี้คือสรุปอัตรารายคนแบบรายเดือน/รายปี (grill-me
+        // 2026-08-14, `devotion_overview_design`)
+        {
+          title: "ภาพรวมเฝ้าเดี่ยว",
+          url: "/devotion-overview",
+          icon: BarChart3,
         },
         // Public page (no login) where a lamb picks their name and
         // subscribes to push reminders — linked here so staff can reach it
