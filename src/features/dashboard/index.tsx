@@ -19,7 +19,7 @@ import { buildYearlyMonths } from "@/features/devotion-overview/lib/aggregate";
 import { AgeDistributionChart } from "./components/age-distribution-chart";
 import { AttendanceTrendChart } from "./components/attendance-trend-chart";
 import { BirthdayThisMonthCard } from "./components/birthday-this-month-card";
-import { DevotionSummaryCard } from "./components/devotion-summary-card";
+import { DevotionTabContent } from "./components/devotion-tab-content";
 import { GiftHighlightCards } from "./components/gift-highlight-cards";
 import { GiftRadarChart } from "./components/gift-radar-chart";
 import { GroupCareStatCards } from "./components/group-care-stat-cards";
@@ -51,11 +51,14 @@ import {
 // สรุปข้อมูลทั้งโบส — แทนที่ template shadcn เดิม (Total Revenue,
 // Subscriptions, Sales, Active Now, กราฟ/รายการปลอมที่ไม่เกี่ยวกับโบส) ด้วย
 // สถิติแกะจริง โครง UI เดิม (Header, TopNav 4 เมนู 3 อัน disabled, ปุ่ม
-// Download placeholder, Tabs Overview/Analytics) คงไว้ตามที่ตกลง — ตกลงใน
+// Download placeholder, Tabs) คงไว้ตามที่ตกลง — ตกลงใน
 // grill-me 2026-08-14 (`dashboard_design` ใน project memory):
 //   - Overview tab = สมาชิกทั้งหมด/active/ผู้นำ/สมาชิกทั่วไป + เกิดเดือนนี้
-//   - Analytics tab = ชาย/หญิง, อายุเฉลี่ย, ช่วงอายุ, เฝ้าเดี่ยว, ของประทาน
-//   - ไม่ scope ตาม role/group (เหมือน devotion-overview) เพราะ RBAC ยังไม่ apply จริง
+//   - Analytics tab = ชาย/หญิง, อายุเฉลี่ย, ช่วงอายุ, ของประทาน
+//   - เฝ้าเดี่ยว tab = ภาพรวมการเฝ้าเดี่ยวทั้งโบสแบบเต็มรูป (การ์ดสรุป +
+//     ตารางรายเดือน/รายปี) — ย้ายมาจากหน้าแยก /devotion-overview ทั้งหมดใน
+//     grill-me รอบห้า (`dashboard_design`), หน้าเดิม+ลิงก์ sidebar ถูกลบแล้ว
+//   - ไม่ scope ตาม role/group (เหมือน devotion-overview เดิม) เพราะ RBAC ยังไม่ apply จริง
 //   - aggregate ฝั่ง client ทั้งหมด ไม่มี RPC ใหม่ (คู่กับ devotion-overview)
 export function Dashboard() {
   // Stable ตลอดอายุ component เดียวกับ pattern ของ devotion-overview — กัน
@@ -116,20 +119,26 @@ export function Dashboard() {
     isError: isDevotionEntriesError,
   } = useDevotionOverviewEntries(devotionLambIds);
 
+  // ใช้ทั้งคำนวณ devotionPercent (สรุปสั้นๆ) และป้อนเข้า DevotionTabContent
+  // (ตารางรายเดือน/รายปีเต็มรูป) — ตัวเดียวกัน ไม่สร้างซ้ำ
+  const devotionEntriesByLamb = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const entry of devotionEntries ?? []) {
+      const set = map.get(entry.lamb_id) ?? new Set<string>();
+      set.add(entry.devotion_date);
+      map.set(entry.lamb_id, set);
+    }
+    return map;
+  }, [devotionEntries]);
+
   const devotionPercent = useMemo(() => {
     if (!devotionMembers) return null;
-    const entriesByLamb = new Map<string, Set<string>>();
-    for (const entry of devotionEntries ?? []) {
-      const set = entriesByLamb.get(entry.lamb_id) ?? new Set<string>();
-      set.add(entry.devotion_date);
-      entriesByLamb.set(entry.lamb_id, set);
-    }
     let totalElapsed = 0;
     let totalCount = 0;
     for (const member of devotionMembers) {
       const months = buildYearlyMonths(
         today,
-        entriesByLamb.get(member.id) ?? new Set(),
+        devotionEntriesByLamb.get(member.id) ?? new Set(),
       );
       const currentMonth = months[months.length - 1];
       totalElapsed += currentMonth.elapsedDays;
@@ -138,7 +147,7 @@ export function Dashboard() {
     return totalElapsed === 0
       ? null
       : Math.round((totalCount / totalElapsed) * 100);
-  }, [devotionMembers, devotionEntries, today]);
+  }, [devotionMembers, devotionEntriesByLamb, today]);
 
   const memberCounts = useMemo(
     () => computeMemberCounts(lambs ?? []),
@@ -244,6 +253,7 @@ export function Dashboard() {
                 <TabsTrigger value="notifications" disabled>
                   Notifications
                 </TabsTrigger>
+                <TabsTrigger value="devotion">เฝ้าเดี่ยว</TabsTrigger>
               </TabsList>
             </div>
 
@@ -255,7 +265,7 @@ export function Dashboard() {
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="ชาย" value={genderCounts.male} icon={Users} />
                 <StatCard title="หญิง" value={genderCounts.female} icon={Users} />
                 <StatCard
@@ -268,7 +278,6 @@ export function Dashboard() {
                   icon={CalendarHeart}
                   description="คำนวณจากวันเกิด"
                 />
-                <DevotionSummaryCard percent={devotionPercent} />
               </div>
               <AgeDistributionChart brackets={ageStats.brackets} />
               <GiftRadarChart
@@ -278,6 +287,15 @@ export function Dashboard() {
               <GiftHighlightCards stats={giftStats} />
               <LessonCompletionCards stats={lessonCompletionStats} />
               <PersonalityDistributionChart data={personalityDistribution} />
+            </TabsContent>
+
+            <TabsContent value="devotion" className="space-y-4">
+              <DevotionTabContent
+                today={today}
+                members={devotionMembers ?? []}
+                entriesByLamb={devotionEntriesByLamb}
+                percent={devotionPercent}
+              />
             </TabsContent>
           </Tabs>
         )}
