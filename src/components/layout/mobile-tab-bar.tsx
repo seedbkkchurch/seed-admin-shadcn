@@ -6,6 +6,7 @@ import {
   Rss,
   UserRound,
 } from "lucide-react";
+import { useMyLamb } from "@/hooks/use-my-lamb";
 import { cn } from "@/lib/utils";
 
 // Bottom tab bar สำหรับจอมือถือ (< 768px, breakpoint เดียวกับ useIsMobile /
@@ -15,11 +16,13 @@ import { cn } from "@/lib/utils";
 // project memory): 5 เมนูหลักที่สมาชิกทั่วไปใช้บ่อยสุด ไม่ใช่เมนู admin
 // ทั้งหมด (ต่างจาก sidebar ที่มีทุกอัน)
 //
-// "โปรไฟล์ของตัวเอง" hardcode ไปที่ lamb_info คนเดียว (Hatthakit Soyrak) เป็น
-// mock ชั่วคราว — ยังไม่มีการผูก auth user เข้ากับ lamb_id จริง (ดู
-// [[rbac_design]]) revisit ตอน auth เชื่อมแล้วให้เปลี่ยนเป็น lambId ของผู้ใช้
-// ที่ login อยู่จริง
-const MOCK_MY_LAMB_ID = "9ec9835c-4c7f-4a7c-b904-7389906169ad";
+// "โปรไฟล์ของตัวเอง" — เดิม hardcode ไปที่ lamb_info คนเดียว (Hatthakit
+// Soyrak, id 9ec9835c-4c7f-4a7c-b904-7389906169ad) เป็น mock ชั่วคราวตอนยัง
+// ไม่มีการผูก auth user เข้ากับ lamb_id — ตอนนี้ auth เชื่อมแล้ว (ตกลงใน
+// grill-me 2026-08-14 รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`)
+// เปลี่ยนมาใช้ useMyLamb() (lamb_info.auth_user_id = auth.uid()) แทน
+// hardcode — ถ้ายังไม่ resolve/ไม่มีลูกแกะผูกอยู่ (เช่น staff account) แท็บนี้
+// จะกดไม่ได้แทนที่จะพาไปหน้าคนอื่นแบบผิดๆ
 
 const attendancePath = "/attendance" as const;
 const devotionNewPath = "/lamb-info/devotion/new" as const;
@@ -35,10 +38,13 @@ function useIsPathActive(path: string) {
 }
 
 export function MobileTabBar() {
+  const { data: myLamb } = useMyLamb();
   const isAttendanceActive = useIsPathActive(attendancePath);
   const isDevotionNewActive = useIsPathActive(devotionNewPath);
   const isDevotionFeedActive = useIsPathActive(devotionFeedPath);
-  const isProfileActive = useIsPathActive(`/lamb-info/${MOCK_MY_LAMB_ID}`);
+  const isProfileActive = useIsPathActive(
+    myLamb ? `/lamb-info/${myLamb.id}` : "",
+  );
   const isSubscribeActive = useIsPathActive(subscribePath);
 
   const itemClass = (active: boolean) =>
@@ -46,6 +52,8 @@ export function MobileTabBar() {
       "flex flex-col items-center justify-center gap-1 py-2 text-[11px]",
       active ? "text-primary" : "text-muted-foreground hover:text-foreground",
     );
+  const disabledItemClass =
+    "flex flex-col items-center justify-center gap-1 py-2 text-[11px] text-muted-foreground/40";
 
   return (
     <nav
@@ -72,14 +80,21 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
-          <Link
-            to="/lamb-info/$lambId"
-            params={{ lambId: MOCK_MY_LAMB_ID }}
-            className={itemClass(isProfileActive)}
-          >
-            <UserRound className="size-5" />
-            <span className="leading-none">โปรไฟล์</span>
-          </Link>
+          {myLamb ? (
+            <Link
+              to="/lamb-info/$lambId"
+              params={{ lambId: myLamb.id }}
+              className={itemClass(isProfileActive)}
+            >
+              <UserRound className="size-5" />
+              <span className="leading-none">โปรไฟล์</span>
+            </Link>
+          ) : (
+            <span className={disabledItemClass} aria-disabled="true">
+              <UserRound className="size-5" />
+              <span className="leading-none">โปรไฟล์</span>
+            </span>
+          )}
         </li>
         <li>
           <Link to={subscribePath} className={itemClass(isSubscribeActive)}>

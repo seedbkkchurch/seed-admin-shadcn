@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
-import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
+import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authSignIn2RouteImport } from './routes/(auth)/sign-in-2'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
@@ -29,6 +29,7 @@ import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_aut
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
 import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
+import { Route as AuthenticatedChangePasswordIndexRouteImport } from './routes/_authenticated/change-password/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
@@ -63,11 +65,6 @@ const ClerkRouteRoute = ClerkRouteRouteImport.update({
   path: '/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SubscribeRoute = SubscribeRouteImport.update({
-  id: '/subscribe',
-  path: '/subscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   id: '/(auth)/forgot-password',
   path: '/forgot-password',
@@ -76,6 +73,11 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
 const authOtpRoute = authOtpRouteImport.update({
   id: '/(auth)/otp',
   path: '/otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authResetPasswordRoute = authResetPasswordRouteImport.update({
+  id: '/(auth)/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authSignInRoute = authSignInRouteImport.update({
@@ -153,6 +155,12 @@ const AuthenticatedBibleIndexRoute = AuthenticatedBibleIndexRouteImport.update({
   path: '/bible/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChangePasswordIndexRoute =
+  AuthenticatedChangePasswordIndexRouteImport.update({
+    id: '/change-password/',
+    path: '/change-password/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -217,6 +225,12 @@ const AuthenticatedSettingsNotificationsRoute =
     id: '/notifications',
     path: '/notifications',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSubscribeIndexRoute =
+  AuthenticatedSubscribeIndexRouteImport.update({
+    id: '/subscribe/',
+    path: '/subscribe/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
   id: '/tasks/',
@@ -296,10 +310,10 @@ const AuthenticatedLambInfoDevotionDevotionIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/clerk': typeof ClerkauthRouteRouteWithChildren
-  '/subscribe': typeof SubscribeRoute
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -319,12 +333,14 @@ export interface FileRoutesByFullPath {
   '/apps/': typeof AuthenticatedAppsIndexRoute
   '/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/bible/': typeof AuthenticatedBibleIndexRoute
+  '/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
   '/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
@@ -338,9 +354,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkauthRouteRouteWithChildren
-  '/subscribe': typeof SubscribeRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -361,12 +377,14 @@ export interface FileRoutesByTo {
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/bible': typeof AuthenticatedBibleIndexRoute
+  '/change-password': typeof AuthenticatedChangePasswordIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
   '/personality-type': typeof AuthenticatedPersonalityTypeIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/subscribe': typeof AuthenticatedSubscribeIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
@@ -382,12 +400,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
-  '/subscribe': typeof SubscribeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
   '/clerk/(auth)': typeof ClerkauthRouteRouteWithChildren
   '/clerk/_authenticated': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
+  '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/sign-in-2': typeof authSignIn2Route
   '/(auth)/sign-up': typeof authSignUpRoute
@@ -408,12 +426,14 @@ export interface FileRoutesById {
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
+  '/_authenticated/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
   '/_authenticated/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
@@ -430,10 +450,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/clerk'
-    | '/subscribe'
     | '/settings'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -453,12 +473,14 @@ export interface FileRouteTypes {
     | '/apps/'
     | '/attendance/'
     | '/bible/'
+    | '/change-password/'
     | '/chats/'
     | '/group-care/'
     | '/help-center/'
     | '/lamb-info/'
     | '/personality-type/'
     | '/settings/'
+    | '/subscribe/'
     | '/tasks/'
     | '/users/'
     | '/bible/$book/$chapter'
@@ -472,9 +494,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
-    | '/subscribe'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -495,12 +517,14 @@ export interface FileRouteTypes {
     | '/apps'
     | '/attendance'
     | '/bible'
+    | '/change-password'
     | '/chats'
     | '/group-care'
     | '/help-center'
     | '/lamb-info'
     | '/personality-type'
     | '/settings'
+    | '/subscribe'
     | '/tasks'
     | '/users'
     | '/bible/$book/$chapter'
@@ -515,12 +539,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/clerk'
-    | '/subscribe'
     | '/_authenticated/settings'
     | '/clerk/(auth)'
     | '/clerk/_authenticated'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
+    | '/(auth)/reset-password'
     | '/(auth)/sign-in'
     | '/(auth)/sign-in-2'
     | '/(auth)/sign-up'
@@ -541,12 +565,14 @@ export interface FileRouteTypes {
     | '/_authenticated/apps/'
     | '/_authenticated/attendance/'
     | '/_authenticated/bible/'
+    | '/_authenticated/change-password/'
     | '/_authenticated/chats/'
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
     | '/_authenticated/lamb-info/'
     | '/_authenticated/personality-type/'
     | '/_authenticated/settings/'
+    | '/_authenticated/subscribe/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
     | '/_authenticated/bible/$book/$chapter'
@@ -562,9 +588,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ClerkRouteRoute: typeof ClerkRouteRouteWithChildren
-  SubscribeRoute: typeof SubscribeRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
+  authResetPasswordRoute: typeof authResetPasswordRoute
   authSignInRoute: typeof authSignInRoute
   authSignIn2Route: typeof authSignIn2Route
   authSignUpRoute: typeof authSignUpRoute
@@ -591,13 +617,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/subscribe': {
-      id: '/subscribe'
-      path: '/subscribe'
-      fullPath: '/subscribe'
-      preLoaderRoute: typeof SubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(auth)/forgot-password': {
       id: '/(auth)/forgot-password'
       path: '/forgot-password'
@@ -610,6 +629,13 @@ declare module '@tanstack/react-router' {
       path: '/otp'
       fullPath: '/otp'
       preLoaderRoute: typeof authOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/reset-password': {
+      id: '/(auth)/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/sign-in': {
@@ -717,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBibleIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/change-password/': {
+      id: '/_authenticated/change-password/'
+      path: '/change-password'
+      fullPath: '/change-password/'
+      preLoaderRoute: typeof AuthenticatedChangePasswordIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -793,6 +826,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/subscribe/': {
+      id: '/_authenticated/subscribe/'
+      path: '/subscribe'
+      fullPath: '/subscribe/'
+      preLoaderRoute: typeof AuthenticatedSubscribeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tasks/': {
       id: '/_authenticated/tasks/'
@@ -918,11 +958,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
   AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
+  AuthenticatedChangePasswordIndexRoute: typeof AuthenticatedChangePasswordIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
+  AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedBibleBookChapterRoute: typeof AuthenticatedBibleBookChapterRoute
@@ -942,12 +984,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
   AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
+  AuthenticatedChangePasswordIndexRoute: AuthenticatedChangePasswordIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedLambInfoIndexRoute: AuthenticatedLambInfoIndexRoute,
   AuthenticatedPersonalityTypeIndexRoute:
     AuthenticatedPersonalityTypeIndexRoute,
+  AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedBibleBookChapterRoute: AuthenticatedBibleBookChapterRoute,
@@ -1014,9 +1058,9 @@ const ClerkRouteRouteWithChildren = ClerkRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ClerkRouteRoute: ClerkRouteRouteWithChildren,
-  SubscribeRoute: SubscribeRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
+  authResetPasswordRoute: authResetPasswordRoute,
   authSignInRoute: authSignInRoute,
   authSignIn2Route: authSignIn2Route,
   authSignUpRoute: authSignUpRoute,

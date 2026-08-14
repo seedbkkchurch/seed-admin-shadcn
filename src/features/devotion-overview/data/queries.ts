@@ -22,7 +22,9 @@ export function useDevotionOverviewMembers() {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "id, nick_name, first_name, last_name, profile_picture, gender, group_care_info:group_care(id, name)",
+          // ระบุ FK ให้ชัด — ดู comment เดียวกันใน
+          // src/features/lamb-info/data/queries.ts (useLambInfoList)
+          "id, nick_name, first_name, last_name, profile_picture, gender, group_care_info:group_care!lamb_info_group_care_fkey(id, name)",
         )
         .eq("status", true)
         .order("first_name", { ascending: true });

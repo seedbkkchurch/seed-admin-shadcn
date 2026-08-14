@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase/client";
 import { isIos, isStandalone } from "@/lib/pwa";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
-import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
+import { useMyLamb } from "@/hooks/use-my-lamb";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,55 +13,37 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-type LambOption = {
-  id: string;
-  nick_name: string | null;
-  first_name: string;
-  last_name: string;
-};
-
-// Public "who are you" page for the เฝ้าเดี่ยว push reminder (grill-me
-// follow-up, 2026-08-12; simplified to one tap 2026-08-12). Lambs don't
-// have accounts yet, so this is a deliberately low-security stand-in: pick
-// your name from the church's ~50 members — that single selection *is* the
-// user gesture that lets the browser show its permission dialog, so there's
-// no separate "subscribe" button to tap afterward. Reads from the
-// `lamb_directory` view (id + display name only — not the full lamb_info
-// table, which stays authenticated-only) so this works for the anon role.
+// เดิมเป็นหน้า public ให้เลือกชื่อตัวเองจาก dropdown (Lamb ยังไม่มี account —
+// ดู comment เดิมด้านล่าง) imports ที่เคยใช้:
+//   import { useQuery } from "@tanstack/react-query";
+//   import { supabase } from "@/lib/supabase/client";
+//   import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
+//   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// type LambOption = { id: string; nick_name: string | null; first_name: string; last_name: string };
+// คอมเมนต์ไว้เป็น reference — ตอนนี้ auto-detect จาก auth ผ่าน useMyLamb()
+// แทน, ย้ายหน้านี้เข้า _authenticated แล้ว (ตกลงใน grill-me 2026-08-14
+// รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`)
+//
+// เดิม: Public "who are you" page for the เฝ้าเดี่ยว push reminder (grill-me
+// follow-up, 2026-08-12; simplified to one tap 2026-08-12) — pick your name
+// from the church's ~50 members, that single selection *is* the user
+// gesture that lets the browser show its permission dialog. ตอนนี้ปุ่มกด
+// "รับการแจ้งเตือน" เป็น user gesture แทน (ต้อง login ก่อนอยู่แล้ว จึงรู้ lamb
+// จาก auth ได้ทันที ไม่ต้องเลือกเอง)
 export function Subscribe() {
-  const [lambId, setLambId] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const { subscribe, status } = usePushSubscription();
-
-  const { data: lambs, isPending } = useQuery({
-    queryKey: ["lamb-directory"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lamb_directory")
-        .select("id, nick_name, first_name, last_name");
-      if (error) throw error;
-      return data as LambOption[];
-    },
-  });
+  const { data: myLamb, isLoading, isResolvingUser, isError } = useMyLamb();
 
   const iosNotInstalled = isIos() && !isStandalone();
 
-  // Called straight from the Select's onValueChange — this MUST run with no
-  // `await` before the permission request inside `subscribe()`, since that
-  // request only reliably shows a dialog while still inside the browser's
-  // "recent user gesture" window that the selection click just opened.
-  const handleSelect = (value: string) => {
-    setLambId(value);
+  // ต้องเรียกจาก click handler ตรงๆ ไม่มี await ก่อนหน้า subscribe() —
+  // permission request ของ browser ต้องอยู่ใน "recent user gesture" window
+  // ของคลิกปุ่มนี้เท่านั้นถึงจะโชว์ dialog ได้แน่นอน
+  const handleSubscribeClick = () => {
+    if (!myLamb) return;
     void (async () => {
-      const result = await subscribe(value);
+      const result = await subscribe(myLamb.id);
       switch (result) {
         case "subscribed":
           setSubscribed(true);
@@ -86,7 +68,7 @@ export function Subscribe() {
         <CardHeader>
           <CardTitle>รับแจ้งเตือนเฝ้าเดี่ยว</CardTitle>
           <CardDescription>
-            เลือกชื่อของคุณ ระบบจะขออนุญาตแจ้งเตือนให้ทันที — จะมีข้อความเตือน
+            กดปุ่มด้านล่าง ระบบจะขออนุญาตแจ้งเตือนให้ทันที — จะมีข้อความเตือน
             ตอนเช้าและเย็น ถ้ายังไม่ได้ส่งเฝ้าเดี่ยววันนั้น
           </CardDescription>
         </CardHeader>
@@ -103,32 +85,35 @@ export function Subscribe() {
               <CheckCircle2 className="size-4" />
               รับการแจ้งเตือนเรียบร้อยแล้ว
             </div>
+          ) : isResolvingUser || isLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              กำลังโหลด...
+            </div>
+          ) : isError || !myLamb ? (
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>ไม่พบลูกแกะที่ผูกกับบัญชีนี้</AlertTitle>
+              <AlertDescription>
+                บัญชีที่ล็อกอินอยู่ยังไม่ได้ผูกกับข้อมูลลูกแกะใน lamb_info —
+                ติดต่อผู้ดูแลระบบ
+              </AlertDescription>
+            </Alert>
           ) : (
-            <Select
-              value={lambId}
-              onValueChange={handleSelect}
-              disabled={isPending || status === "subscribing"}
+            <Button
+              onClick={handleSubscribeClick}
+              disabled={status === "subscribing"}
+              className="w-full"
             >
-              <SelectTrigger className="w-full">
-                {status === "subscribing" ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" />
-                    กำลังสมัคร...
-                  </span>
-                ) : (
-                  <SelectValue
-                    placeholder={isPending ? "กำลังโหลด..." : "เลือกชื่อของคุณ"}
-                  />
-                )}
-              </SelectTrigger>
-              <SelectContent>
-                {lambs?.map((lamb) => (
-                  <SelectItem key={lamb.id} value={lamb.id}>
-                    {lambDisplayName(lamb)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {status === "subscribing" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  กำลังสมัคร...
+                </>
+              ) : (
+                `รับการแจ้งเตือน (${myLamb.nick_name || myLamb.first_name})`
+              )}
+            </Button>
           )}
         </CardContent>
       </Card>

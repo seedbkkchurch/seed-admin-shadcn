@@ -35,7 +35,13 @@ export function useLambInfoList() {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)",
+          // ระบุ FK ให้ชัด (!lamb_info_group_care_fkey) เพราะตอนนี้มี FK
+          // เชื่อม lamb_info<->group_care 2 เส้น (อีกเส้นคือ
+          // group_care.team_leader_lamb_id -> lamb_info.id, เพิ่มมาจาก RBAC
+          // migration) — ไม่ระบุแล้ว PostgREST จะ error "ambiguous
+          // relationship" (ตกลงใน grill-me 2026-08-14, bug fix หลังพบว่า
+          // หน้า lamb_info โหลดไม่ขึ้น)
+          "*, group_care_info:group_care!lamb_info_group_care_fkey(id, name), personality_type(code, description_en, description_th, explain, archetype)",
         )
         .order("status", { ascending: false })
         .order("first_name", { ascending: true });
@@ -54,7 +60,7 @@ export function useLambInfoDetail(id: string | undefined) {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "*, group_care_info:group_care(id, name), personality_type(code, description_en, description_th, explain, archetype)",
+          "*, group_care_info:group_care!lamb_info_group_care_fkey(id, name), personality_type(code, description_en, description_th, explain, archetype)",
         )
         .eq("id", id as string)
         .single();

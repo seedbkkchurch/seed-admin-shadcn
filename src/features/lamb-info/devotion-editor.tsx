@@ -13,25 +13,24 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
+import { useMyLamb } from "@/hooks/use-my-lamb";
 import { cn } from "@/lib/utils";
+// เดิมมี Select ให้เลือกลูกแกะเอง (ดู commit ก่อนหน้า grill-me 2026-08-14
+// รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`) — imports ที่เคยใช้:
+//   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+//   import { useLambNameOptions } from "./data/queries";
+//   import { lambDisplayName } from "./data/devotion-schema";
+// คอมเมนต์ไว้เป็น reference — ตอนนี้ auto-detect จาก auth ผ่าน useMyLamb() แทน
 import { ArticleEditor, type ArticleEditorHandle } from "./components/article-editor";
 import {
   useCreateLambDevotion,
   useLambDevotionDetail,
-  useLambNameOptions,
   useUpdateLambDevotion,
 } from "./data/queries";
-import { lambDisplayName, type LambDevotionRow } from "./data/devotion-schema";
+import { type LambDevotionRow } from "./data/devotion-schema";
 import {
   clearDevotionEditorDraft,
   loadDevotionEditorDraft,
@@ -54,12 +53,13 @@ function isEmptyHtml(value: string) {
 // (คอนสตรเทนต์ 1 ครั้ง/วันเอาออกแล้ว — ดู grill-me 2026-08-14,
 // `devotion_multi_submit_design`).
 //
-// The "ส่งในนามของ" lamb select box is a stand-in for real per-user auth:
-// this app has no notion of "the lamb currently using this page" (Clerk
-// auth identifies staff/admins, not individual lambs), so for now
-// whoever fills out the form manually picks which lamb the entry
-// belongs to. Per grill-me follow-up (2026-08-09) — explicitly a test
-// affordance, not the final submission flow.
+// "ส่งในนามของ" — เดิมเป็น Select ให้เลือกลูกแกะเอง (stand-in ตอนยังไม่มี
+// per-user auth จริง — ดู comment คอมเมนต์ imports ด้านบน) ตอนนี้ auto-detect
+// จาก auth ผ่าน useMyLamb() แทนแล้ว (ตกลงใน grill-me 2026-08-14 รอบเจ็ด,
+// `rbac_design`/`auth_lamb_link_design`) — ทุกลูกแกะที่มี email มี auth
+// account ผูกไว้แล้ว (bulk-create ตอน migration) จึงคาดว่า useMyLamb() จะ
+// resolve ได้เกือบทุกครั้ง กรณีไม่มี (เช่น staff account ที่ไม่ใช่ลูกแกะจริง)
+// แสดง error state แทนการปล่อยให้ส่งได้โดยไม่มี lamb_id
 export function DevotionEditor() {
   const navigate = useNavigate();
   const editorRef = useRef<ArticleEditorHandle>(null);
@@ -74,9 +74,13 @@ export function DevotionEditor() {
   // `devotion_multi_submit_design`)
   const [initialDraft] = useState(() => loadDevotionEditorDraft(today));
 
-  const [lambId, setLambId] = useState<string | undefined>(
-    initialDraft?.lambId,
-  );
+  const {
+    data: myLamb,
+    isLoading: isMyLambLoading,
+    isResolvingUser: isMyLambResolvingUser,
+    isError: isMyLambError,
+  } = useMyLamb();
+  const lambId = myLamb?.id;
   const [title, setTitle] = useState(initialDraft?.title ?? "");
   // เพิ่งออกจากช่องหัวข้อไปครั้งแรกหรือยัง — ใช้คุมว่าข้อความเตือน "ลืมใส่
   // หัวข้อ" ควรโผล่หรือไม่ (โผล่หลัง blur ครั้งแรกที่ยังว่างอยู่เท่านั้น
@@ -97,8 +101,6 @@ export function DevotionEditor() {
   );
   const [editorResetKey, setEditorResetKey] = useState(0);
 
-  const { data: lambOptions, isPending: isLambOptionsPending } =
-    useLambNameOptions();
   const createDevotion = useCreateLambDevotion();
 
   // บันทึกร่างทุกครั้งที่ฟิลด์เปลี่ยน — ข้ามการเขียนตอนทุกอย่างยังว่างเปล่า
@@ -146,7 +148,6 @@ export function DevotionEditor() {
   // กระทำที่ล้างข้อมูลทิ้งจริง (ตกลงใน grill-me 2026-08-14 ให้มี confirm
   // dialog ก่อนเสมอ ดู handleConfirmClear ด้านล่าง)
   const handleConfirmClear = () => {
-    setLambId(undefined);
     setTitle("");
     setTitleTouched(false);
     setHtml("");
@@ -157,8 +158,10 @@ export function DevotionEditor() {
     setClearDialogOpen(false);
   };
 
-  const hasContentToClear =
-    !!lambId || title.trim().length > 0 || !isEmptyHtml(html);
+  // lambId มาจาก auth เสมอ (auto-detect ไม่ใช่ตัวเลือกที่ผู้ใช้กดเอง) จึงไม่
+  // นับเป็น "เนื้อหาที่ต้องล้าง" อีกต่อไป — ต่างจากก่อนหน้านี้ที่เคยรวม
+  // !!lambId ด้วยตอนยังเป็น Select ให้เลือกเอง
+  const hasContentToClear = title.trim().length > 0 || !isEmptyHtml(html);
 
   return (
     <>
@@ -203,28 +206,29 @@ export function DevotionEditor() {
         </div>
 
         <div className="mx-auto w-full max-w-3xl space-y-4">
+          {/* auto-detect จาก auth แทน Select เดิม (ดู useMyLamb comment
+          ด้านบน) — โชว์ error ถ้า auth account นี้ไม่มีลูกแกะผูกอยู่ แทนที่จะ
+          ปล่อยให้ส่งได้แบบไม่มี lamb_id */}
           <div className="space-y-1.5">
             <label className="text-muted-foreground text-xs">
-              ส่งในนามของ (สำหรับทดสอบ — ยังไม่ผูกกับผู้ใช้จริง)
+              ส่งในนามของ
             </label>
-            <Select value={lambId} onValueChange={setLambId}>
-              <SelectTrigger className="w-full sm:w-80">
-                <SelectValue placeholder="เลือกลูกแกะ..." />
-              </SelectTrigger>
-              <SelectContent>
-                {isLambOptionsPending ? (
-                  <SelectItem disabled value="loading">
-                    กำลังโหลด...
-                  </SelectItem>
-                ) : (
-                  lambOptions?.map((lamb) => (
-                    <SelectItem key={lamb.id} value={lamb.id}>
-                      {lambDisplayName(lamb)}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            {isMyLambResolvingUser || isMyLambLoading ? (
+              <Skeleton className="h-9 w-full sm:w-80" />
+            ) : isMyLambError || !myLamb ? (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertTitle>ไม่พบลูกแกะที่ผูกกับบัญชีนี้</AlertTitle>
+                <AlertDescription>
+                  บัญชีที่ล็อกอินอยู่ยังไม่ได้ผูกกับข้อมูลลูกแกะใน lamb_info —
+                  ติดต่อผู้ดูแลระบบ
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <p className="text-sm font-medium">
+                {myLamb.nick_name || `${myLamb.first_name} ${myLamb.last_name}`}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
