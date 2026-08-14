@@ -1,11 +1,8 @@
+import { useMemo, useState } from "react";
+import { AlertCircle, CalendarHeart, Users } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { Header } from "@/components/layout/header";
@@ -14,11 +11,192 @@ import { TopNav } from "@/components/layout/top-nav";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { Analytics } from "./components/analytics";
-import { Overview } from "./components/overview";
-import { RecentSales } from "./components/recent-sales";
+import {
+  useDevotionOverviewEntries,
+  useDevotionOverviewMembers,
+} from "@/features/devotion-overview/data/queries";
+import { buildYearlyMonths } from "@/features/devotion-overview/lib/aggregate";
+import { AgeDistributionChart } from "./components/age-distribution-chart";
+import { AttendanceTrendChart } from "./components/attendance-trend-chart";
+import { BirthdayThisMonthCard } from "./components/birthday-this-month-card";
+import { DevotionSummaryCard } from "./components/devotion-summary-card";
+import { GiftHighlightCards } from "./components/gift-highlight-cards";
+import { GiftRadarChart } from "./components/gift-radar-chart";
+import { GroupCareStatCards } from "./components/group-care-stat-cards";
+import { LessonCompletionCards } from "./components/lesson-completion-cards";
+import { MemberStatCards } from "./components/member-stat-cards";
+import { PersonalityDistributionChart } from "./components/personality-distribution-chart";
+import { StatCard } from "./components/stat-card";
+import {
+  useDashboardAttendance,
+  useDashboardGifts,
+  useDashboardGroupCareList,
+  useDashboardLambs,
+  useDashboardPersonalityTypes,
+} from "./data/queries";
+import {
+  computeAgeStats,
+  computeAttendanceTrend,
+  computeBirthdaysThisMonth,
+  computeGenderCounts,
+  computeGiftAverages,
+  computeGiftStats,
+  computeGroupCareStats,
+  computeLessonCompletionStats,
+  computeMemberCounts,
+  computePersonalityDistribution,
+  getRecentWeekStarts,
+} from "./lib/aggregate";
 
+// สรุปข้อมูลทั้งโบส — แทนที่ template shadcn เดิม (Total Revenue,
+// Subscriptions, Sales, Active Now, กราฟ/รายการปลอมที่ไม่เกี่ยวกับโบส) ด้วย
+// สถิติแกะจริง โครง UI เดิม (Header, TopNav 4 เมนู 3 อัน disabled, ปุ่ม
+// Download placeholder, Tabs Overview/Analytics) คงไว้ตามที่ตกลง — ตกลงใน
+// grill-me 2026-08-14 (`dashboard_design` ใน project memory):
+//   - Overview tab = สมาชิกทั้งหมด/active/ผู้นำ/สมาชิกทั่วไป + เกิดเดือนนี้
+//   - Analytics tab = ชาย/หญิง, อายุเฉลี่ย, ช่วงอายุ, เฝ้าเดี่ยว, ของประทาน
+//   - ไม่ scope ตาม role/group (เหมือน devotion-overview) เพราะ RBAC ยังไม่ apply จริง
+//   - aggregate ฝั่ง client ทั้งหมด ไม่มี RPC ใหม่ (คู่กับ devotion-overview)
 export function Dashboard() {
+  // Stable ตลอดอายุ component เดียวกับ pattern ของ devotion-overview — กัน
+  // "วันนี้" ขยับกลางเซสชันจนตัวเลขไม่นิ่ง
+  const [today] = useState(() => new Date());
+
+  const {
+    data: lambs,
+    isPending: isLambsPending,
+    isError: isLambsError,
+  } = useDashboardLambs();
+  const {
+    data: giftRows,
+    isPending: isGiftsPending,
+    isError: isGiftsError,
+  } = useDashboardGifts();
+  const {
+    data: groupCareList,
+    isPending: isGroupCareListPending,
+    isError: isGroupCareListError,
+  } = useDashboardGroupCareList();
+  const {
+    data: personalityTypes,
+    isPending: isPersonalityTypesPending,
+    isError: isPersonalityTypesError,
+  } = useDashboardPersonalityTypes();
+
+  // เทรนด์มาโบสถ์/แคร์ 12 สัปดาห์ล่าสุด — ใช้สมาชิก active ปัจจุบันเป็น
+  // ขอบเขตคงที่ (ตัว lambIds เดียวกับที่ใช้คำนวณสถิติอื่นๆ ด้านล่าง)
+  const activeLambIds = useMemo(
+    () => (lambs ?? []).filter((l) => l.status === true).map((l) => l.id),
+    [lambs],
+  );
+  const recentWeekStarts = useMemo(
+    () => getRecentWeekStarts(today, 12),
+    [today],
+  );
+  const {
+    data: attendanceRows,
+    isPending: isAttendancePending,
+    isError: isAttendanceError,
+  } = useDashboardAttendance(activeLambIds, recentWeekStarts[0]);
+
+  // เฝ้าเดี่ยวเฉลี่ยทั้งโบส (เดือนนี้) — ใช้ query + สูตรคำนวณเดียวกับหน้า
+  // /devotion-overview (ไม่ reimplement) เพื่อให้ตัวเลข 2 หน้าตรงกันเสมอ
+  const {
+    data: devotionMembers,
+    isPending: isDevotionMembersPending,
+    isError: isDevotionMembersError,
+  } = useDevotionOverviewMembers();
+  const devotionLambIds = useMemo(
+    () => (devotionMembers ?? []).map((m) => m.id),
+    [devotionMembers],
+  );
+  const {
+    data: devotionEntries,
+    isPending: isDevotionEntriesPending,
+    isError: isDevotionEntriesError,
+  } = useDevotionOverviewEntries(devotionLambIds);
+
+  const devotionPercent = useMemo(() => {
+    if (!devotionMembers) return null;
+    const entriesByLamb = new Map<string, Set<string>>();
+    for (const entry of devotionEntries ?? []) {
+      const set = entriesByLamb.get(entry.lamb_id) ?? new Set<string>();
+      set.add(entry.devotion_date);
+      entriesByLamb.set(entry.lamb_id, set);
+    }
+    let totalElapsed = 0;
+    let totalCount = 0;
+    for (const member of devotionMembers) {
+      const months = buildYearlyMonths(
+        today,
+        entriesByLamb.get(member.id) ?? new Set(),
+      );
+      const currentMonth = months[months.length - 1];
+      totalElapsed += currentMonth.elapsedDays;
+      totalCount += currentMonth.count;
+    }
+    return totalElapsed === 0
+      ? null
+      : Math.round((totalCount / totalElapsed) * 100);
+  }, [devotionMembers, devotionEntries, today]);
+
+  const memberCounts = useMemo(
+    () => computeMemberCounts(lambs ?? []),
+    [lambs],
+  );
+  const birthdaysThisMonth = useMemo(
+    () => computeBirthdaysThisMonth(lambs ?? [], today),
+    [lambs, today],
+  );
+  const genderCounts = useMemo(() => computeGenderCounts(lambs ?? []), [lambs]);
+  const ageStats = useMemo(
+    () => computeAgeStats(lambs ?? [], today),
+    [lambs, today],
+  );
+  const giftAverages = useMemo(
+    () => computeGiftAverages(giftRows ?? []),
+    [giftRows],
+  );
+  const giftStats = useMemo(() => computeGiftStats(giftRows ?? []), [giftRows]);
+  const groupCareStats = useMemo(
+    () => computeGroupCareStats(lambs ?? [], groupCareList ?? []),
+    [lambs, groupCareList],
+  );
+  const attendanceTrend = useMemo(
+    () =>
+      computeAttendanceTrend(
+        recentWeekStarts,
+        activeLambIds.length,
+        attendanceRows ?? [],
+      ),
+    [recentWeekStarts, activeLambIds, attendanceRows],
+  );
+  const personalityDistribution = useMemo(
+    () => computePersonalityDistribution(lambs ?? [], personalityTypes ?? []),
+    [lambs, personalityTypes],
+  );
+  const lessonCompletionStats = useMemo(
+    () => computeLessonCompletionStats(lambs ?? []),
+    [lambs],
+  );
+
+  const isPending =
+    isLambsPending ||
+    isGiftsPending ||
+    isDevotionMembersPending ||
+    isDevotionEntriesPending ||
+    isGroupCareListPending ||
+    isPersonalityTypesPending ||
+    isAttendancePending;
+  const isError =
+    isLambsError ||
+    isGiftsError ||
+    isDevotionMembersError ||
+    isDevotionEntriesError ||
+    isGroupCareListError ||
+    isPersonalityTypesError ||
+    isAttendanceError;
+
   return (
     <>
       {/* ===== Top Heading ===== */}
@@ -38,153 +216,71 @@ export function Dashboard() {
             <Button>Download</Button>
           </div>
         </div>
-        <Tabs
-          orientation="vertical"
-          defaultValue="overview"
-          className="space-y-4"
-        >
-          <div className="w-full overflow-x-auto pb-2">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="reports" disabled>
-                Reports
-              </TabsTrigger>
-              <TabsTrigger value="notifications" disabled>
-                Notifications
-              </TabsTrigger>
-            </TabsList>
+
+        {isError ? (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>โหลดข้อมูลไม่สำเร็จ</AlertTitle>
+            <AlertDescription>ลองรีเฟรชหน้านี้อีกครั้ง</AlertDescription>
+          </Alert>
+        ) : isPending ? (
+          <div className="space-y-4">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Revenue
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">$45,231.89</div>
-                  <p className="text-xs text-muted-foreground">
-                    +20.1% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Subscriptions
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+2350</div>
-                  <p className="text-xs text-muted-foreground">
-                    +180.1% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <rect width="20" height="14" x="2" y="5" rx="2" />
-                    <path d="M2 10h20" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+12,234</div>
-                  <p className="text-xs text-muted-foreground">
-                    +19% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Active Now
-                  </CardTitle>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 text-muted-foreground"
-                  >
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+573</div>
-                  <p className="text-xs text-muted-foreground">
-                    +201 since last hour
-                  </p>
-                </CardContent>
-              </Card>
+        ) : (
+          <Tabs
+            orientation="vertical"
+            defaultValue="overview"
+            className="space-y-4"
+          >
+            <div className="w-full overflow-x-auto pb-2">
+              <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="reports" disabled>
+                  Reports
+                </TabsTrigger>
+                <TabsTrigger value="notifications" disabled>
+                  Notifications
+                </TabsTrigger>
+              </TabsList>
             </div>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
-              <Card className="col-span-1 lg:col-span-4">
-                <CardHeader>
-                  <CardTitle>Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="ps-2">
-                  <Overview />
-                </CardContent>
-              </Card>
-              <Card className="col-span-1 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle>Recent Sales</CardTitle>
-                  <CardDescription>
-                    You made 265 sales this month.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentSales />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          <TabsContent value="analytics" className="space-y-4">
-            <Analytics />
-          </TabsContent>
-        </Tabs>
+
+            <TabsContent value="overview" className="space-y-4">
+              <MemberStatCards counts={memberCounts} />
+              <GroupCareStatCards stats={groupCareStats} />
+              <AttendanceTrendChart data={attendanceTrend} />
+              <BirthdayThisMonthCard lambs={birthdaysThisMonth} today={today} />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="ชาย" value={genderCounts.male} icon={Users} />
+                <StatCard title="หญิง" value={genderCounts.female} icon={Users} />
+                <StatCard
+                  title="อายุเฉลี่ยทั้งโบส"
+                  value={
+                    ageStats.averageAge === null
+                      ? "–"
+                      : `${ageStats.averageAge} ปี`
+                  }
+                  icon={CalendarHeart}
+                  description="คำนวณจากวันเกิด"
+                />
+                <DevotionSummaryCard percent={devotionPercent} />
+              </div>
+              <AgeDistributionChart brackets={ageStats.brackets} />
+              <GiftRadarChart
+                averages={giftAverages}
+                assessedCount={giftStats.assessedCount}
+              />
+              <GiftHighlightCards stats={giftStats} />
+              <LessonCompletionCards stats={lessonCompletionStats} />
+              <PersonalityDistributionChart data={personalityDistribution} />
+            </TabsContent>
+          </Tabs>
+        )}
       </Main>
     </>
   );

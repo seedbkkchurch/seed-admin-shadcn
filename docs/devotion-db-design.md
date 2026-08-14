@@ -2,7 +2,14 @@
 
 สรุปจากการ grill-me เมื่อ 2026-08-09 — สมมติฐานที่ตกลงกัน:
 
-- ลูกแกะส่งเฝ้าเดี่ยวได้ **วันละ 1 ครั้ง/คน** → unique constraint `(lamb_id, devotion_date)`
+- ~~ลูกแกะส่งเฝ้าเดี่ยวได้ **วันละ 1 ครั้ง/คน** → unique constraint
+  `(lamb_id, devotion_date)`~~ **อัปเดต 2026-08-14:** เอาคอนสตรเทนต์นี้ออกแล้ว
+  (migration `drop_lamb_devotion_one_per_day`) — ส่งได้ไม่จำกัดจำนวนครั้ง/วัน
+  ต่อคน ดู project memory `devotion_multi_submit_design` สำหรับดีไซน์เต็ม
+  (ripple effects: heatmap popover หน้าโปรไฟล์ต้องแสดงได้หลายรายการ/วัน,
+  draft-recovery ในหน้าเขียน) ตัวเลขปริมาณข้อมูลในหัวข้อ 3-4 ด้านล่างยังอิง
+  สมมติฐานเดิม (คนละครั้ง/วันสูงสุด) — ถ้า engagement จริงเพิ่มจากการส่งได้
+  หลายครั้ง/วัน ตัวเลข worst-case จะขยับขึ้นตามสัดส่วนจำนวนครั้งเฉลี่ย/คน/วัน
 - รูปภาพเก็บใน **Supabase Storage bucket** (ไม่เก็บ base64 ใน DB)
 - เฉลี่ย **~30%** ของการส่งต่อวันมีรูปแนบ
 - เก็บ**ตลอดไป ไม่มีกำหนดลบ**
@@ -24,9 +31,11 @@ create table lamb_devotion (
   -- null/empty array = ไม่มีรูป
   image_urls text[] not null default '{}',
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 
-  constraint lamb_devotion_one_per_day unique (lamb_id, devotion_date)
+  -- constraint lamb_devotion_one_per_day unique (lamb_id, devotion_date)
+  -- ^ เอาออกแล้ว 2026-08-14 (migration drop_lamb_devotion_one_per_day) —
+  --   ส่งได้ไม่จำกัดจำนวนครั้ง/วัน/คน ดูหมายเหตุด้านบน
 );
 
 -- Feed เรียงตามวันที่ล่าสุดก่อน — index เดียวพอ เพราะข้อมูลมีน้อย (ดูหัวข้อ 3)

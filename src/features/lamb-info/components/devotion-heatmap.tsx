@@ -39,13 +39,16 @@ export type DevotionHeatmapEntry = {
 type DevotionHeatmapProps = {
   today: Date;
   daysBack: number;
-  getEntry: (date: Date) => DevotionHeatmapEntry | null;
+  // คืนทุกเฝ้าเดี่ยวของวันนั้น (อาจมีมากกว่า 1 รายการ — คอนสตรเทนต์ 1
+  // ครั้ง/วันถูกเอาออกแล้ว ดู grill-me 2026-08-14,
+  // `devotion_multi_submit_design`) array ว่าง = วันนั้นไม่มีเฝ้าเดี่ยวเลย
+  getEntries: (date: Date) => DevotionHeatmapEntry[];
 };
 
 export function DevotionHeatmap({
   today,
   daysBack,
-  getEntry,
+  getEntries,
 }: DevotionHeatmapProps) {
   const rangeStart = subDays(today, daysBack);
   const gridStart = startOfWeek(rangeStart, { weekStartsOn: 0 });
@@ -103,7 +106,8 @@ export function DevotionHeatmap({
                 )}
                 {week.map((day, di) => {
                   const inRange = day >= rangeStart && day <= today;
-                  const entry = inRange ? getEntry(day) : null;
+                  const dayEntries = inRange ? getEntries(day) : [];
+                  const hasEntries = dayEntries.length > 0;
                   const style = { gridColumn: wi + 2, gridRow: di + 2 };
 
                   const cell = (
@@ -113,9 +117,9 @@ export function DevotionHeatmap({
                       className={cn(
                         "rounded-xs",
                         !inRange && "invisible",
-                        inRange && !entry && "bg-muted",
+                        inRange && !hasEntries && "bg-muted",
                         inRange &&
-                          entry &&
+                          hasEntries &&
                           "cursor-pointer bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500",
                         inRange &&
                           isSameDay(day, today) &&
@@ -124,7 +128,7 @@ export function DevotionHeatmap({
                     />
                   );
 
-                  if (!entry) {
+                  if (!hasEntries) {
                     return <Fragment key={di}>{cell}</Fragment>;
                   }
 
@@ -132,32 +136,52 @@ export function DevotionHeatmap({
                     <Popover key={di}>
                       <PopoverTrigger asChild>{cell}</PopoverTrigger>
                       <PopoverContent className="w-64">
-                        <div className="mb-1 text-sm font-medium">
-                          {format(day, "d MMMM yyyy")}
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <div className="text-sm font-medium">
+                            {format(day, "d MMMM yyyy")}
+                          </div>
+                          {/* วันที่ส่งหลายครั้ง (คอนสตรเทนต์ 1 ครั้ง/วันเอา
+                          ออกแล้ว) — บอกจำนวนไว้กันงงว่าทำไม popover มีหลาย
+                          บล็อก ดู grill-me 2026-08-14,
+                          `devotion_multi_submit_design` */}
+                          {dayEntries.length > 1 && (
+                            <span className="text-xs text-muted-foreground">
+                              {dayEntries.length} รายการ
+                            </span>
+                          )}
                         </div>
-                        <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
-                          {entry.title}
-                        </p>
-                        {entry.image_urls[0] && (
-                          <img
-                            src={entry.image_urls[0]}
-                            alt={entry.title}
-                            className="mb-2 max-h-40 w-full rounded-md border object-cover"
-                          />
-                        )}
-                        <Button
-                          asChild
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0"
-                        >
-                          <Link
-                            to="/lamb-info/devotion/$devotionId"
-                            params={{ devotionId: entry.id }}
-                          >
-                            อ่านเต็ม <ArrowRight className="size-3.5" />
-                          </Link>
-                        </Button>
+                        <div className="max-h-72 space-y-3 overflow-y-auto">
+                          {dayEntries.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="border-b pb-3 last:border-b-0 last:pb-0"
+                            >
+                              <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
+                                {entry.title}
+                              </p>
+                              {entry.image_urls[0] && (
+                                <img
+                                  src={entry.image_urls[0]}
+                                  alt={entry.title}
+                                  className="mb-2 max-h-40 w-full rounded-md border object-cover"
+                                />
+                              )}
+                              <Button
+                                asChild
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0"
+                              >
+                                <Link
+                                  to="/lamb-info/devotion/$devotionId"
+                                  params={{ devotionId: entry.id }}
+                                >
+                                  อ่านเต็ม <ArrowRight className="size-3.5" />
+                                </Link>
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </PopoverContent>
                     </Popover>
                   );

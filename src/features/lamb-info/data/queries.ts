@@ -338,11 +338,10 @@ export function useLambDevotionHistory(lambId: string | undefined) {
 
 type LambDevotionInput = Omit<LambDevotion, "id" | "created_at" | "updated_at">;
 
-// Unique-violation Postgres error code — thrown when the selected lamb
-// already has an entry for `devotion_date` (see the table's
-// lamb_devotion_one_per_day constraint in docs/devotion-db-design.md).
-export const DEVOTION_ALREADY_SUBMITTED_CODE = "23505";
-
+// เดิมมี unique constraint (lamb_id, devotion_date) จำกัด 1 ครั้ง/วัน — เอา
+// ออกแล้วตาม grill-me 2026-08-14 (`devotion_multi_submit_design` ใน project
+// memory) ส่งได้ไม่จำกัดจำนวนครั้ง/วัน จึงไม่มี unique-violation ให้ดักจับอีก
+// (DEVOTION_ALREADY_SUBMITTED_CODE เดิมถูกลบไปพร้อมกัน)
 export function useCreateLambDevotion() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -364,9 +363,8 @@ export function useCreateLambDevotion() {
 
 // Edit surface for the admin test table (devotion-table.tsx) and the
 // detail page — per grill-me follow-up (2026-08-11), only
-// title/content/status are editable; lamb_id and devotion_date are
-// intentionally excluded (fixed at creation) to avoid colliding with the
-// lamb_devotion_one_per_day constraint.
+// title/content/status are editable; lamb_id and devotion_date stay fixed
+// at creation (editing them would just be re-creating a different entry).
 type LambDevotionUpdateInput = Partial<
   Pick<LambDevotion, "title" | "content_html" | "image_urls" | "is_public">
 >;

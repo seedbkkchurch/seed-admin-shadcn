@@ -1,9 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { AlertCircle, Save, Send } from "lucide-react";
+import { AlertCircle, Eraser, Save, Send } from "lucide-react";
 import { toast } from "sonner";
 import { ConfigDrawer } from "@/components/config-drawer";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
@@ -25,13 +26,17 @@ import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quic
 import { cn } from "@/lib/utils";
 import { ArticleEditor, type ArticleEditorHandle } from "./components/article-editor";
 import {
-  DEVOTION_ALREADY_SUBMITTED_CODE,
   useCreateLambDevotion,
   useLambDevotionDetail,
   useLambNameOptions,
   useUpdateLambDevotion,
 } from "./data/queries";
 import { lambDisplayName, type LambDevotionRow } from "./data/devotion-schema";
+import {
+  clearDevotionEditorDraft,
+  loadDevotionEditorDraft,
+  saveDevotionEditorDraft,
+} from "./lib/devotion-draft-storage";
 
 function extractImageUrls(html: string): string[] {
   const matches = [...html.matchAll(/<img[^>]+src="([^"]+)"/g)];
@@ -45,7 +50,9 @@ function isEmptyHtml(value: string) {
 // Medium-style เฝ้าเดี่ยว (daily devotion) writer — a title plus a rich
 // text body that can have images inserted inline, submitted with a single
 // button. Persists to the real `lamb_devotion` table (see
-// docs/devotion-db-design.md for the schema).
+// docs/devotion-db-design.md for the schema). ส่งได้ไม่จำกัดจำนวนครั้ง/วัน
+// (คอนสตรเทนต์ 1 ครั้ง/วันเอาออกแล้ว — ดู grill-me 2026-08-14,
+// `devotion_multi_submit_design`).
 //
 // The "ส่งในนามของ" lamb select box is a stand-in for real per-user auth:
 // this app has no notion of "the lamb currently using this page" (Clerk
@@ -56,19 +63,50 @@ function isEmptyHtml(value: string) {
 export function DevotionEditor() {
   const navigate = useNavigate();
   const editorRef = useRef<ArticleEditorHandle>(null);
-  const [lambId, setLambId] = useState<string | undefined>();
-  const [title, setTitle] = useState("");
+  // Stable for the component's lifetime — used both for the draft's
+  // "day stamp" and the submitted devotion_date, so a draft started right
+  // before midnight can't end up saved under a different day than it was
+  // restored/expired against.
+  const [today] = useState(() => new Date());
+
+  // กู้ร่างที่ค้างไว้ (ถ้ามีและยังไม่ข้ามวัน) ครั้งเดียวตอน mount — เผลอ
+  // รีเฟรชระหว่างเขียนแล้วไม่ต้องเขียนใหม่ (ดู grill-me 2026-08-14,
+  // `devotion_multi_submit_design`)
+  const [initialDraft] = useState(() => loadDevotionEditorDraft(today));
+
+  const [lambId, setLambId] = useState<string | undefined>(
+    initialDraft?.lambId,
+  );
+  const [title, setTitle] = useState(initialDraft?.title ?? "");
   // เพิ่งออกจากช่องหัวข้อไปครั้งแรกหรือยัง — ใช้คุมว่าข้อความเตือน "ลืมใส่
   // หัวข้อ" ควรโผล่หรือไม่ (โผล่หลัง blur ครั้งแรกที่ยังว่างอยู่เท่านั้น
   // ไม่ใช่ตั้งแต่เปิดหน้ามา จะได้ไม่น่ารำคาญ — ดู grill-me 2026-08-13)
   const [titleTouched, setTitleTouched] = useState(false);
-  const [html, setHtml] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
+  const [html, setHtml] = useState(initialDraft?.html ?? "");
+  const [isPublic, setIsPublic] = useState(initialDraft?.isPublic ?? true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+
+  // แยกจาก `html` ที่ไหลตาม onChangeHtml ทุกคีย์สโตรก — ค่านี้ใช้เป็น
+  // initialContent ตอน (re)mount ของ ArticleEditor เท่านั้น (กู้ร่างตอนเปิด
+  // หน้าครั้งแรก, หรือรีเซ็ตเป็นค่าว่างตอนกด Clear) ส่วน editorResetKey
+  // บังคับ ArticleEditor remount ใหม่หลัง Clear (ตัว editor เองไม่มี API
+  // ให้ล้างเนื้อหาจากภายนอก ดู article-editor.tsx)
+  const [editorInitialContent, setEditorInitialContent] = useState(
+    initialDraft?.html ?? "",
+  );
+  const [editorResetKey, setEditorResetKey] = useState(0);
 
   const { data: lambOptions, isPending: isLambOptionsPending } =
     useLambNameOptions();
   const createDevotion = useCreateLambDevotion();
+
+  // บันทึกร่างทุกครั้งที่ฟิลด์เปลี่ยน — ข้ามการเขียนตอนทุกอย่างยังว่างเปล่า
+  // (เปิดหน้ามาเฉยๆ ไม่ต้องสร้างร่างว่างทิ้งไว้ใน localStorage)
+  useEffect(() => {
+    if (!lambId && title.trim() === "" && isEmptyHtml(html)) return;
+    saveDevotionEditorDraft({ lambId, title, html, isPublic }, today);
+  }, [lambId, title, html, isPublic, today]);
 
   const showTitleError = titleTouched && title.trim().length === 0;
   const canSubmit =
@@ -83,7 +121,7 @@ export function DevotionEditor() {
     createDevotion.mutate(
       {
         lamb_id: lambId,
-        devotion_date: format(new Date(), "yyyy-MM-dd"),
+        devotion_date: format(today, "yyyy-MM-dd"),
         title: title.trim(),
         content_html: html,
         image_urls: extractImageUrls(html),
@@ -91,17 +129,11 @@ export function DevotionEditor() {
       },
       {
         onSuccess: () => {
-          toast.success("ส่งเฝ้าเดี่ยววันนี้แล้ว");
+          clearDevotionEditorDraft();
+          toast.success("ส่งเฝ้าเดี่ยวแล้ว");
           navigate({ to: "/lamb-info/devotion" });
         },
         onError: (error: unknown) => {
-          const code = (error as { code?: string } | null)?.code;
-          if (code === DEVOTION_ALREADY_SUBMITTED_CODE) {
-            toast.error("คนนี้ส่งเฝ้าเดี่ยววันนี้ไปแล้ว", {
-              description: "ส่งได้วันละ 1 ครั้งต่อคนเท่านั้น",
-            });
-            return;
-          }
           toast.error("บันทึกไม่สำเร็จ", {
             description: error instanceof Error ? error.message : undefined,
           });
@@ -109,6 +141,24 @@ export function DevotionEditor() {
       },
     );
   };
+
+  // ล้างทั้งฟอร์ม + ร่างที่บันทึกไว้ — แยกต่างหากจากปุ่มส่ง เพราะเป็นการ
+  // กระทำที่ล้างข้อมูลทิ้งจริง (ตกลงใน grill-me 2026-08-14 ให้มี confirm
+  // dialog ก่อนเสมอ ดู handleConfirmClear ด้านล่าง)
+  const handleConfirmClear = () => {
+    setLambId(undefined);
+    setTitle("");
+    setTitleTouched(false);
+    setHtml("");
+    setIsPublic(true);
+    clearDevotionEditorDraft();
+    setEditorInitialContent("");
+    setEditorResetKey((key) => key + 1);
+    setClearDialogOpen(false);
+  };
+
+  const hasContentToClear =
+    !!lambId || title.trim().length > 0 || !isEmptyHtml(html);
 
   return (
     <>
@@ -123,20 +173,33 @@ export function DevotionEditor() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
-              เขียนเฝ้าเดี่ยววันนี้
+              เขียนเฝ้าเดี่ยว
             </h2>
             <p className="text-muted-foreground">
-              {format(new Date(), "d MMMM yyyy")} — เขียนบทความ แทรกรูปภาพ
+              {format(today, "d MMMM yyyy")} — เขียนบทความ แทรกรูปภาพ
               กลางเนื้อหาได้เหมือน Medium
             </p>
           </div>
-          <Button
-            size="lg"
-            onClick={handleSubmit}
-            disabled={!canSubmit || createDevotion.isPending}
-          >
-            <Send /> ส่งเฝ้าเดี่ยว
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* ปุ่มล้างข้อมูลแยกจากปุ่มส่ง — ต้องกดยืนยันก่อนเสมอเพราะล้าง
+            ข้อมูลจริง (ตกลงใน grill-me 2026-08-14,
+            `devotion_multi_submit_design`) */}
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setClearDialogOpen(true)}
+              disabled={!hasContentToClear}
+            >
+              <Eraser /> ล้างข้อมูล
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={!canSubmit || createDevotion.isPending}
+            >
+              <Send /> ส่งเฝ้าเดี่ยว
+            </Button>
+          </div>
         </div>
 
         <div className="mx-auto w-full max-w-3xl space-y-4">
@@ -191,7 +254,9 @@ export function DevotionEditor() {
           </label>
 
           <ArticleEditor
+            key={editorResetKey}
             ref={editorRef}
+            initialContent={editorInitialContent}
             onChangeHtml={setHtml}
             onUploadingChange={setIsUploadingImage}
             isPublic={isPublic}
@@ -203,6 +268,17 @@ export function DevotionEditor() {
         onInsertHtml={(insertedHtml) =>
           editorRef.current?.insertHtml(insertedHtml)
         }
+      />
+
+      <ConfirmDialog
+        open={clearDialogOpen}
+        onOpenChange={setClearDialogOpen}
+        handleConfirm={handleConfirmClear}
+        title="ล้างข้อมูลที่เขียนไว้ทั้งหมด?"
+        desc="หัวข้อ เนื้อหา และการเลือกลูกแกะที่เขียนไว้จะหายไปทั้งหมด กู้คืนไม่ได้"
+        confirmText="ล้างข้อมูล"
+        cancelBtnText="ยกเลิก"
+        destructive
       />
     </>
   );

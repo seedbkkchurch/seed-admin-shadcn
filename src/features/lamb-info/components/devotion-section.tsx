@@ -46,20 +46,24 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
 
   const { data: entries, isPending } = useLambDevotionHistory(lambId);
 
-  const entryByDate = useMemo(() => {
-    const map = new Map<string, DevotionHeatmapEntry>();
+  // ค่า array เพราะ 1 วันมีได้มากกว่า 1 เฝ้าเดี่ยว (คอนสตรเทนต์ 1 ครั้ง/วัน
+  // เอาออกแล้ว — ดู grill-me 2026-08-14, `devotion_multi_submit_design`)
+  const entriesByDate = useMemo(() => {
+    const map = new Map<string, DevotionHeatmapEntry[]>();
     for (const entry of entries ?? []) {
-      map.set(entry.devotion_date, {
+      const list = map.get(entry.devotion_date) ?? [];
+      list.push({
         id: entry.id,
         title: entry.title,
         image_urls: entry.image_urls,
       });
+      map.set(entry.devotion_date, list);
     }
     return map;
   }, [entries]);
 
-  const getEntry = (date: Date) =>
-    entryByDate.get(format(date, "yyyy-MM-dd")) ?? null;
+  const getEntries = (date: Date) =>
+    entriesByDate.get(format(date, "yyyy-MM-dd")) ?? [];
 
   // useLambDevotionHistory returns oldest-first (see queries.ts) — reverse
   // for the "ประวัติล่าสุด" list below the graph, which wants newest-first.
@@ -73,16 +77,18 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       start: subDays(today, ONE_YEAR_DAYS_BACK),
       end: today,
     });
-    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
-  }, [today, entryByDate]);
+    return days.filter((d) => entriesByDate.has(format(d, "yyyy-MM-dd")))
+      .length;
+  }, [today, entriesByDate]);
 
   const threeYearCount = useMemo(() => {
     const days = eachDayOfInterval({
       start: subDays(today, THREE_YEAR_DAYS_BACK),
       end: today,
     });
-    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
-  }, [today, entryByDate]);
+    return days.filter((d) => entriesByDate.has(format(d, "yyyy-MM-dd")))
+      .length;
+  }, [today, entriesByDate]);
 
   // อาทิตย์นี้ = สัปดาห์ปฏิทิน อา-ส (weekStartsOn: 0) ที่ครอบ "today" — เดียวกับ
   // week_start ที่หน้าเช็คชื่อรายสัปดาห์ (attendance) ใช้ ดู grill-me 2026-08-13
@@ -91,8 +97,9 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       start: startOfWeek(today, { weekStartsOn: 0 }),
       end: endOfWeek(today, { weekStartsOn: 0 }),
     });
-    return days.filter((d) => entryByDate.has(format(d, "yyyy-MM-dd"))).length;
-  }, [today, entryByDate]);
+    return days.filter((d) => entriesByDate.has(format(d, "yyyy-MM-dd")))
+      .length;
+  }, [today, entriesByDate]);
 
   const statText =
     view === "year"
@@ -147,7 +154,7 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
               <DevotionHeatmap
                 today={today}
                 daysBack={ONE_YEAR_DAYS_BACK}
-                getEntry={getEntry}
+                getEntries={getEntries}
               />
             ) : view === "month" ? (
               <DevotionMonthlyChart today={today} entries={entries ?? []} />
@@ -155,7 +162,7 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
               <DevotionHeatmap
                 today={today}
                 daysBack={THREE_YEAR_DAYS_BACK}
-                getEntry={getEntry}
+                getEntries={getEntries}
               />
             )}
 
