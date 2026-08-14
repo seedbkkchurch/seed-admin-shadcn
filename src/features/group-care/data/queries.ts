@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { type GroupCareMember, type GroupCareRow } from "./schema";
 
 const groupCareKeys = {
@@ -46,7 +47,12 @@ export function useGroupCareMembers() {
   });
 }
 
-type GroupCareInput = Omit<GroupCareRow, "id">;
+// Built from the generated Insert type (not Row) so optional/nullable
+// columns like team_leader_lamb_id — which the form doesn't collect — don't
+// become required keys just because they exist on the table. Row requires
+// every column key to be present even when its value type is nullable;
+// Insert correctly marks defaulted/nullable columns optional.
+type GroupCareInput = Omit<TablesInsert<"group_care">, "id">;
 
 export function useCreateGroupCare() {
   const queryClient = useQueryClient();

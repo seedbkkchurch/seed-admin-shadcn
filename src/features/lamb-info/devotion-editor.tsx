@@ -30,7 +30,7 @@ import {
   useLambDevotionDetail,
   useUpdateLambDevotion,
 } from "./data/queries";
-import { type LambDevotionRow } from "./data/devotion-schema";
+import { lambDisplayName, type LambDevotionRow } from "./data/devotion-schema";
 import {
   clearDevotionEditorDraft,
   loadDevotionEditorDraft,
