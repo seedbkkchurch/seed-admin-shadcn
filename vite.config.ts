@@ -72,6 +72,31 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Raise the warning threshold a bit (default 500kB) now that vendor code
+    // is actually split into separate chunks below, so the remaining
+    // largest chunks aren't flagged for being merely "big" rather than
+    // genuinely unsplit.
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        // Manual vendor chunking to keep any single chunk under the
+        // warning threshold and improve browser caching (vendor code
+        // changes far less often than app code, so splitting it out means
+        // users re-download less on each deploy).
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("@tiptap")) return "vendor-tiptap";
+          if (id.includes("recharts")) return "vendor-recharts";
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          if (id.includes("@tanstack")) return "vendor-tanstack";
+          if (id.includes("react-dom") || id.includes("/react/") || id.includes("/react-router"))
+            return "vendor-react";
+          return "vendor";
+        },
+      },
+    },
+  },
   test: {
     silent: "passed-only",
     unstubEnvs: true,
