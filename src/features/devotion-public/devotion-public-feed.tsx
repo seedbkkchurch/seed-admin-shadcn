@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLambDevotionFeed } from "@/features/lamb-info/data/queries";
+import { usePublicDevotionFeed } from "@/features/lamb-info/data/queries";
 import { PublicHeader } from "./components/public-header";
 
 function getInitials(name: string) {
@@ -20,14 +20,19 @@ function stripHtml(html: string) {
     .trim();
 }
 
-// Public mirror ของ features/lamb-info/devotion-feed.tsx — ใช้
-// useLambDevotionFeed เดิม (กรอง is_public=true อยู่แล้วในตัว query เอง
-// ไม่ต้องแก้อะไรเพิ่ม) ต่างกันแค่: (1) ไม่ต้อง login/ไม่มี sidebar/chrome
-// ของแอป (2) ไม่มีปุ่ม "เขียนเฝ้าเดี่ยว" (การเขียนยังต้อง login เสมอ) (3)
-// การ์ดลิงก์ไปหน้า /devotion/$id (public) แทน /lamb-info/devotion/$id
-// (authenticated) — ดู grill-me 2026-08-16
+// Public mirror ของ features/lamb-info/devotion-feed.tsx — ต่างกันตรง (1)
+// ไม่ต้อง login/ไม่มี sidebar/chrome ของแอป (2) ไม่มีปุ่ม "เขียนเฝ้าเดี่ยว"
+// (การเขียนยังต้อง login เสมอ) (3) การ์ดลิงก์ไปหน้า /devotion/$id (public)
+// แทน /lamb-info/devotion/$id (authenticated) — ดู grill-me 2026-08-16
+//
+// เดิม reuse useLambDevotionFeed (query ตรงตาราง lamb_devotion) แต่ตารางนั้น
+// เปิด RLS ไว้เฉพาะ role authenticated เท่านั้น (ไม่มี policy ให้ anon เลย —
+// ดู comment ยาวใน data/queries.ts) เปลี่ยนมาใช้ usePublicDevotionFeed
+// (อ่านจาก DB view public_devotion_feed) แทน — คืนชื่อลูกแกะแบบ flat column
+// (lamb_nick_name/lamb_first_name/lamb_last_name) ไม่ใช่ nested lamb_info
+// object เหมือน useLambDevotionFeed เดิม (view ไม่มี FK ให้ PostgREST embed)
 export function DevotionPublicFeed() {
-  const { data: entries, isPending, isError, error } = useLambDevotionFeed();
+  const { data: entries, isPending, isError, error } = usePublicDevotionFeed();
 
   return (
     <>
@@ -64,9 +69,11 @@ export function DevotionPublicFeed() {
             </p>
           ) : (
             entries.map((entry) => {
-              const lambName = entry.lamb_info
-                ? (entry.lamb_info.nick_name ?? entry.lamb_info.first_name)
-                : "ไม่ทราบชื่อ";
+              // การ์ดโชว์แค่ชื่อเล่น (fallback ชื่อจริง) ไม่มีนามสกุล — ตาม
+              // devotion-feed.tsx เดิม (grill-me follow-up 2026-08-14) view
+              // คืน flat column ไม่ใช่ nested lamb_info เหมือนตัวเดิม
+              const lambName =
+                entry.lamb_nick_name ?? entry.lamb_first_name ?? "ไม่ทราบชื่อ";
               const coverImage = entry.image_urls[0] ?? null;
 
               return (

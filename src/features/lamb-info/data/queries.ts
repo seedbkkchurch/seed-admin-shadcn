@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import type { TablesInsert } from "@/lib/supabase/database.types";
-import { type LambDevotion, type LambDevotionRow } from "./devotion-schema";
+import {
+  type LambDevotion,
+  type LambDevotionRow,
+  type PublicDevotionFeedEntry,
+} from "./devotion-schema";
 import { type GiftFromGodRow, type GiftScores } from "./gifts";
 import { type LambInfo, type LambInfoRow } from "./schema";
 
@@ -26,6 +30,11 @@ const lambDevotionKeys = {
   feed: ["lamb-devotion", "feed"] as const,
   detail: (id: string) => ["lamb-devotion", id] as const,
   history: (lambId: string) => ["lamb-devotion", "history", lambId] as const,
+  // แยก namespace จากของฝั่ง authenticated ข้างบนชัดๆ — คนละ table/view กัน
+  // (public_devotion_feed DB view ไม่ใช่ lamb_devotion) ไม่ควรอยู่ query key
+  // เดียวกันหรือ invalidate ปนกัน
+  publicFeed: ["public-devotion-feed"] as const,
+  publicDetail: (id: string) => ["public-devotion-feed", id] as const,
 };
 
 export function useLambInfoList() {
@@ -314,29 +323,54 @@ export function useLambDevotionDetail(id: string | undefined) {
   });
 }
 
-// เหมือน useLambDevotionDetail เป๊ะ ต่างแค่เพิ่ม .eq("is_public", true) —
-// backs หน้า public /devotion/$devotionId (features/devotion-public/) ที่
-// ไม่ต้อง login เลย เนื่องจาก RLS บนตาราง lamb_devotion ยังไม่เปิด (ดู
-// project memory rbac_design "RLS enforcement on existing tables... is
-// still NOT turned on") anon key อ่านได้ทุกแถวอยู่แล้วถ้าไม่กรองเอง ฝั่ง
-// client ต้องกรอง is_public เองตรงนี้กัน URL ของรายการ private หลุดออกไป
-// แม้จะรู้ id ตรงๆ (คนละ query key จาก useLambDevotionDetail เดิม เพราะ
-// ผลลัพธ์ไม่เหมือนกันเสมอไป — รายการ private จะ error ที่นี่แต่โหลดได้ปกติ
-// ในฝั่ง admin) ดู grill-me 2026-08-16
+// Public feed (ไม่ต้อง login) — backs /devotion (features/devotion-public/).
+//
+// เดิมหน้านี้ reuse useLambDevotionFeed (query ตรงตาราง lamb_devotion) ตอน
+// build ครั้งแรก เพราะตอนนั้น project memory (rbac_design, บันทึกไว้
+// 2026-08-14) บอกว่า RLS บนตารางเดิมยังไม่เปิด — ปรากฏว่าถูกเปิดไปแล้วโดยไม่
+// ได้อัปเดต memory และทุก policy ที่มีอนุญาตเฉพาะ role authenticated เท่านั้น
+// ไม่มี policy ให้ anon เลย เพจ public เลย 404/ไม่พบข้อมูลจริงตอน deploy (ดู
+// grill-me 2026-08-16 "เข้าดูแบบไม่ login แล้วดูไม่ได้")
+//
+// แก้โดยเปลี่ยนไปอ่านจาก DB view `public_devotion_feed` แทน (migration
+// public_devotion_feed_view_for_anon_share) — view นี้ query แทนเราด้วยสิทธิ์
+// เจ้าของ view (security_invoker=false) จึงอ่าน lamb_devotion/lamb_info ได้
+// แม้ RLS จะกัน anon ไว้ โดย view เองกรอง is_public=true และเลือกเฉพาะคอลัมน์
+// ปลอดภัย (ไม่มี address/phone/email/birthday ฯลฯ) ให้แล้ว — ไม่ต้องกรอง/เช็ค
+// อะไรเพิ่มฝั่ง client อีก ต่างจาก useLambDevotionFeed (ตาราง lamb_devotion
+// ตรงๆ, ใช้ฝั่ง authenticated เท่านั้น) โดยสิ้นเชิง ห้ามสลับใช้ผิดฝั่ง
+export function usePublicDevotionFeed() {
+  return useQuery({
+    queryKey: lambDevotionKeys.publicFeed,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("public_devotion_feed")
+        .select("*")
+        .order("devotion_date", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as PublicDevotionFeedEntry[];
+    },
+  });
+}
+
+// Public detail (ไม่ต้อง login) — backs /devotion/$devotionId
+// (features/devotion-public/). อ่านจาก view เดียวกับ usePublicDevotionFeed
+// ข้างบน ด้วยเหตุผลเดียวกันทุกประการ — ดูคอมเมนต์ยาวข้างบน
 export function usePublicLambDevotionDetail(id: string | undefined) {
   return useQuery({
-    queryKey: [...lambDevotionKeys.detail(id ?? ""), "public"],
+    queryKey: lambDevotionKeys.publicDetail(id ?? ""),
     enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("lamb_devotion")
-        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .from("public_devotion_feed")
+        .select("*")
         .eq("id", id as string)
-        .eq("is_public", true)
         .single();
 
       if (error) throw error;
-      return data as LambDevotionRow;
+      return data as PublicDevotionFeedEntry;
     },
   });
 }

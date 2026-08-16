@@ -64,48 +64,64 @@ export function DevotionPublicDetail() {
             <Skeleton className="h-24 w-full" />
           </div>
         ) : (
-          <article className="mx-auto w-full max-w-3xl space-y-4">
-            {entry.image_urls[0] && (
-              <img
-                src={entry.image_urls[0]}
-                alt={entry.title}
-                className="max-h-96 w-full rounded-md object-cover"
-              />
-            )}
-            <h1 className="text-3xl font-bold md:text-4xl">{entry.title}</h1>
-            <div className="flex items-center gap-2">
-              <Avatar className="size-8">
-                <AvatarFallback className="text-xs">
-                  {entry.lamb_info
-                    ? getInitials(lambDisplayName(entry.lamb_info))
-                    : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="text-sm font-medium">
-                  {entry.lamb_info
-                    ? lambDisplayName(entry.lamb_info)
-                    : "ไม่ทราบชื่อ"}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {format(parseISO(entry.devotion_date), "d MMMM yyyy")}
-                </div>
-              </div>
-            </div>
+          (() => {
+            // view คืน first/last name แบบ nullable (left join + คอลัมน์ DB
+            // เองก็ nullable) — lambDisplayName เดิมรับ first/last แบบ
+            // non-null เท่านั้น ต่างจาก LambDevotionRow ปกติที่การันตีไม่ null
+            // ผ่าน type override (ดู PublicDevotionFeedEntry comment) จึงต้อง
+            // เช็คเองตรงนี้แทน แสดง "ไม่ทราบชื่อ" ถ้าไม่มีทั้งสองชื่อ
+            const lambName =
+              entry.lamb_first_name && entry.lamb_last_name
+                ? lambDisplayName({
+                    nick_name: entry.lamb_nick_name,
+                    first_name: entry.lamb_first_name,
+                    last_name: entry.lamb_last_name,
+                  })
+                : null;
 
-            <div
-              className={
-                "text-sm leading-relaxed sm:text-base " +
-                "[&_p]:my-3 [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold " +
-                "[&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold " +
-                "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-6 " +
-                "[&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-6 " +
-                "[&_blockquote]:my-3 [&_blockquote]:border-s-4 [&_blockquote]:border-muted-foreground/30 [&_blockquote]:ps-4 [&_blockquote]:text-muted-foreground [&_blockquote]:italic " +
-                "[&_img]:my-4 [&_img]:max-h-[480px] [&_img]:w-full [&_img]:rounded-md [&_img]:object-contain"
-              }
-              dangerouslySetInnerHTML={{ __html: entry.content_html }}
-            />
-          </article>
+            return (
+              <article className="mx-auto w-full max-w-3xl space-y-4">
+                {entry.image_urls[0] && (
+                  <img
+                    src={entry.image_urls[0]}
+                    alt={entry.title}
+                    className="max-h-96 w-full rounded-md object-cover"
+                  />
+                )}
+                <h1 className="text-3xl font-bold md:text-4xl">
+                  {entry.title}
+                </h1>
+                <div className="flex items-center gap-2">
+                  <Avatar className="size-8">
+                    <AvatarFallback className="text-xs">
+                      {lambName ? getInitials(lambName) : "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="text-sm font-medium">
+                      {lambName ?? "ไม่ทราบชื่อ"}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      {format(parseISO(entry.devotion_date), "d MMMM yyyy")}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    "text-sm leading-relaxed sm:text-base " +
+                    "[&_p]:my-3 [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold " +
+                    "[&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold " +
+                    "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-6 " +
+                    "[&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-6 " +
+                    "[&_blockquote]:my-3 [&_blockquote]:border-s-4 [&_blockquote]:border-muted-foreground/30 [&_blockquote]:ps-4 [&_blockquote]:text-muted-foreground [&_blockquote]:italic " +
+                    "[&_img]:my-4 [&_img]:max-h-[480px] [&_img]:w-full [&_img]:rounded-md [&_img]:object-contain"
+                  }
+                  dangerouslySetInnerHTML={{ __html: entry.content_html }}
+                />
+              </article>
+            );
+          })()
         )}
       </Main>
     </>
