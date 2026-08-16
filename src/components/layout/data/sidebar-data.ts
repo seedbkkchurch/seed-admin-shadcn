@@ -3,20 +3,17 @@ import {
   LayoutDashboard,
   Monitor,
   Bug,
-  ListTodo,
   FileX,
   HelpCircle,
   IdCard,
   Lock,
   Bell,
-  Package,
   Palette,
   ServerOff,
   Settings,
   Wrench,
   UserCog,
   UserX,
-  Users,
   MessagesSquare,
   ShieldCheck,
   AudioWaveform,
@@ -30,9 +27,14 @@ import {
   ClipboardCheck,
   BookOpen,
 } from "lucide-react";
-import { ClerkLogo } from "@/assets/clerk-logo";
 import { type SidebarData } from "../types";
 
+// ลบเมนู demo ของ template เดิม (Tasks, Apps, Users, Secured by Clerk)
+// ออกจาก Sidebar ตามที่ตกลงใน grill-me 2026-08-16 — ลบแค่รายการเมนู หน้า
+// route เดิม (/tasks, /apps, /users, /clerk/*) ยังอยู่ในโค้ด เข้าถึงได้ถ้า
+// พิมพ์ URL ตรงๆ (ไม่ได้ลบไฟล์ route ทิ้ง) เมนูนี้ตัวเดียวกันขับ Cmd+K
+// search menu ด้วย (ดู components/command-menu.tsx) ลบตรงนี้จุดเดียวก็หาย
+// จาก search ไปด้วยอัตโนมัติ
 export const sidebarData: SidebarData = {
   user: {
     name: "satnaing",
@@ -66,25 +68,10 @@ export const sidebarData: SidebarData = {
           icon: LayoutDashboard,
         },
         {
-          title: "Tasks",
-          url: "/tasks",
-          icon: ListTodo,
-        },
-        {
-          title: "Apps",
-          url: "/apps",
-          icon: Package,
-        },
-        {
           title: "Chats",
           url: "/chats",
           badge: "3",
           icon: MessagesSquare,
-        },
-        {
-          title: "Users",
-          url: "/users",
-          icon: Users,
         },
         {
           title: "Lamb Info",
@@ -136,24 +123,6 @@ export const sidebarData: SidebarData = {
           title: "User Roles",
           url: "/user-roles",
           icon: ShieldCheck,
-        },
-        {
-          title: "Secured by Clerk",
-          icon: ClerkLogo,
-          items: [
-            {
-              title: "Sign In",
-              url: "/clerk/sign-in",
-            },
-            {
-              title: "Sign Up",
-              url: "/clerk/sign-up",
-            },
-            {
-              title: "User Management",
-              url: "/clerk/user-management",
-            },
-          ],
         },
       ],
     },
