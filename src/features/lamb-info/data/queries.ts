@@ -314,6 +314,33 @@ export function useLambDevotionDetail(id: string | undefined) {
   });
 }
 
+// เหมือน useLambDevotionDetail เป๊ะ ต่างแค่เพิ่ม .eq("is_public", true) —
+// backs หน้า public /devotion/$devotionId (features/devotion-public/) ที่
+// ไม่ต้อง login เลย เนื่องจาก RLS บนตาราง lamb_devotion ยังไม่เปิด (ดู
+// project memory rbac_design "RLS enforcement on existing tables... is
+// still NOT turned on") anon key อ่านได้ทุกแถวอยู่แล้วถ้าไม่กรองเอง ฝั่ง
+// client ต้องกรอง is_public เองตรงนี้กัน URL ของรายการ private หลุดออกไป
+// แม้จะรู้ id ตรงๆ (คนละ query key จาก useLambDevotionDetail เดิม เพราะ
+// ผลลัพธ์ไม่เหมือนกันเสมอไป — รายการ private จะ error ที่นี่แต่โหลดได้ปกติ
+// ในฝั่ง admin) ดู grill-me 2026-08-16
+export function usePublicLambDevotionDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: [...lambDevotionKeys.detail(id ?? ""), "public"],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lamb_devotion")
+        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .eq("id", id as string)
+        .eq("is_public", true)
+        .single();
+
+      if (error) throw error;
+      return data as LambDevotionRow;
+    },
+  });
+}
+
 // Full submission history for one lamb (all lamb_devotion rows, public
 // and private alike) — backs the "ประวัติเฝ้าเดี่ยว" section on their
 // profile page (devotion-section.tsx). No lamb_info join needed (the lamb

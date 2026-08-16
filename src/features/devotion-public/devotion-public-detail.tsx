@@ -1,73 +1,50 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { AlertCircle, ArrowLeft, Pencil } from "lucide-react";
-import { ConfigDrawer } from "@/components/config-drawer";
-import { Header } from "@/components/layout/header";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Main } from "@/components/layout/main";
-import { ProfileDropdown } from "@/components/profile-dropdown";
-import { Search } from "@/components/search";
-import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShareButton } from "@/features/devotion-public/components/share-button";
-import { lambDisplayName } from "./data/devotion-schema";
-import { useLambDevotionDetail } from "./data/queries";
+import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
+import { usePublicLambDevotionDetail } from "@/features/lamb-info/data/queries";
+import { PublicHeader } from "./components/public-header";
+import { ShareButton } from "./components/share-button";
 
 function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-const route = getRouteApi("/_authenticated/lamb-info/devotion/$devotionId/");
+const route = getRouteApi("/devotion/$devotionId/");
 
-// Full-article read view for a single feed entry — opened by clicking a
-// card in devotion-feed.tsx. Reads the real `lamb_devotion` table.
-export function DevotionDetail() {
+// Public mirror ของ features/lamb-info/devotion-detail.tsx — ต่างจากตัวเดิม
+// ตรงที่ (1) query ใหม่ usePublicLambDevotionDetail กรอง is_public=true
+// ชัดเจน (ตัวเดิม useLambDevotionDetail ไม่กรอง เพราะฝั่ง admin ต้องดูได้
+// ทั้ง public/private) กัน URL หลุด/เดา id รายการ private ได้ (2) ไม่มีปุ่ม
+// "แก้ไข" (3) มีปุ่มแชร์ไป LINE แทน — ดู grill-me 2026-08-16
+export function DevotionPublicDetail() {
   const { devotionId } = route.useParams();
   const {
     data: entry,
     isPending,
     isError,
     error,
-  } = useLambDevotionDetail(devotionId);
+  } = usePublicLambDevotionDetail(devotionId);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
     <>
-      <Header fixed>
-        <Search className="me-auto" />
-        <ThemeSwitch />
-        <ConfigDrawer />
-        <ProfileDropdown />
-      </Header>
+      <PublicHeader />
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/lamb-info/devotion">
+            <Link to="/devotion">
               <ArrowLeft /> กลับไปหน้าเฝ้าเดี่ยว
             </Link>
           </Button>
-          <div className="flex items-center gap-2">
-            {/* แสดงเฉพาะรายการ is_public — รายการ private ไม่มีหน้า public
-            ให้แชร์ (ดู grill-me 2026-08-16) */}
-            {entry?.is_public && (
-              <ShareButton
-                url={`${window.location.origin}/devotion/${devotionId}`}
-                text={entry.title}
-              />
-            )}
-            {entry && (
-              <Button variant="outline" size="sm" asChild>
-                <Link
-                  to="/lamb-info/devotion/$devotionId/edit"
-                  params={{ devotionId }}
-                >
-                  <Pencil /> แก้ไข
-                </Link>
-              </Button>
-            )}
-          </div>
+          {entry && <ShareButton url={shareUrl} text={entry.title} />}
         </div>
 
         {isError ? (
@@ -77,7 +54,7 @@ export function DevotionDetail() {
             <AlertDescription>
               {error instanceof Error
                 ? error.message
-                : "รายการนี้อาจถูกลบไปแล้ว หรือลิงก์ไม่ถูกต้อง"}
+                : "รายการนี้อาจไม่ใช่สาธารณะ ถูกลบไปแล้ว หรือลิงก์ไม่ถูกต้อง"}
             </AlertDescription>
           </Alert>
         ) : isPending ? (

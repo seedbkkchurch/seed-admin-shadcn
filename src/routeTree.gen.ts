@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as DevotionIndexRouteImport } from './routes/devotion/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -26,6 +27,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as DevotionDevotionIdIndexRouteImport } from './routes/devotion/$devotionId/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserRolesIndexRouteImport } from './routes/_authenticated/user-roles/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
@@ -64,6 +66,11 @@ const ClerkRouteRoute = ClerkRouteRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevotionIndexRoute = DevotionIndexRouteImport.update({
+  id: '/devotion/',
+  path: '/devotion/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -140,6 +147,11 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const DevotionDevotionIdIndexRoute = DevotionDevotionIdIndexRouteImport.update({
+  id: '/devotion/$devotionId/',
+  path: '/devotion/$devotionId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -329,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/devotion/': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -351,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/user-roles/': typeof AuthenticatedUserRolesIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/devotion/$devotionId/': typeof DevotionDevotionIdIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
@@ -374,6 +388,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/devotion': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -396,6 +411,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/user-roles': typeof AuthenticatedUserRolesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/devotion/$devotionId': typeof DevotionDevotionIdIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
@@ -424,6 +440,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/devotion/': typeof DevotionIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -446,6 +463,7 @@ export interface FileRoutesById {
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/user-roles/': typeof AuthenticatedUserRolesIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/devotion/$devotionId/': typeof DevotionDevotionIdIndexRoute
   '/_authenticated/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/_authenticated/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
   '/_authenticated/lamb-info/devotion/new': typeof AuthenticatedLambInfoDevotionNewRoute
@@ -472,6 +490,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/devotion/'
     | '/errors/$error'
     | '/settings/account'
     | '/settings/appearance'
@@ -494,6 +513,7 @@ export interface FileRouteTypes {
     | '/tasks/'
     | '/user-roles/'
     | '/users/'
+    | '/devotion/$devotionId/'
     | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
     | '/lamb-info/devotion/new'
@@ -517,6 +537,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/devotion'
     | '/errors/$error'
     | '/settings/account'
     | '/settings/appearance'
@@ -539,6 +560,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/user-roles'
     | '/users'
+    | '/devotion/$devotionId'
     | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
     | '/lamb-info/devotion/new'
@@ -566,6 +588,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/devotion/'
     | '/_authenticated/errors/$error'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
@@ -588,6 +611,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks/'
     | '/_authenticated/user-roles/'
     | '/_authenticated/users/'
+    | '/devotion/$devotionId/'
     | '/_authenticated/bible/$book/$chapter'
     | '/_authenticated/lamb-info/$lambId/devotion'
     | '/_authenticated/lamb-info/devotion/new'
@@ -612,6 +636,8 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+  DevotionIndexRoute: typeof DevotionIndexRoute
+  DevotionDevotionIdIndexRoute: typeof DevotionDevotionIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -628,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devotion/': {
+      id: '/devotion/'
+      path: '/devotion'
+      fullPath: '/devotion/'
+      preLoaderRoute: typeof DevotionIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -734,6 +767,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/devotion/$devotionId/': {
+      id: '/devotion/$devotionId/'
+      path: '/devotion/$devotionId'
+      fullPath: '/devotion/$devotionId/'
+      preLoaderRoute: typeof DevotionDevotionIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
@@ -1091,6 +1131,8 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
+  DevotionIndexRoute: DevotionIndexRoute,
+  DevotionDevotionIdIndexRoute: DevotionDevotionIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
