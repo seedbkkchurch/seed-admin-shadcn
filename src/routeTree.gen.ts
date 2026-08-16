@@ -27,6 +27,7 @@ import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_aut
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedUserRolesIndexRouteImport } from './routes/_authenticated/user-roles/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -144,6 +145,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedUserRolesIndexRoute =
+  AuthenticatedUserRolesIndexRouteImport.update({
+    id: '/user-roles/',
+    path: '/user-roles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -342,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
+  '/user-roles/': typeof AuthenticatedUserRolesIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
@@ -386,6 +394,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/subscribe': typeof AuthenticatedSubscribeIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
+  '/user-roles': typeof AuthenticatedUserRolesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
@@ -435,6 +444,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
+  '/_authenticated/user-roles/': typeof AuthenticatedUserRolesIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/bible/$book/$chapter': typeof AuthenticatedBibleBookChapterRoute
   '/_authenticated/lamb-info/$lambId/devotion': typeof AuthenticatedLambInfoLambIdDevotionRoute
@@ -482,6 +492,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/subscribe/'
     | '/tasks/'
+    | '/user-roles/'
     | '/users/'
     | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscribe'
     | '/tasks'
+    | '/user-roles'
     | '/users'
     | '/bible/$book/$chapter'
     | '/lamb-info/$lambId/devotion'
@@ -574,6 +586,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/subscribe/'
     | '/_authenticated/tasks/'
+    | '/_authenticated/user-roles/'
     | '/_authenticated/users/'
     | '/_authenticated/bible/$book/$chapter'
     | '/_authenticated/lamb-info/$lambId/devotion'
@@ -727,6 +740,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users/'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/user-roles/': {
+      id: '/_authenticated/user-roles/'
+      path: '/user-roles'
+      fullPath: '/user-roles/'
+      preLoaderRoute: typeof AuthenticatedUserRolesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tasks/': {
@@ -966,6 +986,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
+  AuthenticatedUserRolesIndexRoute: typeof AuthenticatedUserRolesIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedBibleBookChapterRoute: typeof AuthenticatedBibleBookChapterRoute
   AuthenticatedLambInfoLambIdDevotionRoute: typeof AuthenticatedLambInfoLambIdDevotionRoute
@@ -993,6 +1014,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalityTypeIndexRoute,
   AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
+  AuthenticatedUserRolesIndexRoute: AuthenticatedUserRolesIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedBibleBookChapterRoute: AuthenticatedBibleBookChapterRoute,
   AuthenticatedLambInfoLambIdDevotionRoute:

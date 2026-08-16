@@ -1,5 +1,13 @@
 :root {
   --radius: 0.625rem;
+
+  /* ความสูงของ MobileTabBar (แถบเมนูล่างบนจอมือถือ <768px) รวม safe-area —
+   * ค่ากลางที่เดียว ใครก็ตามที่วางองค์ประกอบ fixed ชิดขอบล่างจอบน mobile
+   * ต้องเผื่อระยะนี้กันบัง tab bar (ดู grill-me 2026-08-16 "เปิด bible ทับ
+   * tab menu ด้านล่าง") ใช้ผ่าน Tailwind arbitrary value เช่น
+   * bottom-[var(--mobile-tab-bar-height)] — ต้องตรงกับความสูงจริงใน
+   * mobile-tab-bar.tsx (py-2 + line-height ของ label + icon ~56px ปัดขึ้น) */
+  --mobile-tab-bar-height: calc(4.5rem + env(safe-area-inset-bottom));
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);

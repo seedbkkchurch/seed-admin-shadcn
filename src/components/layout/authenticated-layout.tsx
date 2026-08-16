@@ -34,8 +34,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               "peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]",
 
               // กันเนื้อหาโดน MobileTabBar (fixed ด้านล่าง, จอ < 768px) บัง —
-              // ความสูง bar ~56px + label + safe-area, ปัดขึ้นเป็น 4.5rem
-              "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
+              // ใช้ --mobile-tab-bar-height ค่ากลางเดียวกับที่
+              // BibleQuickReferenceSheet ใช้เผื่อระยะให้ปุ่ม/แถบลอยของมัน
+              // ไม่ทับ tab bar (ดู theme.css, grill-me 2026-08-16)
+              "pb-[var(--mobile-tab-bar-height)] md:pb-0",
             )}
           >
             {children ?? <Outlet />}

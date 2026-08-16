@@ -133,6 +133,11 @@ export const sidebarData: SidebarData = {
           icon: BrainCircuit,
         },
         {
+          title: "User Roles",
+          url: "/user-roles",
+          icon: ShieldCheck,
+        },
+        {
           title: "Secured by Clerk",
           icon: ClerkLogo,
           items: [

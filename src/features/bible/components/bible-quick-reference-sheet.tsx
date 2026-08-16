@@ -25,6 +25,15 @@ type Stage = "closed" | "collapsed" | "expanded";
 //   expanded  = modal เต็มจอแนวนอน ~85% มีฉากทึบ (ใช้ shadcn Sheet เดิม)
 // กดฉาก/ปุ่ม X ตอน expanded → กลับไป collapsed เสมอ (ไม่ปิดสนิท) —
 // ต้องกดปุ่ม X บนแถบ collapsed อีกทีถึงจะปิดสนิทกลับไปเป็นปุ่มลอย
+//
+// closed/collapsed เป็น fixed ชิดขอบล่างจอเหมือนกับ MobileTabBar (แถบเมนู
+// ล่างบนมือถือ <768px, อยู่ใน AuthenticatedLayout) เดิมไม่ได้เผื่อระยะเลย
+// ปุ่ม/แถบเลยไปทับกับ tab bar บนมือถือ (ดู grill-me 2026-08-16 "เปิด bible
+// ทับ tab menu ด้านล่าง") แก้โดยเผื่อ --mobile-tab-bar-height (ค่ากลางใน
+// theme.css ค่าเดียวกับที่ AuthenticatedLayout ใช้กันเนื้อหาโดนบัง) เฉพาะจอ
+// <768px เท่านั้น — บน md ขึ้นไปไม่มี tab bar เลยใช้ bottom-4/bottom-0 เดิม
+// ส่วน expanded (Sheet เต็มจอ ~85vh มีฉากทึบ) ไม่ต้องแก้ เพราะเป็น portal
+// วางท้าย DOM จึงวางทับ tab bar ได้เองอยู่แล้ว ไม่มีปัญหาช่องว่างโผล่
 export function BibleQuickReferenceSheet({
   onInsertHtml,
 }: {
@@ -86,7 +95,7 @@ export function BibleQuickReferenceSheet({
         type="button"
         size="icon"
         onClick={() => setStage("expanded")}
-        className="fixed right-4 bottom-4 z-40 size-12 rounded-full shadow-lg"
+        className="fixed right-4 bottom-[calc(var(--mobile-tab-bar-height)+1rem)] z-40 size-12 rounded-full shadow-lg md:bottom-4"
         aria-label="เปิดคัมภีร์อ้างอิง"
       >
         <BookOpen className="size-5" />
@@ -96,7 +105,7 @@ export function BibleQuickReferenceSheet({
 
   if (stage === "collapsed") {
     return (
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-2 border-t bg-background/95 px-4 py-2.5 shadow-lg backdrop-blur">
+      <div className="fixed inset-x-0 bottom-[var(--mobile-tab-bar-height)] z-40 flex items-center justify-between gap-2 border-t bg-background/95 px-4 py-2.5 shadow-lg backdrop-blur md:bottom-0">
         <button
           type="button"
           onClick={() => setStage("expanded")}
