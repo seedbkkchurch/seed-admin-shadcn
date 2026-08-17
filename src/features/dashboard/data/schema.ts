@@ -17,7 +17,7 @@ export type DashboardLamb = Omit<
     | "gender"
     | "birthday"
     | "status"
-    | "is_leader_group_care"
+    | "role"
     | "tags"
     | "interesting"
     | "group_care"

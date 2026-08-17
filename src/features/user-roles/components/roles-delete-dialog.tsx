@@ -13,10 +13,12 @@ type RolesDeleteDialogProps = {
   currentRow: RoleRow;
 };
 
-// user_roles_role_fkey is ON DELETE NO ACTION (see grill-me 2026-08-15) — a
-// role still assigned to at least one lamb would otherwise fail with a raw
-// Postgres FK-violation error. Pre-check the usage count while the dialog
-// is open and block the confirm button with a friendly count instead.
+// lamb_info_role_fkey is ON DELETE NO ACTION (see grill-me 2026-08-15,
+// still true after the 2026-08-17 redesign that moved role onto lamb_info
+// directly) — a role still assigned to at least one lamb would otherwise
+// fail with a raw Postgres FK-violation error. Pre-check the usage count
+// while the dialog is open and block the confirm button with a friendly
+// count instead.
 export function RolesDeleteDialog({
   open,
   onOpenChange,

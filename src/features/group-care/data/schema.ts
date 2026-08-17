@@ -6,17 +6,14 @@ export type GroupCareRow = Tables<"group_care">;
 // (see useGroupCareMembers in data/queries.ts). first_name/last_name
 // overridden to non-null — DB allows NULL, app has always assumed
 // non-null here (see grill-me 2026-08-12, `supabase_generated_types`
-// project memory). is_leader_group_care marks whether this member is a
-// leader of their assigned group_care (see grill-me 2026-08-12,
-// `group_care_leader` project memory — reused instead of adding a new
-// field on group_care itself).
+// project memory). `role` (cell_leader/team_leader = leader of their
+// assigned group_care) replaces the old is_leader_group_care boolean —
+// see grill-me 2026-08-12, `group_care_leader` project memory for why
+// this reuses lamb_info instead of a field on group_care itself, and
+// rbac_lamb_role_redesign (2026-08-17) for the boolean -> role move.
 export type GroupCareMember = Pick<
   Tables<"lamb_info">,
-  | "id"
-  | "nick_name"
-  | "profile_picture"
-  | "group_care"
-  | "is_leader_group_care"
+  "id" | "nick_name" | "profile_picture" | "group_care" | "role"
 > & {
   first_name: string;
   last_name: string;

@@ -38,8 +38,10 @@ export function GroupCare() {
       return {
         ...group,
         members: groupMembers,
+        // Was is_leader_group_care — now derived from lamb_info.role (see
+        // rbac_lamb_role_redesign project memory, grill-me 2026-08-17).
         leaders: groupMembers.filter(
-          (member) => member.is_leader_group_care,
+          (member) => member.role === "cell_leader" || member.role === "team_leader",
         ),
       };
     });

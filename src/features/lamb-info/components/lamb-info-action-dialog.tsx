@@ -38,6 +38,13 @@ import {
 } from "../data/queries";
 import { type LambInfoRow } from "../data/schema";
 
+// This form used to have a "Group Leader" switch writing straight to
+// lamb_info.is_leader_group_care. That column is gone (grill-me
+// 2026-08-17, rbac_lamb_role_redesign project memory) — role is now
+// lamb_info.role, changeable only by super_admin via a DB trigger, so a
+// non-super_admin editing a lamb's other fields here would hit a
+// permission-denied error on this field specifically. Deliberately
+// dropped from this form; manage role on the /user-roles page instead.
 const formSchema = z.object({
   profile_picture: z
     .union([z.url({ error: "Enter a valid URL." }), z.literal("")])
@@ -57,7 +64,6 @@ const formSchema = z.object({
   favorite_food: z.string().optional(),
   unfavorite_food: z.string().optional(),
   is_timote: z.boolean(),
-  is_leader_group_care: z.boolean(),
   status: z.boolean(),
   group_care: z.string().optional(),
   age: z.string().optional(),
@@ -92,7 +98,6 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       favorite_food: "",
       unfavorite_food: "",
       is_timote: false,
-      is_leader_group_care: false,
       status: true,
       group_care: "",
       age: "",
@@ -118,7 +123,6 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     favorite_food: currentRow.favorite_food ?? "",
     unfavorite_food: currentRow.unfavorite_food ?? "",
     is_timote: currentRow.is_timote ?? false,
-    is_leader_group_care: currentRow.is_leader_group_care ?? false,
     status: currentRow.status ?? true,
     group_care: currentRow.group_care ?? "",
     age: currentRow.age != null ? String(currentRow.age) : "",
@@ -179,7 +183,6 @@ export function LambInfoActionDialog({
       favorite_food: values.favorite_food || null,
       unfavorite_food: values.unfavorite_food || null,
       is_timote: values.is_timote,
-      is_leader_group_care: values.is_leader_group_care,
       status: values.status,
       group_care: values.group_care || null,
       age: values.age ? Number(values.age) : null,
@@ -581,25 +584,6 @@ export function LambInfoActionDialog({
                         value: g.id,
                       }))}
                     />
-                    <FormMessage className="col-span-4 col-start-3" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="is_leader_group_care"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
-                    <FormLabel className="col-span-2 text-end">
-                      Group Leader
-                    </FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="col-span-4 justify-self-start"
-                      />
-                    </FormControl>
                     <FormMessage className="col-span-4 col-start-3" />
                   </FormItem>
                 )}

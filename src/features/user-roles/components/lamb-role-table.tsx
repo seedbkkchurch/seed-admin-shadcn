@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type SortingState,
   type VisibilityState,
@@ -22,11 +22,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination, DataTableToolbar } from "@/components/data-table";
-import { type AssignmentRow } from "../data/schema";
-import { assignmentsColumns as columns } from "./assignments-columns";
+import { type LambRoleRow, type RoleRow } from "../data/schema";
+import { makeLambRoleColumns } from "./lamb-role-columns";
 
-type AssignmentsTableProps = {
-  data: AssignmentRow[];
+type LambRoleTableProps = {
+  data: LambRoleRow[];
+  roles: RoleRow[];
   search: Record<string, unknown>;
   navigate: NavigateFn;
 };
@@ -34,14 +35,17 @@ type AssignmentsTableProps = {
 // Namespaced pagination/filter keys (assignPage, assignName, ...) — see
 // the same note on RolesTable; both tables' TabsContent stay mounted at
 // once so they can't share "page"/"code" URL keys.
-export function AssignmentsTable({
+export function LambRoleTable({
   data,
+  roles,
   search,
   navigate,
-}: AssignmentsTableProps) {
+}: LambRoleTableProps) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  const columns = useMemo(() => makeLambRoleColumns(roles), [roles]);
 
   const {
     columnFilters,

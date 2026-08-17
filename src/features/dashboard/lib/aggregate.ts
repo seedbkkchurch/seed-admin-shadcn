@@ -21,11 +21,12 @@ import type {
 
 // สรุปดีไซน์จาก grill-me 2026-08-14 (`dashboard_design` ใน project memory):
 // - "สมาชิกทั้งหมด" นับทุกแถวไม่กรอง status ส่วน active/ผู้นำ/สมาชิกทั่วไป
-//   คำนวณจากสมาชิก active เท่านั้น (ผู้นำ = active ที่ is_leader_group_care
-//   หรือมีคำว่า "leader" ใน tags แบบ case-insensitive, สมาชิกทั่วไป = active
-//   ลบผู้นำ ไม่ทับซ้อนกัน)
-// - user_roles ตาม RBAC ยังไม่ apply จริง จึงต้องพึ่ง is_leader_group_care +
-//   tags แบบ heuristic ไปก่อน (ดู [[rbac_design]]) — revisit เมื่อ RBAC ใช้งานจริง
+//   คำนวณจากสมาชิก active เท่านั้น (ผู้นำ = active ที่มี role เป็น cell_leader/
+//   team_leader หรือมีคำว่า "leader" ใน tags แบบ case-insensitive, สมาชิกทั่วไป
+//   = active ลบผู้นำ ไม่ทับซ้อนกัน)
+// - อัปเดต 2026-08-17 (rbac_lamb_role_redesign): RBAC ใช้งานจริงแล้ว —
+//   is_leader_group_care ถูกลบไปแล้ว เปลี่ยนมาเช็ค lamb_info.role ตรงๆ แทน
+//   (tags heuristic ยังคงไว้เป็น fallback เดิม ไม่ได้ตัดออก)
 
 export type MemberCounts = {
   total: number;
@@ -35,7 +36,7 @@ export type MemberCounts = {
 };
 
 function isLeader(lamb: DashboardLamb): boolean {
-  if (lamb.is_leader_group_care) return true;
+  if (lamb.role === "cell_leader" || lamb.role === "team_leader") return true;
   return splitTags(lamb.tags).some((tag) =>
     tag.toLowerCase().includes("leader"),
   );

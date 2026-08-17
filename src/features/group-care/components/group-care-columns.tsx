@@ -51,9 +51,10 @@ export const groupCareColumns: ColumnDef<GroupCareRowWithMembers>[] = [
   },
   {
     id: "leader",
-    // Names of every member with is_leader_group_care = true, joined for
-    // display; sortable via the same joined string (see grill-me
-    // 2026-08-12, `group_care_leader` project memory).
+    // Names of every member with role IN (cell_leader, team_leader),
+    // joined for display; sortable via the same joined string (see
+    // grill-me 2026-08-12, `group_care_leader` project memory — role
+    // source updated 2026-08-17, see rbac_lamb_role_redesign).
     accessorFn: (row) =>
       row.leaders
         .map((leader) => leader.nick_name || leader.first_name)

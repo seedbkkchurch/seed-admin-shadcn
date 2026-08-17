@@ -118,12 +118,15 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
             >
               {row.status ? "Active" : "Inactive"}
             </Badge>
-            {row.is_leader_group_care && (
+            {/* Was is_leader_group_care — now derived from lamb_info.role
+                (see rbac_lamb_role_redesign project memory, grill-me
+                2026-08-17). */}
+            {(row.role === "cell_leader" || row.role === "team_leader") && (
               <Badge
                 variant="outline"
                 className="bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200 px-3 py-1 text-sm"
               >
-                หัวหน้าแคร์
+                {row.role === "team_leader" ? "ทีมผู้รับใช้หลัก" : "หัวหน้าแคร์"}
               </Badge>
             )}
             {row.tags && (

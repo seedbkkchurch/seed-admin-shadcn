@@ -27,7 +27,7 @@ export function useDashboardLambs() {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "id, first_name, last_name, nick_name, profile_picture, gender, birthday, status, is_leader_group_care, tags, interesting, group_care, personality_code, lamb_lesson_ch18_progress, lamb_lesson_life_progress",
+          "id, first_name, last_name, nick_name, profile_picture, gender, birthday, status, role, tags, interesting, group_care, personality_code, lamb_lesson_ch18_progress, lamb_lesson_life_progress",
         );
 
       if (error) throw error;

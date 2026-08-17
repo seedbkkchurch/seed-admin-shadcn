@@ -116,19 +116,20 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     enableSorting: false,
   },
   {
+    // Was is_leader_group_care — now derived from lamb_info.role (see
+    // rbac_lamb_role_redesign project memory, grill-me 2026-08-17).
     id: "leader",
     header: "Leader",
     cell: ({ row }) => {
-      const isLeader = row.original.is_leader_group_care;
-      return isLeader ? (
+      const { role } = row.original;
+      if (role !== "cell_leader" && role !== "team_leader") return <div>-</div>;
+      return (
         <Badge
           variant="outline"
           className="bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200"
         >
-          หัวหน้าแคร์
+          {role === "team_leader" ? "ทีมผู้รับใช้หลัก" : "หัวหน้าแคร์"}
         </Badge>
-      ) : (
-        <div>-</div>
       );
     },
     enableSorting: false,
