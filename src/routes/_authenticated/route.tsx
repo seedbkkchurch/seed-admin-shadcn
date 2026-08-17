@@ -17,6 +17,33 @@ export const Route = createFileRoute("/_authenticated")({
       });
     }
 
+    // ตรวจว่า auth user นี้มีแถว lamb_info ผูกอยู่ไหม (ยกเว้นบัญชี
+    // hardcoded super-admin ที่ตั้งใจไม่มี lamb_info โดยดีไซน์ — ดู
+    // checkIsSuperAdmin() ใน features/user-roles/data/queries.ts) จำเป็น
+    // ตั้งแต่เปิด Google provider (grill-me 2026-08-17): Supabase auto-links
+    // ตาม email ที่ verified แล้วให้อัตโนมัติถ้า email ตรงกับบัญชี
+    // bulk-created เดิม แต่ถ้า Google login ด้วย email ที่ไม่ตรงกับใครเลย
+    // มันจะสร้าง auth.users ใหม่เปล่าๆ ให้ — login ผ่านได้แต่ไม่มี lamb_info
+    // ผูก ทำให้ useMyLamb()/RBAC หาแถวไม่เจอและทุกหน้าใช้งานไม่ได้ กันไว้
+    // ตรงนี้จุดเดียว (ครอบคลุมทุก route ใต้ _authenticated) — เจอแล้ว signOut
+    // ทันทีแล้วเด้งไปหน้าแจ้งเตือน แทนที่จะปล่อยให้ไป error ทีหลัง
+    const isHardcodedSuperAdmin =
+      import.meta.env.VITE_SUPER_ADMIN_UID &&
+      session.user.id === import.meta.env.VITE_SUPER_ADMIN_UID;
+
+    if (!isHardcodedSuperAdmin) {
+      const { data: lamb } = await supabase
+        .from("lamb_info")
+        .select("id")
+        .eq("auth_user_id", session.user.id)
+        .maybeSingle();
+
+      if (!lamb) {
+        await supabase.auth.signOut();
+        throw redirect({ to: "/unregistered" });
+      }
+    }
+
     // บังคับเปลี่ยนรหัสผ่านตอน login ครั้งแรก — ทุกบัญชี bulk-created เริ่ม
     // จากรหัสผ่านเดียวกัน (raw_user_meta_data.must_change_password = true,
     // ตั้งใน migration rbac_bulk_create_lamb_auth_accounts) เด้งไปหน้า

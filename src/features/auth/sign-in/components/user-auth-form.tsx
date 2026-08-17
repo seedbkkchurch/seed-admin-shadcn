@@ -79,6 +79,7 @@ export function UserAuthForm({
   ...props
 }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -119,6 +120,26 @@ export function UserAuthForm({
     toast.success("Welcome back!");
     const targetPath = redirectTo || "/";
     navigate({ to: targetPath, replace: true });
+  }
+
+  // เปิดใช้งานจริงแล้ว (grill-me 2026-08-17) — email ที่ verified แล้วตรง
+  // กับบัญชี bulk-created เดิม (ทั้ง 40 บัญชี confirm หมด) จะถูก Supabase
+  // auto-link เข้า auth.users.id เดิมให้อัตโนมัติ ไม่กระทบ lamb_info /
+  // role / permission ที่ผูกไว้อยู่แล้ว ส่วนกรณี email ไม่ตรงกับใครเลย
+  // (auth.users ใหม่ ไม่มี lamb_info ผูก) ถูกกันไว้ที่
+  // _authenticated/route.tsx beforeLoad — signOut + เด้งไป /unregistered
+  // ให้อัตโนมัติ ไม่ต้องเช็คซ้ำตรงนี้ (redirect ออกจากหน้าไปเลย เลยไม่มี
+  // response ให้ setIsGoogleLoading(false) ตอนสำเร็จ)
+  async function handleGoogleSignIn() {
+    setIsGoogleLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) {
+      toast.error(error.message);
+      setIsGoogleLoading(false);
+    }
   }
 
   return (
@@ -188,18 +209,17 @@ export function UserAuthForm({
           <Separator className="flex-1" />
         </div>
 
-        {/*
-          เปิด Google provider ใน Supabase แล้ว (2026-08-17) แต่ยัง disable
-          ปุ่มนี้ไว้ก่อน — ต้องออกแบบก่อนว่าบัญชี Google ที่ login เข้ามาใหม่
-          จะผูกกับแถวใน lamb_info (auth_user_id) ที่มีอยู่แล้วยังไง เพราะ
-          role/permission ทั้งระบบอิงจาก auth_user_id ตรงนี้ ถ้าเปิดใช้ก่อน
-          ออกแบบ อาจสร้างบัญชีใหม่ที่ไม่มี lamb_info ผูกอยู่ (ดู grill-me
-          2026-08-17). เอา disabled ออกแล้วเติม onClick ที่เรียก
-          supabase.auth.signInWithOAuth({ provider: "google" }) ทีหลังตอน
-          ออกแบบเสร็จ
-        */}
-        <Button type="button" variant="outline" disabled>
-          <GoogleIcon />
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isGoogleLoading || isLoading}
+          onClick={handleGoogleSignIn}
+        >
+          {isGoogleLoading ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <GoogleIcon />
+          )}
           Sign in with Google
         </Button>
       </form>

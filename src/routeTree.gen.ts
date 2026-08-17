@@ -13,6 +13,7 @@ import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as DevotionIndexRouteImport } from './routes/devotion/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as errorsUnregisteredRouteImport } from './routes/(errors)/unregistered'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors404RouteImport } from './routes/(errors)/404'
@@ -78,6 +79,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const errorsUnregisteredRoute = errorsUnregisteredRouteImport.update({
+  id: '/(errors)/unregistered',
+  path: '/unregistered',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const errors503Route = errors503RouteImport.update({
   id: '/(errors)/503',
@@ -348,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/unregistered': typeof errorsUnregisteredRoute
   '/devotion/': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByTo {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/unregistered': typeof errorsUnregisteredRoute
   '/': typeof AuthenticatedIndexRoute
   '/devotion': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -448,6 +456,7 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404Route
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
+  '/(errors)/unregistered': typeof errorsUnregisteredRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/devotion/': typeof DevotionIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -500,6 +509,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/unregistered'
     | '/devotion/'
     | '/errors/$error'
     | '/settings/account'
@@ -547,6 +557,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/unregistered'
     | '/'
     | '/devotion'
     | '/errors/$error'
@@ -599,6 +610,7 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/(errors)/500'
     | '/(errors)/503'
+    | '/(errors)/unregistered'
     | '/_authenticated/'
     | '/devotion/'
     | '/_authenticated/errors/$error'
@@ -649,6 +661,7 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+  errorsUnregisteredRoute: typeof errorsUnregisteredRoute
   DevotionIndexRoute: typeof DevotionIndexRoute
   DevotionDevotionIdIndexRoute: typeof DevotionDevotionIdIndexRoute
 }
@@ -682,6 +695,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/(errors)/unregistered': {
+      id: '/(errors)/unregistered'
+      path: '/unregistered'
+      fullPath: '/unregistered'
+      preLoaderRoute: typeof errorsUnregisteredRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(errors)/503': {
       id: '/(errors)/503'
@@ -1153,6 +1173,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
+  errorsUnregisteredRoute: errorsUnregisteredRoute,
   DevotionIndexRoute: DevotionIndexRoute,
   DevotionDevotionIdIndexRoute: DevotionDevotionIdIndexRoute,
 }
