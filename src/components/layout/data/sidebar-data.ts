@@ -68,12 +68,12 @@ export const sidebarData: SidebarData = {
           url: "/",
           icon: LayoutDashboard,
         },
-        {
-          title: "Chats",
-          url: "/chats",
-          badge: "3",
-          icon: MessagesSquare,
-        },
+        // {
+        //   title: "Chats",
+        //   url: "/chats",
+        //   badge: "3",
+        //   icon: MessagesSquare,
+        // },
         {
           title: "Lamb Info",
           url: "/lamb-info",
