@@ -26,6 +26,7 @@ import {
   BellPlus,
   ClipboardCheck,
   BookOpen,
+  KeyRound,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -83,11 +84,6 @@ export const sidebarData: SidebarData = {
           url: "/lamb-info/devotion",
           icon: NotebookPen,
         },
-        {
-          title: "เฝ้าเดี่ยว (ตาราง)",
-          url: "/lamb-info/devotion/table",
-          icon: Table,
-        },
         // Public page (no login) where a lamb picks their name and
         // subscribes to push reminders — linked here so staff can reach it
         // quickly to test or share the link (grill-me follow-up,
@@ -114,15 +110,36 @@ export const sidebarData: SidebarData = {
           url: "/bible/1/1",
           icon: BookOpen,
         },
+      ],
+    },
+    // Permission-gated admin tools — everything here redirects non-
+    // super_admin visitors to /403 in its own route's beforeLoad (see
+    // routes/_authenticated/user-roles, /personality-type currently isn't
+    // gated but lives here anyway since it's config, not day-to-day data,
+    // and /permissions). Grouped together per grill-me follow-up
+    // 2026-08-17 (moved out of "General" — was previously mixed in there).
+    {
+      title: "Admin",
+      items: [
+        {
+          title: "User Roles",
+          url: "/user-roles",
+          icon: ShieldCheck,
+        },
+        {
+          title: "Permissions",
+          url: "/permissions",
+          icon: KeyRound,
+        },
         {
           title: "Personality Type",
           url: "/personality-type",
           icon: BrainCircuit,
         },
         {
-          title: "User Roles",
-          url: "/user-roles",
-          icon: ShieldCheck,
+          title: "เฝ้าเดี่ยว (ตาราง)",
+          url: "/lamb-info/devotion/table",
+          icon: Table,
         },
       ],
     },

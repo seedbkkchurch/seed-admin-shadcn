@@ -34,6 +34,7 @@ import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedPersonalityTypeIndexRouteImport } from './routes/_authenticated/personality-type/index'
+import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
 import { Route as AuthenticatedLambInfoIndexRouteImport } from './routes/_authenticated/lamb-info/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
@@ -184,6 +185,12 @@ const AuthenticatedPersonalityTypeIndexRoute =
   AuthenticatedPersonalityTypeIndexRouteImport.update({
     id: '/personality-type/',
     path: '/personality-type/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPermissionsIndexRoute =
+  AuthenticatedPermissionsIndexRouteImport.update({
+    id: '/permissions/',
+    path: '/permissions/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLambInfoIndexRoute =
@@ -358,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
+  '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
@@ -405,6 +413,7 @@ export interface FileRoutesByTo {
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
+  '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type': typeof AuthenticatedPersonalityTypeIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/subscribe': typeof AuthenticatedSubscribeIndexRoute
@@ -457,6 +466,7 @@ export interface FileRoutesById {
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
+  '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
@@ -507,6 +517,7 @@ export interface FileRouteTypes {
     | '/group-care/'
     | '/help-center/'
     | '/lamb-info/'
+    | '/permissions/'
     | '/personality-type/'
     | '/settings/'
     | '/subscribe/'
@@ -554,6 +565,7 @@ export interface FileRouteTypes {
     | '/group-care'
     | '/help-center'
     | '/lamb-info'
+    | '/permissions'
     | '/personality-type'
     | '/settings'
     | '/subscribe'
@@ -605,6 +617,7 @@ export interface FileRouteTypes {
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
     | '/_authenticated/lamb-info/'
+    | '/_authenticated/permissions/'
     | '/_authenticated/personality-type/'
     | '/_authenticated/settings/'
     | '/_authenticated/subscribe/'
@@ -817,6 +830,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersonalityTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/permissions/': {
+      id: '/_authenticated/permissions/'
+      path: '/permissions'
+      fullPath: '/permissions/'
+      preLoaderRoute: typeof AuthenticatedPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lamb-info/': {
       id: '/_authenticated/lamb-info/'
       path: '/lamb-info'
@@ -1023,6 +1043,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
+  AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
@@ -1050,6 +1071,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedLambInfoIndexRoute: AuthenticatedLambInfoIndexRoute,
+  AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPersonalityTypeIndexRoute:
     AuthenticatedPersonalityTypeIndexRoute,
   AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
