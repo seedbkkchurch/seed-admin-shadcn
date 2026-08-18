@@ -1,17 +1,29 @@
+import { useEffect } from "react";
 import { UserX } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/lib/supabase/client";
 import { Route as UnregisteredRoute } from "@/routes/(errors)/unregistered";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 // แสดงตอน login สำเร็จ (ผ่าน Google หรือ provider อื่นในอนาคต) แต่ไม่มีแถว
-// lamb_info ผูกกับ auth user นี้ — session ถูก signOut ไปแล้วก่อนเด้งมาหน้านี้
-// (ดู _authenticated/route.tsx beforeLoad) โชว์ email ที่พยายาม login เข้ามา
-// ด้วย ช่วยให้คนที่เผลอเลือกบัญชี Google ผิดรู้ตัวได้เอง ไม่ต้องไปกวนแอดมิน
-// โดยไม่จำเป็น — ตกลงใน grill-me 2026-08-18
+// lamb_info ผูกกับ auth user นี้ — โชว์ email ที่พยายาม login เข้ามาด้วย
+// ช่วยให้คนที่เผลอเลือกบัญชี Google ผิดรู้ตัวได้เอง ไม่ต้องไปกวนแอดมินโดย
+// ไม่จำเป็น — ตกลงใน grill-me 2026-08-18
+//
+// signOut() ทำที่นี่ (ตอน mount) แทนที่จะทำใน _authenticated/route.tsx
+// beforeLoad ก่อน throw redirect — เจอ bug จริงว่า await signOut() ก่อน
+// throw ทำให้เกิด race กับ TanStack Router จน redirect หลุดไป /sign-in
+// แทน /unregistered (ดู commit message เดียวกัน) ย้ายมาทำที่นี่แทนเพราะ
+// ตอนนี้ component mount แปลว่า navigate ไปหน้านี้สำเร็จแล้วจริงๆ ไม่มี
+// อะไรมาแย่ง navigation ได้อีก
 export function UnregisteredError() {
   const navigate = useNavigate();
   const { email } = UnregisteredRoute.useSearch();
+
+  useEffect(() => {
+    void supabase.auth.signOut();
+  }, []);
 
   return (
     <div className="h-svh">

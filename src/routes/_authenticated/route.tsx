@@ -39,12 +39,15 @@ export const Route = createFileRoute("/_authenticated")({
         .maybeSingle();
 
       if (!lamb) {
-        // ดึง email ไว้ก่อน signOut() (session หายไปพร้อม signOut เลย ถ้า
-        // เอาทีหลังจะไม่มีข้อมูลเหลือให้ดึง) ส่งติดไปกับ redirect เป็น
-        // search param ให้หน้า /unregistered โชว์ว่า "ไม่พบบัญชีไหน" —
-        // กันคนงงว่าทำไมเข้าไม่ได้ทั้งที่ login ผ่าน (grill-me 2026-08-18)
+        // สำคัญ: ห้าม await signOut() ตรงนี้ก่อน throw redirect — เจอ bug
+        // จริงตอนทดสอบ (grill-me 2026-08-18) ว่า await signOut() ก่อน throw
+        // ทำให้เกิด race กับ TanStack Router (auth state เปลี่ยนกลางทาง
+        // ระหว่างรอ ทำให้ router re-evaluate _authenticated ซ้ำด้วย session
+        // ที่เพิ่งว่างไปแล้ว ก่อน redirect ของเราจะ commit ผลคือหลุดไป
+        // /sign-in แทน /unregistered) เปลี่ยนมาส่ง email ไปก่อนเฉยๆ แล้วให้
+        // หน้า /unregistered เป็นคน signOut() เองตอน mount แทน — ไม่มี await
+        // คั่นระหว่าง lamb_info check กับ throw redirect เลย ไม่มี race
         const attemptedEmail = session.user.email;
-        await supabase.auth.signOut();
         throw redirect({
           to: "/unregistered",
           search: attemptedEmail ? { email: attemptedEmail } : undefined,
