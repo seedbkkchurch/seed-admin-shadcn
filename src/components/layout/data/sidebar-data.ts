@@ -12,6 +12,7 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  HandHeart,
   HeartHandshake,
   BrainCircuit,
   NotebookPen,
@@ -75,6 +76,11 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว",
           url: "/lamb-info/devotion",
           icon: NotebookPen,
+        },
+        {
+          title: "รายการคำอธิษฐาน",
+          url: "/prayer-list",
+          icon: HandHeart,
         },
         // Public page (no login) where a lamb picks their name and
         // subscribes to push reminders — linked here so staff can reach it

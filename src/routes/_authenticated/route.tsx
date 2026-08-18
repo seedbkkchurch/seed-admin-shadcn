@@ -39,8 +39,16 @@ export const Route = createFileRoute("/_authenticated")({
         .maybeSingle();
 
       if (!lamb) {
+        // ดึง email ไว้ก่อน signOut() (session หายไปพร้อม signOut เลย ถ้า
+        // เอาทีหลังจะไม่มีข้อมูลเหลือให้ดึง) ส่งติดไปกับ redirect เป็น
+        // search param ให้หน้า /unregistered โชว์ว่า "ไม่พบบัญชีไหน" —
+        // กันคนงงว่าทำไมเข้าไม่ได้ทั้งที่ login ผ่าน (grill-me 2026-08-18)
+        const attemptedEmail = session.user.email;
         await supabase.auth.signOut();
-        throw redirect({ to: "/unregistered" });
+        throw redirect({
+          to: "/unregistered",
+          search: attemptedEmail ? { email: attemptedEmail } : undefined,
+        });
       }
     }
 

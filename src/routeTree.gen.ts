@@ -34,6 +34,7 @@ import { Route as AuthenticatedUserRolesIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedPrayerListIndexRouteImport } from './routes/_authenticated/prayer-list/index'
 import { Route as AuthenticatedPersonalityTypeIndexRouteImport } from './routes/_authenticated/personality-type/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
 import { Route as AuthenticatedLambInfoIndexRouteImport } from './routes/_authenticated/lamb-info/index'
@@ -186,6 +187,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedPrayerListIndexRoute =
+  AuthenticatedPrayerListIndexRouteImport.update({
+    id: '/prayer-list/',
+    path: '/prayer-list/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPersonalityTypeIndexRoute =
   AuthenticatedPersonalityTypeIndexRouteImport.update({
@@ -374,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
+  '/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -423,6 +431,7 @@ export interface FileRoutesByTo {
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type': typeof AuthenticatedPersonalityTypeIndexRoute
+  '/prayer-list': typeof AuthenticatedPrayerListIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/subscribe': typeof AuthenticatedSubscribeIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -477,6 +486,7 @@ export interface FileRoutesById {
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
+  '/_authenticated/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/lamb-info/'
     | '/permissions/'
     | '/personality-type/'
+    | '/prayer-list/'
     | '/settings/'
     | '/subscribe/'
     | '/tasks/'
@@ -578,6 +589,7 @@ export interface FileRouteTypes {
     | '/lamb-info'
     | '/permissions'
     | '/personality-type'
+    | '/prayer-list'
     | '/settings'
     | '/subscribe'
     | '/tasks'
@@ -631,6 +643,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lamb-info/'
     | '/_authenticated/permissions/'
     | '/_authenticated/personality-type/'
+    | '/_authenticated/prayer-list/'
     | '/_authenticated/settings/'
     | '/_authenticated/subscribe/'
     | '/_authenticated/tasks/'
@@ -842,6 +855,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/prayer-list/': {
+      id: '/_authenticated/prayer-list/'
+      path: '/prayer-list'
+      fullPath: '/prayer-list/'
+      preLoaderRoute: typeof AuthenticatedPrayerListIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/personality-type/': {
       id: '/_authenticated/personality-type/'
@@ -1065,6 +1085,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
+  AuthenticatedPrayerListIndexRoute: typeof AuthenticatedPrayerListIndexRoute
   AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUserRolesIndexRoute: typeof AuthenticatedUserRolesIndexRoute
@@ -1094,6 +1115,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPersonalityTypeIndexRoute:
     AuthenticatedPersonalityTypeIndexRoute,
+  AuthenticatedPrayerListIndexRoute: AuthenticatedPrayerListIndexRoute,
   AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUserRolesIndexRoute: AuthenticatedUserRolesIndexRoute,

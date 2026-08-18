@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BellPlus,
   ClipboardCheck,
+  HandHeart,
   NotebookPen,
   Rss,
   UserRound,
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 const attendancePath = "/attendance" as const;
 const devotionNewPath = "/lamb-info/devotion/new" as const;
 const devotionFeedPath = "/lamb-info/devotion" as const;
+const prayerListPath = "/prayer-list" as const;
 const subscribePath = "/subscribe" as const;
 
 // isActive: exact match ยกเว้นระบุ prefixMatch เพื่อกันชนกับ path ย่อยของ
@@ -42,6 +44,7 @@ export function MobileTabBar() {
   const isAttendanceActive = useIsPathActive(attendancePath);
   const isDevotionNewActive = useIsPathActive(devotionNewPath);
   const isDevotionFeedActive = useIsPathActive(devotionFeedPath);
+  const isPrayerListActive = useIsPathActive(prayerListPath);
   const isProfileActive = useIsPathActive(
     myLamb ? `/lamb-info/${myLamb.id}` : "",
   );
@@ -60,7 +63,7 @@ export function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label="เมนูหลัก"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         <li>
           <Link to={attendancePath} className={itemClass(isAttendanceActive)}>
             <ClipboardCheck className="size-5" />
@@ -77,6 +80,12 @@ export function MobileTabBar() {
           <Link to={devotionFeedPath} className={itemClass(isDevotionFeedActive)}>
             <Rss className="size-5" />
             <span className="leading-none">Feed</span>
+          </Link>
+        </li>
+        <li>
+          <Link to={prayerListPath} className={itemClass(isPrayerListActive)}>
+            <HandHeart className="size-5" />
+            <span className="leading-none">คำอธิษฐาน</span>
           </Link>
         </li>
         <li>

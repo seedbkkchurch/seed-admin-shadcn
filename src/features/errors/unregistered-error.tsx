@@ -1,27 +1,49 @@
+import { UserX } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { Route as UnregisteredRoute } from "@/routes/(errors)/unregistered";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 // แสดงตอน login สำเร็จ (ผ่าน Google หรือ provider อื่นในอนาคต) แต่ไม่มีแถว
 // lamb_info ผูกกับ auth user นี้ — session ถูก signOut ไปแล้วก่อนเด้งมาหน้านี้
-// (ดู _authenticated/route.tsx beforeLoad) ตกลงใน grill-me 2026-08-17
+// (ดู _authenticated/route.tsx beforeLoad) โชว์ email ที่พยายาม login เข้ามา
+// ด้วย ช่วยให้คนที่เผลอเลือกบัญชี Google ผิดรู้ตัวได้เอง ไม่ต้องไปกวนแอดมิน
+// โดยไม่จำเป็น — ตกลงใน grill-me 2026-08-18
 export function UnregisteredError() {
   const navigate = useNavigate();
+  const { email } = UnregisteredRoute.useSearch();
+
   return (
     <div className="h-svh">
-      <div className="m-auto flex h-full w-full flex-col items-center justify-center gap-2 px-4">
-        <h1 className="text-[4rem] leading-tight font-bold">
-          บัญชีนี้ยังไม่ได้ลงทะเบียน
-        </h1>
-        <p className="text-center text-muted-foreground">
-          บัญชีของคุณ login สำเร็จ แต่ยังไม่มีข้อมูลผูกไว้ในระบบ
-          <br />
-          กรุณาติดต่อแอดมินให้เพิ่มข้อมูลของคุณก่อนเข้าใช้งาน
-        </p>
-        <div className="mt-6 flex gap-4">
-          <Button onClick={() => navigate({ to: "/sign-in" })}>
-            กลับไปหน้าเข้าสู่ระบบ
-          </Button>
+      <div className="m-auto flex h-full w-full max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="mb-2 flex size-16 items-center justify-center rounded-full bg-muted">
+          <UserX className="size-8 text-muted-foreground" />
         </div>
+
+        <h1 className="text-2xl font-semibold tracking-tight">
+          ไม่พบบัญชีของคุณในระบบ
+        </h1>
+
+        <p className="text-muted-foreground">
+          เข้าสู่ระบบด้วยบัญชี Google สำเร็จ แต่ยังไม่มีข้อมูลสมาชิกที่ผูกกับ
+          อีเมลนี้อยู่ในระบบ
+        </p>
+
+        {email && (
+          <Badge variant="secondary" className="px-3 py-1 font-mono text-sm">
+            {email}
+          </Badge>
+        )}
+
+        <p className="text-sm text-muted-foreground">
+          หากอีเมลด้านบนไม่ใช่บัญชีที่คุณตั้งใจใช้งาน ลองเข้าสู่ระบบใหม่ด้วย
+          บัญชี Google ที่ลงทะเบียนไว้กับทีมแทน แต่ถ้าคิดว่านี่คือบัญชีที่
+          ถูกต้องแล้ว กรุณาติดต่อผู้ดูแลระบบให้เพิ่มข้อมูลของคุณก่อนเข้าใช้งาน
+        </p>
+
+        <Button className="mt-4" onClick={() => navigate({ to: "/sign-in" })}>
+          กลับไปหน้าเข้าสู่ระบบ
+        </Button>
       </div>
     </div>
   );

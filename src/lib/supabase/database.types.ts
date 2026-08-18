@@ -496,6 +496,60 @@ export type Database = {
           },
         ]
       }
+      lamb_prayer_request: {
+        Row: {
+          answered_date: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          is_answered: boolean
+          is_shared: boolean
+          lamb_id: string
+          title: string
+          type: Database["public"]["Enums"]["prayer_entry_type"]
+          updated_at: string
+        }
+        Insert: {
+          answered_date?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          is_answered?: boolean
+          is_shared?: boolean
+          lamb_id: string
+          title: string
+          type?: Database["public"]["Enums"]["prayer_entry_type"]
+          updated_at?: string
+        }
+        Update: {
+          answered_date?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          is_answered?: boolean
+          is_shared?: boolean
+          lamb_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["prayer_entry_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lamb_prayer_request_lamb_id_fkey"
+            columns: ["lamb_id"]
+            isOneToOne: false
+            referencedRelation: "lamb_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lamb_prayer_request_lamb_id_fkey"
+            columns: ["lamb_id"]
+            isOneToOne: false
+            referencedRelation: "lamb_info"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lamb_push_subscription: {
         Row: {
           auth: string
@@ -861,7 +915,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      prayer_entry_type: "prayer" | "conversation"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -988,6 +1042,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      prayer_entry_type: ["prayer", "conversation"],
+    },
   },
 } as const
