@@ -40,6 +40,7 @@ import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedLambInfoIndexRouteImport } from './routes/_authenticated/lamb-info/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
+import { Route as AuthenticatedDevotionRemindersIndexRouteImport } from './routes/_authenticated/devotion-reminders/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedChangePasswordIndexRouteImport } from './routes/_authenticated/change-password/index'
 import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
@@ -224,6 +225,12 @@ const AuthenticatedGroupCareIndexRoute =
     path: '/group-care/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDevotionRemindersIndexRoute =
+  AuthenticatedDevotionRemindersIndexRouteImport.update({
+    id: '/devotion-reminders/',
+    path: '/devotion-reminders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -376,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/bible/': typeof AuthenticatedBibleIndexRoute
   '/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
@@ -426,6 +434,7 @@ export interface FileRoutesByTo {
   '/bible': typeof AuthenticatedBibleIndexRoute
   '/change-password': typeof AuthenticatedChangePasswordIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/devotion-reminders': typeof AuthenticatedDevotionRemindersIndexRoute
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
@@ -481,6 +490,7 @@ export interface FileRoutesById {
   '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
   '/_authenticated/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
@@ -534,6 +544,7 @@ export interface FileRouteTypes {
     | '/bible/'
     | '/change-password/'
     | '/chats/'
+    | '/devotion-reminders/'
     | '/group-care/'
     | '/help-center/'
     | '/lamb-info/'
@@ -584,6 +595,7 @@ export interface FileRouteTypes {
     | '/bible'
     | '/change-password'
     | '/chats'
+    | '/devotion-reminders'
     | '/group-care'
     | '/help-center'
     | '/lamb-info'
@@ -638,6 +650,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bible/'
     | '/_authenticated/change-password/'
     | '/_authenticated/chats/'
+    | '/_authenticated/devotion-reminders/'
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
     | '/_authenticated/lamb-info/'
@@ -898,6 +911,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupCareIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/devotion-reminders/': {
+      id: '/_authenticated/devotion-reminders/'
+      path: '/devotion-reminders'
+      fullPath: '/devotion-reminders/'
+      preLoaderRoute: typeof AuthenticatedDevotionRemindersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -1080,6 +1100,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
   AuthenticatedChangePasswordIndexRoute: typeof AuthenticatedChangePasswordIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedDevotionRemindersIndexRoute: typeof AuthenticatedDevotionRemindersIndexRoute
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
@@ -1109,6 +1130,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
   AuthenticatedChangePasswordIndexRoute: AuthenticatedChangePasswordIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedDevotionRemindersIndexRoute:
+    AuthenticatedDevotionRemindersIndexRoute,
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedLambInfoIndexRoute: AuthenticatedLambInfoIndexRoute,

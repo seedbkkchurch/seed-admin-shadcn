@@ -1,13 +1,7 @@
 import {
   LayoutDashboard,
-  Monitor,
-  HelpCircle,
   IdCard,
   Bell,
-  Palette,
-  Settings,
-  Wrench,
-  UserCog,
   ShieldCheck,
   AudioWaveform,
   Command,
@@ -116,8 +110,12 @@ export const sidebarData: SidebarData = {
     // gated but lives here anyway since it's config, not day-to-day data,
     // and /permissions). Grouped together per grill-me follow-up
     // 2026-08-17 (moved out of "General" — was previously mixed in there).
+    // superAdminOnly ซ่อนทั้งกลุ่มนี้จาก sidebar + Cmd+K ให้คนที่ไม่ใช่
+    // super_admin ตั้งแต่แรกเลย (ไม่ใช่แค่กันตอนกดเข้าแล้ว) — ตกลงใน
+    // grill-me 2026-08-18 ดูการกรองจริงที่ useVisibleNavGroups()
     {
       title: "Admin",
+      superAdminOnly: true,
       items: [
         {
           title: "User Roles",
@@ -138,6 +136,15 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว (ตาราง)",
           url: "/lamb-info/devotion/table",
           icon: Table,
+        },
+        // แผงตั้งเวลา + broadcast แจ้งเตือนเฝ้าเดี่ยวหาทุกคน แยกออกมาจาก
+        // /settings/notifications เดิม (ตกลงใน grill-me 2026-08-18) — ต่างจาก
+        // /subscribe ที่เป็นปุ่มรับแจ้งเตือนส่วนตัว (อยู่ใน dropdown โปรไฟล์
+        // แทน ดู profile-dropdown.tsx)
+        {
+          title: "แจ้งเตือนเฝ้าเดี่ยว",
+          url: "/devotion-reminders",
+          icon: Bell,
         },
       ],
     },
@@ -203,46 +210,46 @@ export const sidebarData: SidebarData = {
     //     },
     //   ],
     // },
-    {
-      title: "Other",
-      items: [
-        {
-          title: "Settings",
-          icon: Settings,
-          items: [
-            {
-              title: "Profile",
-              url: "/settings",
-              icon: UserCog,
-            },
-            {
-              title: "Account",
-              url: "/settings/account",
-              icon: Wrench,
-            },
-            {
-              title: "Appearance",
-              url: "/settings/appearance",
-              icon: Palette,
-            },
-            {
-              title: "Notifications",
-              url: "/settings/notifications",
-              icon: Bell,
-            },
-            {
-              title: "Display",
-              url: "/settings/display",
-              icon: Monitor,
-            },
-          ],
-        },
-        {
-          title: "Help Center",
-          url: "/help-center",
-          icon: HelpCircle,
-        },
-      ],
-    },
+    // {
+    //   title: "Other",
+    //   items: [
+    //     {
+    //       title: "Settings",
+    //       icon: Settings,
+    //       items: [
+    //         {
+    //           title: "Profile",
+    //           url: "/settings",
+    //           icon: UserCog,
+    //         },
+    //         {
+    //           title: "Account",
+    //           url: "/settings/account",
+    //           icon: Wrench,
+    //         },
+    //         {
+    //           title: "Appearance",
+    //           url: "/settings/appearance",
+    //           icon: Palette,
+    //         },
+    //         {
+    //           title: "Notifications",
+    //           url: "/settings/notifications",
+    //           icon: Bell,
+    //         },
+    //         {
+    //           title: "Display",
+    //           url: "/settings/display",
+    //           icon: Monitor,
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: "Help Center",
+    //       url: "/help-center",
+    //       icon: HelpCircle,
+    //     },
+    //   ],
+    // },
   ],
 };

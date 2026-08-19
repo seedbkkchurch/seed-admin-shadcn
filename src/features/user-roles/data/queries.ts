@@ -11,6 +11,7 @@ const userRoleKeys = {
   // in-use role would otherwise fail with a raw Postgres FK error — see
   // grill-me 2026-08-15, still applies after the 2026-08-17 redesign).
   roleUsage: (code: string) => ["user-roles", "role-usage", code] as const,
+  isSuperAdmin: ["user-roles", "is-super-admin"] as const,
 };
 
 // --- roles (dictionary) -----------------------------------------------
@@ -193,4 +194,20 @@ export async function checkIsSuperAdmin(): Promise<boolean> {
   if (lambError || !lamb) return false;
 
   return lamb.role === "super_admin";
+}
+
+// Reactive version of checkIsSuperAdmin() สำหรับใช้ใน component ทั่วไป (เช่น
+// ซ่อน/โชว์กลุ่มเมนู Admin ใน sidebar และ Cmd+K search — ดู
+// useVisibleNavGroups ใน components/layout/data/use-visible-nav-groups.ts)
+// ต่างจาก checkIsSuperAdmin() ตรงที่นี่เป็น hook ครอบด้วย useQuery ให้ cache
+// ผลไว้ในเซสชันเดียวกัน ไม่ต้องยิง query ซ้ำทุกครั้งที่ sidebar re-render —
+// ตกลงใน grill-me 2026-08-18. staleTime 5 นาทีเพราะ role ไม่ได้เปลี่ยนบ่อย
+// ระหว่างใช้งานอยู่ (ถ้าแอดมินเปลี่ยน role ให้ใครกลางทาง คนนั้นจะเห็นเมนู
+// อัปเดตภายใน 5 นาที หรือทันทีถ้า refresh หน้า)
+export function useIsSuperAdmin() {
+  return useQuery({
+    queryKey: userRoleKeys.isSuperAdmin,
+    queryFn: checkIsSuperAdmin,
+    staleTime: 5 * 60 * 1000,
+  });
 }

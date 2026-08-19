@@ -34,6 +34,12 @@ import { SignOutDialog } from "@/components/sign-out-dialog";
 // (หน้า /change-password เองแยกข้อความบังคับ/สมัครใจให้อัตโนมัติแล้ว ดู
 // features/auth/change-password/index.tsx) เปลี่ยนได้แค่ของบัญชีตัวเอง
 // เท่านั้น ไม่ใช่ admin reset ให้คนอื่น
+//
+// เพิ่ม "แจ้งเตือนเฝ้าเดี่ยว" ใน grill-me 2026-08-18 (รอบถัดมา) — ลิงก์ไป
+// /subscribe (ปุ่มรับแจ้งเตือนส่วนตัว) แยกออกมาจากแผงควบคุมแอดมิน
+// (DevotionReminderSettingsForm) ที่ตั้งเวลา/broadcast หาทุกคน ซึ่งย้ายไปอยู่
+// เมนู Admin → /devotion-reminders แทน (super_admin เท่านั้น) — ทุกคนกดรับ
+// แจ้งเตือนของตัวเองจากตรงนี้ได้ ไม่มีความเสี่ยงเรื่องสิทธิ์
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState();
   const user = useAuthUser();
@@ -75,7 +81,7 @@ export function ProfileDropdown() {
                 </Link>
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem disabled>
+              <DropdownMenuItem>
                 Profile
                 <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
               </DropdownMenuItem>
@@ -83,6 +89,9 @@ export function ProfileDropdown() {
             <DropdownMenuItem disabled>
               Settings
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/subscribe">แจ้งเตือนเฝ้าเดี่ยว</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/change-password">เปลี่ยนรหัสผ่าน</Link>

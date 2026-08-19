@@ -33,6 +33,10 @@ type NavItem = NavCollapsible | NavLink;
 type NavGroup = {
   title: string;
   items: NavItem[];
+  // ซ่อนทั้งกลุ่มจนกว่าจะยืนยันว่าเป็น super_admin — ดู
+  // useVisibleNavGroups() ที่ AppSidebar และ CommandMenu ใช้กรองก่อน render
+  // (grill-me 2026-08-18)
+  superAdminOnly?: boolean;
 };
 
 type SidebarData = {
