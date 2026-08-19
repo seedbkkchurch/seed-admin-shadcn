@@ -28,6 +28,12 @@ import { SignOutDialog } from "@/components/sign-out-dialog";
 //   เหมือน pattern เดิมใน mobile-tab-bar.tsx กันพาไปหน้าคนอื่นแบบผิดๆ
 // - โชว์ role (useMyRoles) ใต้อีเมล — รวม super_admin hardcoded bypass
 //   account ที่ไม่มีแถว lamb_info ผูกด้วย
+//
+// เพิ่ม "เปลี่ยนรหัสผ่าน" ใน grill-me 2026-08-18 — ลิงก์ไป /change-password
+// เดียวกับหน้าที่บังคับเปลี่ยนตอน login ครั้งแรก แต่เข้าแบบสมัครใจได้ทุกเมื่อ
+// (หน้า /change-password เองแยกข้อความบังคับ/สมัครใจให้อัตโนมัติแล้ว ดู
+// features/auth/change-password/index.tsx) เปลี่ยนได้แค่ของบัญชีตัวเอง
+// เท่านั้น ไม่ใช่ admin reset ให้คนอื่น
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState();
   const user = useAuthUser();
@@ -77,6 +83,9 @@ export function ProfileDropdown() {
             <DropdownMenuItem disabled>
               Settings
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/change-password">เปลี่ยนรหัสผ่าน</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
