@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   BookOpen,
   KeyRound,
+  FlaskConical,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -145,6 +146,20 @@ export const sidebarData: SidebarData = {
           title: "แจ้งเตือนเฝ้าเดี่ยว",
           url: "/devotion-reminders",
           icon: Bell,
+        },
+        // Dev tool สำรวจ YouVersion Platform API แบบสด (ดู grill-me
+        // 2026-08-20) — ไม่ใช่ฟีเจอร์สำหรับสมาชิกทั่วไป จึงอยู่ในกลุ่ม Admin
+        {
+          title: "Bible API Tester",
+          url: "/bible-api-tester",
+          icon: FlaskConical,
+        },
+        // ย้ายมาจากกลุ่ม General เข้ากลุ่ม Admin ตามคำขอ (2026-08-21) — ยังอ่าน
+        // สดผ่าน YouVersion Platform API เหมือนเดิม แค่เปลี่ยนตำแหน่งเมนู
+        {
+          title: "พระคัมภีร์ (Live)",
+          url: "/bible-live/1/1",
+          icon: BookOpen,
         },
       ],
     },
