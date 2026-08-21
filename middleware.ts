@@ -122,7 +122,17 @@ export default async function middleware(request: Request) {
 
     return new Response(html, {
       status: 200,
-      headers: { "content-type": "text/html; charset=utf-8" },
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        // สำคัญ: ห้าม Vercel edge cache แคช response นี้ไว้ — ถ้าไม่มี header
+        // นี้ path /devotion/:id บาง edge region จะแคช response (บางทีเป็น
+        // /index.html เดิมที่เคยถูกเสิร์ฟให้ path นี้ก่อนหน้า) แล้วเสิร์ฟซ้ำ
+        // ให้ crawler ครั้งต่อไปโดยไม่รัน middleware/query Supabase ใหม่เลย
+        // เป็นสาเหตุที่ og:title บางครั้งเป็นของเว็บหลักแทนที่จะเป็นของ
+        // บทความ (สังเกตจาก Vercel function log ที่เจอ "Cache: HIT
+        // /index.html" ในบาง edge region) ดู grill-me 2026-08-21
+        "cache-control": "private, no-store, max-age=0",
+      },
     });
   } catch {
     return; // ผิดพลาดอะไรก็ตาม (network ล่ม ฯลฯ) ปล่อยผ่านดีกว่าบล็อก
