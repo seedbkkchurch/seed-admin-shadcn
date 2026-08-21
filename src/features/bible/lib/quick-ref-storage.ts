@@ -1,4 +1,4 @@
-import { type BibleLanguageMode } from "../data/types";
+import { type BibleEnglishVersion, type BibleLanguageMode } from "../data/types";
 
 const STORAGE_KEY = "bible-quick-ref-state-v1";
 
@@ -7,6 +7,7 @@ export type QuickRefState = {
   chapter: number;
   mode: BibleLanguageMode;
   showStrongs: boolean;
+  enVersion: BibleEnglishVersion;
 };
 
 const DEFAULT_STATE: QuickRefState = {
@@ -14,14 +15,17 @@ const DEFAULT_STATE: QuickRefState = {
   chapter: 1,
   mode: "both",
   showStrongs: true,
+  enVersion: "kjv",
 };
 
 const VALID_MODES: BibleLanguageMode[] = ["th", "en", "both"];
+const VALID_EN_VERSIONS: BibleEnglishVersion[] = ["kjv", "niv"];
 
-// จำหนังสือ/บท/ภาษา/สวิตช์ Strong's ล่าสุดที่เปิดค้างไว้ใน
+// จำหนังสือ/บท/ภาษา/สวิตช์ Strong's/ฉบับแปลอังกฤษล่าสุดที่เปิดค้างไว้ใน
 // BibleQuickReferenceSheet (bottom sheet หน้าเขียนเฝ้าเดี่ยว) ข้ามวัน/ข้าม
 // เครื่อง — คนละ state กับหน้า /bible เต็มจอที่ sync ลง URL อยู่แล้ว (ดู
-// grill-me 2026-08-13 "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว")
+// grill-me 2026-08-13 "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว") เพิ่ม enVersion
+// เข้ามาทีหลัง (2026-08-21) พร้อมฟีเจอร์ NIV
 export function loadQuickRefState(): QuickRefState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -45,6 +49,11 @@ export function loadQuickRefState(): QuickRefState {
         typeof parsed.showStrongs === "boolean"
           ? parsed.showStrongs
           : DEFAULT_STATE.showStrongs,
+      enVersion:
+        typeof parsed.enVersion === "string" &&
+        VALID_EN_VERSIONS.includes(parsed.enVersion as BibleEnglishVersion)
+          ? (parsed.enVersion as BibleEnglishVersion)
+          : DEFAULT_STATE.enVersion,
     };
   } catch {
     return DEFAULT_STATE;

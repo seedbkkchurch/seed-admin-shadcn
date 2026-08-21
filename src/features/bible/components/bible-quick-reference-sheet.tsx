@@ -8,7 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { BiblePanel } from "./bible-panel";
-import { type BibleLanguageMode } from "../data/types";
+import { type BibleEnglishVersion, type BibleLanguageMode } from "../data/types";
 import { loadQuickRefState, saveQuickRefState } from "../lib/quick-ref-storage";
 
 type Stage = "closed" | "collapsed" | "expanded";
@@ -22,7 +22,9 @@ type Stage = "closed" | "collapsed" | "expanded";
 // 2 สถานะตายตัวสลับด้วยปุ่มแทน):
 //   closed    = เห็นแค่ปุ่มลอยมุมขวาล่าง
 //   collapsed = แถบเล็กติดขอบล่างจอ ไม่มีฉากทึบ พิมพ์ต่อในหน้าเขียนได้ปกติ
-//   expanded  = modal เต็มจอแนวนอน ~85% มีฉากทึบ (ใช้ shadcn Sheet เดิม)
+//   expanded  = modal เต็มจอแนวนอน ~85% มีฉากทึบ (ใช้ shadcn Sheet เดิม) —
+//     ตอน expanded บนมือถือกดปุ่มลอยโหมดอ่านใน BiblePanel ต่อได้อีกที
+//     (เต็มจอทับ sheet ไปเลย ดู bible-reading-mode.tsx)
 // กดฉาก/ปุ่ม X ตอน expanded → กลับไป collapsed เสมอ (ไม่ปิดสนิท) —
 // ต้องกดปุ่ม X บนแถบ collapsed อีกทีถึงจะปิดสนิทกลับไปเป็นปุ่มลอย
 //
@@ -45,6 +47,7 @@ export function BibleQuickReferenceSheet({
   const [chapter, setChapter] = useState(1);
   const [mode, setMode] = useState<BibleLanguageMode>("both");
   const [showStrongs, setShowStrongs] = useState(true);
+  const [enVersion, setEnVersion] = useState<BibleEnglishVersion>("kjv");
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(
     new Set(),
   );
@@ -58,20 +61,24 @@ export function BibleQuickReferenceSheet({
     setChapter(saved.chapter);
     setMode(saved.mode);
     setShowStrongs(saved.showStrongs);
+    setEnVersion(saved.enVersion);
   }, []);
 
   useEffect(() => {
-    saveQuickRefState({ bookNumber, chapter, mode, showStrongs });
-  }, [bookNumber, chapter, mode, showStrongs]);
+    saveQuickRefState({ bookNumber, chapter, mode, showStrongs, enVersion });
+  }, [bookNumber, chapter, mode, showStrongs, enVersion]);
 
   // เปลี่ยนหนังสือ/บท → เลือกข้อที่ติ๊กไว้ไม่มีความหมายแล้ว เคลียร์ทิ้ง
   useEffect(() => {
     setSelectedVerses(new Set());
   }, [bookNumber, chapter]);
 
-  const handleBookChange = (nextBook: number) => {
+  // เผื่อ chapter override (โหมดอ่านสไวป์ข้ามหนังสือถอยหลัง → ไปบทสุดท้ายของ
+  // เล่มก่อนหน้า แทนที่จะ reset เป็นบท 1 เหมือนเปลี่ยนหนังสือจาก nav ปกติ) —
+  // เหมือน handleBookChange ในหน้า /bible เต็มจอ (features/bible/index.tsx)
+  const handleBookChange = (nextBook: number, nextChapter = 1) => {
     setBookNumber(nextBook);
-    setChapter(1);
+    setChapter(nextChapter);
   };
 
   const handleToggleVerse = (verseNumber: number) => {
@@ -161,10 +168,12 @@ export function BibleQuickReferenceSheet({
             chapter={chapter}
             mode={mode}
             showStrongs={showStrongs}
+            enVersion={enVersion}
             onBookChange={handleBookChange}
             onChapterChange={setChapter}
             onModeChange={setMode}
             onShowStrongsChange={setShowStrongs}
+            onEnVersionChange={setEnVersion}
             selectable
             selectedVerses={selectedVerses}
             onToggleVerse={handleToggleVerse}

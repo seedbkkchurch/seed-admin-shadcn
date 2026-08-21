@@ -8,9 +8,12 @@ import {
 // ไฟล์ทั้งหมดอยู่ใน public/bible/ — preprocess จาก kjv_strongs.json / thaikjv.json
 // / strongs-hebrew-dictionary.ts / strongs-greek-dictionary.js (ดู grill-me
 // 2026-08-13 และหมายเหตุใน ./types.ts เรื่องทำไมแยกเป็น "ต่อเล่ม" แทน "ต่อบท")
+// niv/ เพิ่มเข้ามาทีหลัง (2026-08-21) แปลงจาก NIV_en.SQLite3 ที่ผู้ใช้อัปโหลด
+// ด้วย script ครั้งเดียว (ไม่ใช่ build step) — รูปแบบไฟล์เหมือน kjv/ ทุกประการ
+// (book_name + chapters) ต่างกันแค่ไม่มีรหัส Strong's ฝังอยู่ในข้อความ
 const bibleKeys = {
   books: ["bible", "books"] as const,
-  bookFile: (lang: "kjv" | "thai", bookNumber: number) =>
+  bookFile: (lang: "kjv" | "thai" | "niv", bookNumber: number) =>
     ["bible", "book-file", lang, bookNumber] as const,
   dictionary: (lang: "hebrew" | "greek") =>
     ["bible", "dictionary", lang] as const,
@@ -33,7 +36,7 @@ export function useBibleBooks() {
 // โหลดทั้งเล่ม (cache ไว้ด้วย react-query key ตามเล่ม+ภาษา) แล้วให้ผู้เรียก
 // slice เอาเฉพาะบทที่ต้องการเอง — สลับบทในเล่มเดียวกันจะไม่ยิง fetch ซ้ำ
 export function useBibleBookFile(
-  lang: "kjv" | "thai",
+  lang: "kjv" | "thai" | "niv",
   bookNumber: number | undefined,
 ) {
   return useQuery({

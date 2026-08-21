@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useBibleBookFile, useBibleBooks } from "../data/queries";
-import { type BibleLanguageMode } from "../data/types";
+import { type BibleEnglishVersion, type BibleLanguageMode } from "../data/types";
 import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
+import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
 import { VerseBlock, versesToMap } from "./verse-block";
 
 export type BiblePanelProps = {
@@ -13,10 +16,14 @@ export type BiblePanelProps = {
   chapter: number;
   mode: BibleLanguageMode;
   showStrongs: boolean;
-  onBookChange: (bookNumber: number) => void;
+  // ฉบับแปลอังกฤษ — KJV (มี Strong's) หรือ NIV (เพิ่มเข้ามา 2026-08-21 ตามที่
+  // ผู้ใช้อัปโหลด NIV_en.SQLite3 มาเอง ขอให้ "ทำเหมือนกันเลย" กับ KJV)
+  enVersion: BibleEnglishVersion;
+  onBookChange: (bookNumber: number, chapter?: number) => void;
   onChapterChange: (chapter: number) => void;
   onModeChange: (mode: BibleLanguageMode) => void;
   onShowStrongsChange: (show: boolean) => void;
+  onEnVersionChange: (version: BibleEnglishVersion) => void;
   // "page" = หน้า /bible เต็มจอ (หัวข้อใหญ่ + การ์ดมีขอบบน desktop) "embedded"
   // = ฝังใน BibleQuickReferenceSheet หน้าเขียนเฝ้าเดี่ยว (แคบกว่า ไม่มีขอบ,
   // มีโหมดเลือกข้อ) — ดู grill-me 2026-08-13
@@ -33,39 +40,48 @@ export type BiblePanelProps = {
 // หน้า /bible เต็มจอ (URL-synced) และฝังใน bottom sheet หน้าเขียนเฝ้าเดี่ยว
 // (local state + localStorage) โดยไม่ต้องเขียน fetch/loading/error ซ้ำสองที่
 // (ดู grill-me 2026-08-13 "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว")
+//
+// เพิ่มโหมดอ่านเต็มจอบนมือถือ (BibleReadingMode) 2026-08-21 — ปุ่มลอยมุมขวา
+// ล่าง (เฉพาะจอ <768px) เปิด/ปิดเอง ใช้ข้อมูล books/enVerses/thVerses ชุด
+// เดียวกับรายการปกติด้านล่าง ไม่ fetch ซ้ำ (ดู grill-me 2026-08-21)
 export function BiblePanel({
   bookNumber,
   chapter,
   mode,
   showStrongs,
+  enVersion,
   onBookChange,
   onChapterChange,
   onModeChange,
   onShowStrongsChange,
+  onEnVersionChange,
   variant = "page",
   selectable = false,
   selectedVerses,
   onToggleVerse,
   onInsertVerses,
 }: BiblePanelProps) {
+  const isMobile = useIsMobile();
+  const [readingMode, setReadingMode] = useState(false);
+
   const { data: books, isPending: booksPending, isError: booksError } =
     useBibleBooks();
 
   const activeBook = books?.find((b) => b.number === bookNumber);
 
-  const kjvFile = useBibleBookFile("kjv", bookNumber);
+  const enFile = useBibleBookFile(enVersion === "niv" ? "niv" : "kjv", bookNumber);
   const thaiFile = useBibleBookFile("thai", bookNumber);
 
-  const enVerses = versesToMap(kjvFile.data?.chapters[String(chapter)]);
+  const enVerses = versesToMap(enFile.data?.chapters[String(chapter)]);
   const thVerses = versesToMap(thaiFile.data?.chapters[String(chapter)]);
   const verseNumbers = Array.from(
     new Set([...enVerses.keys(), ...thVerses.keys()]),
   ).sort((a, b) => a - b);
 
   const isLoadingChapter =
-    (mode !== "th" && kjvFile.isPending) ||
+    (mode !== "th" && enFile.isPending) ||
     (mode !== "en" && thaiFile.isPending);
-  const isChapterError = kjvFile.isError || thaiFile.isError;
+  const isChapterError = enFile.isError || thaiFile.isError;
 
   const selectedCount = selectedVerses?.size ?? 0;
 
@@ -83,6 +99,9 @@ export function BiblePanel({
     onInsertVerses(html);
   };
 
+  const canOpenReadingMode =
+    isMobile && !booksPending && !booksError && !isLoadingChapter && !isChapterError;
+
   return (
     <div className={cn("flex flex-1 flex-col gap-4", variant === "page" && "sm:gap-6")}>
       {booksError ? (
@@ -99,10 +118,12 @@ export function BiblePanel({
           chapter={chapter}
           mode={mode}
           showStrongs={showStrongs}
+          enVersion={enVersion}
           onBookChange={onBookChange}
           onChapterChange={onChapterChange}
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
+          onEnVersionChange={onEnVersionChange}
         />
       )}
 
@@ -161,6 +182,42 @@ export function BiblePanel({
             แทรกข้อที่เลือก
           </Button>
         </div>
+      )}
+
+      {canOpenReadingMode && !readingMode && (
+        <ReadingModeFab
+          onClick={() => setReadingMode(true)}
+          bottomOffsetClassName={
+            variant === "page"
+              ? "bottom-[calc(var(--mobile-tab-bar-height)+1rem)]"
+              : undefined
+          }
+        />
+      )}
+
+      {readingMode && books && (
+        <BibleReadingMode
+          books={books}
+          bookNumber={bookNumber}
+          chapter={chapter}
+          verseNumbers={verseNumbers}
+          enVerses={enVerses}
+          thVerses={thVerses}
+          mode={mode}
+          showStrongs={showStrongs}
+          enVersion={enVersion}
+          onClose={() => setReadingMode(false)}
+          onBookChange={onBookChange}
+          onChapterChange={onChapterChange}
+          onModeChange={onModeChange}
+          onShowStrongsChange={onShowStrongsChange}
+          onEnVersionChange={onEnVersionChange}
+          selectable={selectable}
+          selectedVerses={selectedVerses}
+          onToggleVerse={onToggleVerse}
+          selectedCount={selectedCount}
+          onInsert={handleInsert}
+        />
       )}
     </div>
   );

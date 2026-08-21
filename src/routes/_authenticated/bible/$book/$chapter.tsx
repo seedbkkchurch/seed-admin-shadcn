@@ -9,9 +9,12 @@ import { BiblePage } from "@/features/bible";
 // strongs = โหมดปิด hover/tap คำ Strong's ฮีบรู/กรีก ทั้งหมด — undefined/true
 // = เปิด (ค่าเริ่มต้น), false = ปิด กลายเป็นข้อความธรรมดา (ดู grill-me
 // 2026-08-13)
+// enVersion = ฉบับแปลอังกฤษ (kjv/niv) — เพิ่มมาทีหลัง (2026-08-21 "เพิ่ม NIV")
+// undefined = kjv (ค่าเริ่มต้นเดิม ไม่กระทบ URL เก่าที่แชร์ไว้ก่อนหน้านี้)
 const bibleSearchSchema = z.object({
   lang: z.enum(["th", "en", "both"]).optional().catch(undefined),
   strongs: z.boolean().optional().catch(undefined),
+  enVersion: z.enum(["kjv", "niv"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/bible/$book/$chapter")({

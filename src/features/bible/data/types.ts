@@ -36,3 +36,9 @@ export type StrongsDictionaryEntry = {
 export type StrongsDictionary = Record<string, StrongsDictionaryEntry>;
 
 export type BibleLanguageMode = "th" | "en" | "both";
+
+// ฉบับแปลอังกฤษ — KJV (มีรหัส Strong's ฝังในเนื้อข้อความ) กับ NIV (ข้อความ
+// ล้วน ไม่มีรหัส Strong's เพราะไฟล์ต้นทาง .SQLite3 ที่แปลงมาไม่มีข้อมูลนี้)
+// เพิ่มเข้ามาทีหลัง (2026-08-21) ผู้ใช้อัปโหลดไฟล์ NIV_en.SQLite3 มาเองแล้ว
+// ขอให้ "ทำเหมือนกันเลย" กับ KJV — ดู data/queries.ts + public/bible/niv/*.json
+export type BibleEnglishVersion = "kjv" | "niv";
