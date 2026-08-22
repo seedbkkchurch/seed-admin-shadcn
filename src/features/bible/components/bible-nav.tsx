@@ -29,11 +29,12 @@ type BibleNavProps = {
 };
 
 // เลือกหนังสือ (combobox พิมพ์ค้นหา) + เลือกบท (พิมพ์เลขตรงๆ) + toggle ภาษา +
-// เลือกฉบับแปลอังกฤษ (KJV/NIV) + สวิตช์เปิด/ปิดคำ Strong's ฮีบรู/กรีก (ดู
+// เลือกฉบับแปลอังกฤษ (KJV/NIV/ESV) + สวิตช์เปิด/ปิดคำ Strong's ฮีบรู/กรีก (ดู
 // grill-me 2026-08-13 — เดิมทั้งสองช่องเป็น Select แบบเลื่อนหา) ฉบับแปล
-// อังกฤษเพิ่มมาทีหลัง (2026-08-21 "เพิ่ม NIV") โชว์เฉพาะตอนโหมดภาษามีอังกฤษ
-// (en/both) เพราะเลือกไปก็ไม่มีผลตอนโหมด th อย่างเดียว — สวิตช์ Strong's ก็
-// ปิดใช้งาน (ไม่ซ่อน) ตอนเลือก NIV เพราะไฟล์ NIV ไม่มีรหัส Strong's ฝังอยู่
+// อังกฤษเพิ่มมาทีหลัง (2026-08-21 "เพิ่ม NIV", 2026-08-22 "เพิ่ม ESV")
+// โชว์เฉพาะตอนโหมดภาษามีอังกฤษ (en/both) เพราะเลือกไปก็ไม่มีผลตอนโหมด th
+// อย่างเดียว — สวิตช์ Strong's ก็ปิดใช้งาน (ไม่ซ่อน) ตอนเลือก NIV/ESV เพราะ
+// ไฟล์ NIV/ESV ไม่มีรหัส Strong's ฝังอยู่
 // มือถือ: stack เต็มความกว้างทีละแถว แทนที่จะ wrap เบียดกัน (ดู grill-me
 // mobile-fit 2026-08-13)
 export function BibleNav({
@@ -85,8 +86,16 @@ export function BibleNav({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
-            <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
+            {/* NIV/ESV เป็นอังกฤษล้วน ไม่มีไฟล์ไทยให้โชว์คู่ — ซ่อนตัวเลือกที่
+            มีไทยออกเมื่อเลือก NIV/ESV เหลือแค่ "อังกฤษอย่างเดียว" ให้เลือก
+            (ดู grill-me 2026-08-21 "ถ้า NIV มีแค่ภาษาอังกฤษ ให้แสดง dropdown
+            แค่ภาษาอังกฤษ" — esv เพิ่มมา 2026-08-22 ทำเหมือนกัน) */}
+            {enVersion !== "niv" && enVersion !== "esv" && (
+              <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
+            )}
+            {enVersion !== "niv" && enVersion !== "esv" && (
+              <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
+            )}
             <SelectItem value="en">อังกฤษอย่างเดียว</SelectItem>
           </SelectContent>
         </Select>
@@ -105,6 +114,7 @@ export function BibleNav({
             <SelectContent>
               <SelectItem value="kjv">KJV (มี Strong&apos;s)</SelectItem>
               <SelectItem value="niv">NIV</SelectItem>
+              <SelectItem value="esv">ESV</SelectItem>
             </SelectContent>
           </Select>
         </div>

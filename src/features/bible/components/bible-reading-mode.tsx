@@ -75,9 +75,10 @@ const SWIPE_DIRECTION_RATIO = 1.2;
 // โหมดอ่านเต็มจอบนมือถือ — ซ่อน header/nav ทั้งหมด เหลือ top bar บางๆ,
 // พระคัมภีร์ไหลต่อเนื่องแบบย่อหน้า (เลขข้อเป็น superscript), สไวป์ซ้าย-ขวา
 // เปลี่ยนบท (ข้ามเล่มต่อเนื่องเมื่อสุดบท/แรกบท), ปรับขนาด+เลือกฟอนต์ Google
-// Fonts แยกไทย/อังกฤษ, และเก็บ toggle ภาษา/Strong's/ฉบับแปลอังกฤษ (KJV/NIV)
-// ไว้ในแผงตั้งค่าเดียวกัน — ดู grill-me 2026-08-21 (ทั้ง session การสัมภาษณ์
-// ออกแบบ และ "เพิ่ม NIV ไปด้วยนะทำเหมือนกันเลย")
+// Fonts แยกไทย/อังกฤษ, และเก็บ toggle ภาษา/Strong's/ฉบับแปลอังกฤษ (KJV/NIV/
+// ESV) ไว้ในแผงตั้งค่าเดียวกัน — ดู grill-me 2026-08-21 (ทั้ง session การ
+// สัมภาษณ์ออกแบบ และ "เพิ่ม NIV ไปด้วยนะทำเหมือนกันเลย") + 2026-08-22
+// "เพิ่ม version ESV ให้ด้วยทำเหมือนเดิม"
 export function BibleReadingMode({
   books,
   bookNumber,
@@ -511,8 +512,14 @@ export function BibleReadingMode({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
-                  <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
+                  {/* NIV/ESV เป็นอังกฤษล้วน ไม่มีไฟล์ไทย — ซ่อนตัวเลือกที่มี
+                  ไทยออกเมื่อเลือก NIV/ESV (ดู grill-me 2026-08-21, 2026-08-22) */}
+                  {enVersion !== "niv" && enVersion !== "esv" && (
+                    <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
+                  )}
+                  {enVersion !== "niv" && enVersion !== "esv" && (
+                    <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
+                  )}
                   <SelectItem value="en">อังกฤษอย่างเดียว</SelectItem>
                 </SelectContent>
               </Select>
@@ -533,6 +540,7 @@ export function BibleReadingMode({
                   <SelectContent>
                     <SelectItem value="kjv">KJV (มี Strong&apos;s)</SelectItem>
                     <SelectItem value="niv">NIV</SelectItem>
+                    <SelectItem value="esv">ESV</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

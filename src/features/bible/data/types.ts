@@ -37,8 +37,12 @@ export type StrongsDictionary = Record<string, StrongsDictionaryEntry>;
 
 export type BibleLanguageMode = "th" | "en" | "both";
 
-// ฉบับแปลอังกฤษ — KJV (มีรหัส Strong's ฝังในเนื้อข้อความ) กับ NIV (ข้อความ
-// ล้วน ไม่มีรหัส Strong's เพราะไฟล์ต้นทาง .SQLite3 ที่แปลงมาไม่มีข้อมูลนี้)
-// เพิ่มเข้ามาทีหลัง (2026-08-21) ผู้ใช้อัปโหลดไฟล์ NIV_en.SQLite3 มาเองแล้ว
-// ขอให้ "ทำเหมือนกันเลย" กับ KJV — ดู data/queries.ts + public/bible/niv/*.json
-export type BibleEnglishVersion = "kjv" | "niv";
+// ฉบับแปลอังกฤษ — KJV (มีรหัส Strong's ฝังในเนื้อข้อความ) กับ NIV/ESV
+// (ข้อความล้วน ไม่มีรหัส Strong's เพราะไฟล์ต้นทาง .SQLite3 ที่แปลงมาไม่มี
+// ข้อมูลนี้) NIV เพิ่มเข้ามาทีหลัง (2026-08-21) ผู้ใช้อัปโหลดไฟล์
+// NIV_en.SQLite3 มาเองแล้วขอให้ "ทำเหมือนกันเลย" กับ KJV — ดู data/queries.ts
+// + public/bible/niv/*.json — esv เพิ่มมาอีกรอบ (2026-08-22) จาก
+// ESV_en.SQLite3 ต้นฉบับมี markup red-letter/บทกวี/footnote (<J>/<t>/<pb/>/
+// <f>) แต่ preprocess ตัดทิ้งหมดเหลือข้อความล้วนเหมือน niv ทุกประการ ตามที่
+// ขอ "ทำเหมือนเดิม"
+export type BibleEnglishVersion = "kjv" | "niv" | "esv";

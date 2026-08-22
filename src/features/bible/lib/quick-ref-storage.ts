@@ -19,13 +19,14 @@ const DEFAULT_STATE: QuickRefState = {
 };
 
 const VALID_MODES: BibleLanguageMode[] = ["th", "en", "both"];
-const VALID_EN_VERSIONS: BibleEnglishVersion[] = ["kjv", "niv"];
+const VALID_EN_VERSIONS: BibleEnglishVersion[] = ["kjv", "niv", "esv"];
 
 // จำหนังสือ/บท/ภาษา/สวิตช์ Strong's/ฉบับแปลอังกฤษล่าสุดที่เปิดค้างไว้ใน
 // BibleQuickReferenceSheet (bottom sheet หน้าเขียนเฝ้าเดี่ยว) ข้ามวัน/ข้าม
 // เครื่อง — คนละ state กับหน้า /bible เต็มจอที่ sync ลง URL อยู่แล้ว (ดู
 // grill-me 2026-08-13 "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว") เพิ่ม enVersion
-// เข้ามาทีหลัง (2026-08-21) พร้อมฟีเจอร์ NIV
+// เข้ามาทีหลัง (2026-08-21) พร้อมฟีเจอร์ NIV แล้วเพิ่ม esv เข้า valid list
+// อีกรอบ (2026-08-22)
 export function loadQuickRefState(): QuickRefState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

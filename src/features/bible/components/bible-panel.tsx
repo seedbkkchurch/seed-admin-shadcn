@@ -16,8 +16,9 @@ export type BiblePanelProps = {
   chapter: number;
   mode: BibleLanguageMode;
   showStrongs: boolean;
-  // ฉบับแปลอังกฤษ — KJV (มี Strong's) หรือ NIV (เพิ่มเข้ามา 2026-08-21 ตามที่
-  // ผู้ใช้อัปโหลด NIV_en.SQLite3 มาเอง ขอให้ "ทำเหมือนกันเลย" กับ KJV)
+  // ฉบับแปลอังกฤษ — KJV (มี Strong's) หรือ NIV/ESV (เพิ่มเข้ามา 2026-08-21 /
+  // 2026-08-22 ตามที่ผู้ใช้อัปโหลด NIV_en.SQLite3 / ESV_en.SQLite3 มาเอง
+  // ขอให้ "ทำเหมือนกันเลย" กับ KJV)
   enVersion: BibleEnglishVersion;
   onBookChange: (bookNumber: number, chapter?: number) => void;
   onChapterChange: (chapter: number) => void;
@@ -69,8 +70,23 @@ export function BiblePanel({
 
   const activeBook = books?.find((b) => b.number === bookNumber);
 
-  const enFile = useBibleBookFile(enVersion === "niv" ? "niv" : "kjv", bookNumber);
+  const enFile = useBibleBookFile(
+    enVersion === "niv" || enVersion === "esv" ? enVersion : "kjv",
+    bookNumber,
+  );
   const thaiFile = useBibleBookFile("thai", bookNumber);
+
+  // ไฟล์ NIV/ESV ไม่มีภาษาไทย (ดึงมาจาก .SQLite3 ที่เป็นอังกฤษล้วน) — บังคับ
+  // โหมดภาษาเป็น "อังกฤษอย่างเดียว" ตอนเลือก NIV/ESV โดยไม่ต้อง setState ใน
+  // effect (คำนวณสดทุก render แทน) ค่า `mode` ดิบที่ผู้ใช้เคยเลือกไว้ (เช่น
+  // "ทั้งสองภาษา") ยังจำอยู่เหมือนเดิม พอสลับกลับ KJV ก็คืนค่าเดิมให้เอง (ดู
+  // grill-me 2026-08-21 "ถ้า NIV มีแค่ภาษาอังกฤษ ให้แสดง dropdown แค่ภาษา
+  // อังกฤษ" — esv เพิ่มมา 2026-08-22 ทำเหมือนกัน) — ใช้ effectiveMode แทน
+  // mode ดิบทุกจุดที่ตัดสินใจว่าจะโชว์/โหลดภาษาไหน (BibleNav, VerseBlock,
+  // BibleReadingMode, buildVerseQuoteHtml)
+  const isEnOnlyVersion = enVersion === "niv" || enVersion === "esv";
+  const effectiveMode: BibleLanguageMode =
+    isEnOnlyVersion && mode !== "en" ? "en" : mode;
 
   const enVerses = versesToMap(enFile.data?.chapters[String(chapter)]);
   const thVerses = versesToMap(thaiFile.data?.chapters[String(chapter)]);
@@ -79,8 +95,8 @@ export function BiblePanel({
   ).sort((a, b) => a - b);
 
   const isLoadingChapter =
-    (mode !== "th" && enFile.isPending) ||
-    (mode !== "en" && thaiFile.isPending);
+    (effectiveMode !== "th" && enFile.isPending) ||
+    (effectiveMode !== "en" && thaiFile.isPending);
   const isChapterError = enFile.isError || thaiFile.isError;
 
   const selectedCount = selectedVerses?.size ?? 0;
@@ -92,7 +108,7 @@ export function BiblePanel({
       bookNameTh: activeBook.nameTh,
       chapterNumber: chapter,
       verseNumbers: [...selectedVerses],
-      mode,
+      mode: effectiveMode,
       enVerses,
       thVerses,
     });
@@ -116,7 +132,7 @@ export function BiblePanel({
           books={books}
           bookNumber={bookNumber}
           chapter={chapter}
-          mode={mode}
+          mode={effectiveMode}
           showStrongs={showStrongs}
           enVersion={enVersion}
           onBookChange={onBookChange}
@@ -160,7 +176,7 @@ export function BiblePanel({
                 verseNumber={v}
                 enText={enVerses.get(v)}
                 thText={thVerses.get(v)}
-                mode={mode}
+                mode={effectiveMode}
                 showStrongs={showStrongs}
                 selectable={selectable}
                 selected={selectedVerses?.has(v)}
@@ -203,7 +219,7 @@ export function BiblePanel({
           verseNumbers={verseNumbers}
           enVerses={enVerses}
           thVerses={thVerses}
-          mode={mode}
+          mode={effectiveMode}
           showStrongs={showStrongs}
           enVersion={enVersion}
           onClose={() => setReadingMode(false)}

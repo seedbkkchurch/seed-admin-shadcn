@@ -11,9 +11,10 @@ import {
 // niv/ เพิ่มเข้ามาทีหลัง (2026-08-21) แปลงจาก NIV_en.SQLite3 ที่ผู้ใช้อัปโหลด
 // ด้วย script ครั้งเดียว (ไม่ใช่ build step) — รูปแบบไฟล์เหมือน kjv/ ทุกประการ
 // (book_name + chapters) ต่างกันแค่ไม่มีรหัส Strong's ฝังอยู่ในข้อความ
+// esv/ เพิ่มมาอีกรอบ (2026-08-22) จาก ESV_en.SQLite3 แปลงแบบเดียวกันทุกอย่าง
 const bibleKeys = {
   books: ["bible", "books"] as const,
-  bookFile: (lang: "kjv" | "thai" | "niv", bookNumber: number) =>
+  bookFile: (lang: "kjv" | "thai" | "niv" | "esv", bookNumber: number) =>
     ["bible", "book-file", lang, bookNumber] as const,
   dictionary: (lang: "hebrew" | "greek") =>
     ["bible", "dictionary", lang] as const,
@@ -36,7 +37,7 @@ export function useBibleBooks() {
 // โหลดทั้งเล่ม (cache ไว้ด้วย react-query key ตามเล่ม+ภาษา) แล้วให้ผู้เรียก
 // slice เอาเฉพาะบทที่ต้องการเอง — สลับบทในเล่มเดียวกันจะไม่ยิง fetch ซ้ำ
 export function useBibleBookFile(
-  lang: "kjv" | "thai" | "niv",
+  lang: "kjv" | "thai" | "niv" | "esv",
   bookNumber: number | undefined,
 ) {
   return useQuery({
