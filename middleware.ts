@@ -70,10 +70,19 @@ export default async function middleware(request: Request) {
   }
 
   try {
+    // สำคัญ: query view `public_devotion_feed` — เหมือนกับที่ฝั่ง client ใช้จริง
+    // (usePublicLambDevotionDetail ใน data/queries.ts) ไม่ query ตาราง
+    // `lamb_devotion` ตรงๆ เพราะ RLS ของตารางนั้นอนุญาตแค่ `authenticated`
+    // เท่านั้น (ดู docs/devotion-db-design.md) — ยิงด้วย anon key ตรงๆ จะได้
+    // แถวว่างเปล่ากลับมาเสมอ (ไม่ error แค่ RLS กรองออกหมด) ทำให้โค้ดด้านล่าง
+    // เข้า !entry แล้ว return เงียบๆ ปล่อยผ่านไปเจอ SPA fallback (og:title เดิม
+    // ของเว็บหลัก) — นี่คือสาเหตุตัวจริงของปัญหา og:title ไม่ตรงบทความ ไม่ใช่
+    // เรื่อง cache (ดู grill-me 2026-08-22) — view นี้กรอง is_public=true ให้
+    // อยู่แล้วในตัว เลยไม่ต้องใส่ filter ซ้ำ (และ column นี้ก็ไม่ได้ expose
+    // ออกมาผ่าน view ด้วย)
     const apiUrl =
-      `${supabaseUrl}/rest/v1/lamb_devotion` +
+      `${supabaseUrl}/rest/v1/public_devotion_feed` +
       `?id=eq.${encodeURIComponent(devotionId)}` +
-      `&is_public=eq.true` +
       `&select=title,content_html,image_urls`;
 
     const res = await fetch(apiUrl, {
