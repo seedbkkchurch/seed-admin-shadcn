@@ -1,4 +1,5 @@
 import { Link, useSearch } from "@tanstack/react-router";
+import { APP_VERSION } from "@/config/app-version";
 import {
   Card,
   CardContent,
@@ -53,6 +54,9 @@ export function SignIn() {
           </p>
         </CardFooter>
       </Card>
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        v{APP_VERSION}
+      </p>
     </AuthLayout>
   );
 }

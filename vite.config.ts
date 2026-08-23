@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import path from "path";
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -7,8 +8,19 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { playwright } from "@vitest/browser-playwright";
 
+// Expose package.json's version to the client bundle (grill-me follow-up,
+// 2026-08-23) — read at build time via fs rather than a JSON import so no
+// tsconfig "resolveJsonModule" change is needed. Shown on the sign-in page
+// and in the sidebar footer so support can tell which build a user is on.
+const appVersion = JSON.parse(
+  readFileSync(path.resolve(__dirname, "package.json"), "utf-8"),
+).version as string;
+
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   plugins: [
     tanstackRouter({
       target: "react",

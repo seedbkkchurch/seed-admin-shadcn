@@ -1,4 +1,5 @@
 import { useLayout } from "@/context/layout-provider";
+import { APP_VERSION } from "@/config/app-version";
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +33,9 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={sidebarData.user} />
+        <p className="px-2 pb-1 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+          v{APP_VERSION}
+        </p>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

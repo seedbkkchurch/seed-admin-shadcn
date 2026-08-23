@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { UserX } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Route as UnregisteredRoute } from "@/routes/(errors)/unregistered";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +20,16 @@ import { Button } from "@/components/ui/button";
 // อะไรมาแย่ง navigation ได้อีก
 export function UnregisteredError() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { email } = UnregisteredRoute.useSearch();
 
   useEffect(() => {
     void supabase.auth.signOut();
-  }, []);
+    // ล้าง React Query cache เหมือนกับ SignOutDialog (ดู comment ที่นั่น) —
+    // เคสนี้ signOut() เกิดหลัง login ผ่านมาแล้วครู่หนึ่งด้วยซ้ำ (พอรู้ว่าไม่มี
+    // lamb_info ผูก) เลยอาจมี query ของบัญชีนี้ค้าง cache อยู่แล้วเช่นกัน
+    queryClient.clear();
+  }, [queryClient]);
 
   return (
     <div className="h-svh">

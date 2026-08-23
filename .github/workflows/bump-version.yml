@@ -1,0 +1,50 @@
+name: Bump version
+
+# Auto-bump package.json's patch version on every push to main (grill-me
+# follow-up, 2026-08-23) — plain +0.0.1 every time, doesn't parse commit
+# messages. Reflected automatically in the app's own version display
+# (sign-in page + sidebar footer, see src/config/app-version.ts) on the
+# next build/deploy, since that reads package.json at build time.
+#
+# `if: github.actor != 'github-actions[bot]'` + the bot pushing its own
+# bump commit is what stops this from looping forever — the bump commit
+# itself is authored by github-actions[bot], so the push event it
+# triggers is skipped by that same condition.
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-version-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump-version:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          NEW_VERSION=$(npm version patch --no-git-tag-version)
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+          git push
