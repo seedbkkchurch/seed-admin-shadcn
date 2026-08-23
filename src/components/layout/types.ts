@@ -16,6 +16,11 @@ type BaseNavItem = {
   title: string;
   badge?: string;
   icon?: React.ElementType;
+  // ซ่อนรายการเมนูนี้ (ไม่ใช่ทั้งกลุ่มแบบ superAdminOnly) จาก role พวกนี้ —
+  // ใช้กับ "เช็คชื่อรายสัปดาห์"/"Lamb Info" ที่ต้องซ่อนจาก member/visitor
+  // แต่ item อื่นในกลุ่ม General เดียวกันยังโชว์ปกติ — กรองจริงที่
+  // useVisibleNavGroups() (ดู grill-me 2026-08-23)
+  hiddenForRoles?: string[];
 };
 
 type NavLink = BaseNavItem & {

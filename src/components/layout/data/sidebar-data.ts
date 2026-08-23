@@ -66,6 +66,11 @@ export const sidebarData: SidebarData = {
           title: "Lamb Info",
           url: "/lamb-info",
           icon: IdCard,
+          // รายชื่อลูกแกะหลายคน — member/visitor ดูได้แค่ profile ตัวเอง
+          // (ผ่านปุ่ม Profile ใน dropdown/tab bar) ไม่ควรเห็นเมนูรายการนี้
+          // เลย กันซ้ำที่ route ด้วย (ดู /_authenticated/lamb-info,
+          // grill-me 2026-08-23)
+          hiddenForRoles: ["member", "visitor"],
         },
         {
           title: "เฝ้าเดี่ยว",
@@ -95,6 +100,9 @@ export const sidebarData: SidebarData = {
           title: "เช็คชื่อรายสัปดาห์",
           url: "/attendance",
           icon: ClipboardCheck,
+          // เมนูคุมงานเช็คชื่อทั้งกลุ่มแคร์ — ไม่ใช่ของ member/visitor
+          // (ดู /_authenticated/attendance, grill-me 2026-08-23)
+          hiddenForRoles: ["member", "visitor"],
         },
         // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
         // 2026-08-13 + เปลี่ยนใจ 2026-08-13)

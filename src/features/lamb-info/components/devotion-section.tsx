@@ -6,8 +6,6 @@ import {
   startOfWeek,
   subDays,
 } from "date-fns";
-import { Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +13,6 @@ import { useLambDevotionHistory } from "../data/queries";
 import { DevotionHeatmap, type DevotionHeatmapEntry } from "./devotion-heatmap";
 import { DevotionMonthlyChart } from "./devotion-monthly-chart";
 import { DevotionRecentList } from "./devotion-recent-list";
-import { DevotionUploadDialog } from "./devotion-upload-dialog";
 
 type DevotionView = "day" | "month" | "year";
 
@@ -42,7 +39,6 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
   // rolling windows mid-session.
   const [today] = useState(() => new Date());
   const [view, setView] = useState<DevotionView>("day");
-  const [uploadOpen, setUploadOpen] = useState(false);
 
   const { data: entries, isPending } = useLambDevotionHistory(lambId);
 
@@ -113,37 +109,19 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
           <div className="font-semibold">ประวัติเฝ้าเดี่ยว</div>
           <p className="text-sm text-muted-foreground">{statText}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Tabs value={view} onValueChange={(v) => setView(v as DevotionView)}>
-            <TabsList>
-              <TabsTrigger value="day">รายวัน</TabsTrigger>
-              <TabsTrigger value="month">รายเดือน</TabsTrigger>
-              <TabsTrigger value="year">รายปี</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {/* Mobile: icon-only so it doesn't crowd the Tabs on the same
-              row. sm+: back to the full-text button. Two separate Buttons
-              (rather than one Button with a conditionally-hidden label) so
-              the icon one actually gets `size='icon'`'s square padding —
-              Tailwind can't switch a component's `size` prop per
-              breakpoint, only its className. Per grill-me follow-up
-              (2026-08-11). */}
-          <Button
-            size="icon"
-            className="sm:hidden"
-            aria-label="ส่งเฝ้าเดี่ยว"
-            onClick={() => setUploadOpen(true)}
-          >
-            <Upload />
-          </Button>
-          <Button
-            size="lg"
-            className="hidden sm:inline-flex"
-            onClick={() => setUploadOpen(true)}
-          >
-            <Upload /> ส่งเฝ้าเดี่ยว
-          </Button>
-        </div>
+        {/* ปุ่ม "ส่งเฝ้าเดี่ยว" (เปิด DevotionUploadDialog) เอาออกแล้ว — เดิม
+        ส่งเข้าชื่อ "เจ้าของโปรไฟล์ที่กำลังดูอยู่" ไม่ใช่ตัวเอง ทำให้ใครก็ตาม
+        ที่เข้าดูโปรไฟล์ลูกแกะคนอื่นส่งเฝ้าเดี่ยวแทนคนนั้นได้ — การส่งเฝ้าเดี่ยว
+        จริงมีหน้า "เขียนเฝ้าเดี่ยว" แยกต่างหากอยู่แล้ว (auto-detect เป็นของ
+        ตัวเองเสมอ ดู devotion-editor.tsx) การ์ดนี้จึงเหลือไว้แค่ประวัติ/กราฟ
+        ให้ดูอย่างเดียว (ดู grill-me 2026-08-23) */}
+        <Tabs value={view} onValueChange={(v) => setView(v as DevotionView)}>
+          <TabsList>
+            <TabsTrigger value="day">รายวัน</TabsTrigger>
+            <TabsTrigger value="month">รายเดือน</TabsTrigger>
+            <TabsTrigger value="year">รายปี</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
       <CardContent>
         {isPending ? (
@@ -170,13 +148,6 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
           </>
         )}
       </CardContent>
-
-      <DevotionUploadDialog
-        open={uploadOpen}
-        onOpenChange={setUploadOpen}
-        lambId={lambId}
-        today={today}
-      />
     </Card>
   );
 }
