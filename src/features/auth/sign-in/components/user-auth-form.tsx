@@ -6,6 +6,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
+import { isIos, isStandalone, markIosStandaloneOAuthStart } from "@/lib/pwa";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -128,18 +129,104 @@ export function UserAuthForm({
   // role / permission ที่ผูกไว้อยู่แล้ว ส่วนกรณี email ไม่ตรงกับใครเลย
   // (auth.users ใหม่ ไม่มี lamb_info ผูก) ถูกกันไว้ที่
   // _authenticated/route.tsx beforeLoad — signOut + เด้งไป /unregistered
-  // ให้อัตโนมัติ ไม่ต้องเช็คซ้ำตรงนี้ (redirect ออกจากหน้าไปเลย เลยไม่มี
-  // response ให้ setIsGoogleLoading(false) ตอนสำเร็จ)
+  // ให้อัตโนมัติ ไม่ต้องเช็คซ้ำตรงนี้
+
+  // Popup-based OAuth (grill-me 2026-08-23) — เดิม signInWithOAuth ทำ
+  // full-page navigation ออกจากหน้าต่างปัจจุบันตรงๆ ซึ่งถ้าเรียกจาก
+  // installed PWA (standalone window) จะพาหลุดออกจาก standalone shell เข้า
+  // browser/Custom Tab เสมอ ไม่มีทาง "เด้งกลับเข้า standalone window เดิม"
+  // ตรงๆ โดย spec (ยืนยันจาก Supabase OAuth docs — ไม่มี option ควบคุมพฤติกรรม
+  // นี้) เปลี่ยนมาเปิด popup แยกต่างหากแทน — หน้าต่าง standalone เดิมไม่ขยับ
+  // ไปไหนเลย รอรับ session ผ่าน BroadcastChannel-style postMessage จาก
+  // /auth/popup-callback (ดู route นั้นประกอบ) ยกเว้น iOS standalone ที่
+  // window.open() จาก home-screen web app ไม่การันตีพฤติกรรมตาม spec (บาง
+  // เวอร์ชัน iOS เปิด popup จริง บางเวอร์ชัน hand off ไป Safari เหมือนเดิม)
+  // เลยข้าม popup ไปใช้ full-page redirect เดิมตรงๆ แล้วชดเชยด้วยหน้า
+  // "ปิดแท็บนี้แล้วเปิดจากโฮมสกรีน" ที่ /auth/popup-callback แทน (ดูฝั่ง
+  // consumeIosStandaloneOAuthFlag ใน src/lib/pwa.ts)
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) {
-      toast.error(error.message);
-      setIsGoogleLoading(false);
+
+    const popupCallbackUrl = `${window.location.origin}/auth/popup-callback`;
+
+    if (isIos() && isStandalone()) {
+      markIosStandaloneOAuthStart();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: popupCallbackUrl },
+      });
+      if (error) {
+        toast.error(error.message);
+        setIsGoogleLoading(false);
+      }
+      return;
     }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: popupCallbackUrl, skipBrowserRedirect: true },
+    });
+
+    if (error || !data?.url) {
+      toast.error(error?.message ?? "Something went wrong.");
+      setIsGoogleLoading(false);
+      return;
+    }
+
+    const popup = window.open(
+      data.url,
+      "google-oauth",
+      "width=480,height=640,menubar=no,toolbar=no,location=yes,status=no",
+    );
+
+    if (!popup) {
+      // Popup ถูกบล็อก — fallback เป็น full-page redirect ทันที (เสีย
+      // standalone shell ไปก็ยังดีกว่า login ไม่ได้เลย)
+      const { error: redirectError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: popupCallbackUrl },
+      });
+      if (redirectError) {
+        toast.error(redirectError.message);
+        setIsGoogleLoading(false);
+      }
+      return;
+    }
+
+    let settled = false;
+
+    function handleMessage(event: MessageEvent) {
+      if (
+        event.origin !== window.location.origin ||
+        event.data?.source !== "app-oauth-callback"
+      ) {
+        return;
+      }
+      settled = true;
+      window.removeEventListener("message", handleMessage);
+      window.clearInterval(pollClosed);
+      setIsGoogleLoading(false);
+      if (event.data.ok) {
+        toast.success("Welcome back!");
+        navigate({ to: redirectTo || "/", replace: true });
+      } else {
+        toast.error("เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+
+    // ผู้ใช้ปิด popup เองก่อน auth เสร็จ (ไม่มี error event ให้ดักจับ) —
+    // poll popup.closed เงียบๆ แล้ว reset loading state
+    const pollClosed = window.setInterval(() => {
+      if (popup.closed) {
+        window.clearInterval(pollClosed);
+        if (!settled) {
+          window.removeEventListener("message", handleMessage);
+          setIsGoogleLoading(false);
+        }
+      }
+    }, 500);
   }
 
   return (

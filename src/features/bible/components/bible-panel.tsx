@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,11 +64,18 @@ export function BiblePanel({
 }: BiblePanelProps) {
   const isMobile = useIsMobile();
   const [readingMode, setReadingMode] = useState(false);
+  // จุด scroll เป้าหมายตอนกดปุ่มบทถัดไป/ก่อนหน้าแบบธรรมดา (ไม่ใช่
+  // full-screen reading mode) — เลื่อนขึ้นไปเหนือหัวข้อ "บทที่ X" หลังเปลี่ยน
+  // บท เพราะอ่านพระคัมภีร์ไล่บนลงล่าง กดปุ่มที่อยู่ล่างสุดของรายการข้อแล้ว
+  // อยากกลับไปเริ่มอ่านบทใหม่จากบนสุดทันที ไม่ต้องเลื่อนเอง (ดู grill-me
+  // 2026-08-23 "ไว้ล่างสุด เราอ่าน bible จากบนลงล่างขึ้นบ้างสิ")
+  const headingRef = useRef<HTMLDivElement>(null);
 
   const { data: books, isPending: booksPending, isError: booksError } =
     useBibleBooks();
 
   const activeBook = books?.find((b) => b.number === bookNumber);
+  const chapterCount = activeBook?.chapterCount ?? 1;
 
   const enFile = useBibleBookFile(
     enVersion === "niv" || enVersion === "esv" ? enVersion : "kjv",
@@ -118,6 +125,42 @@ export function BiblePanel({
   const canOpenReadingMode =
     isMobile && !booksPending && !booksError && !isLoadingChapter && !isChapterError;
 
+  // ปุ่มเปลี่ยนบทถัดไป/ก่อนหน้าของโหมดธรรมดา (ตรงข้ามกับ full-screen reading
+  // mode ด้านบน ที่มีสไวป์ + ลูกศรลอยของตัวเองอยู่แล้ว) — ตรรกะข้ามเล่มต่อเนื่อง
+  // เหมือนกับ goToChapter ใน bible-reading-mode.tsx ทุกประการ (สุดบท →
+  // หนังสือถัดไปบท 1, บท 1 ถอยหลัง → หนังสือก่อนหน้าบทสุดท้าย) ตกลงกันใน
+  // grill-me 2026-08-23 ว่าให้ใช้ทั้งหน้า /bible เต็มจอและแผงฝังตอนเขียน
+  // เฝ้าเดี่ยว ทุกขนาดหน้าจอ (ไม่ใช่แค่มือถือเหมือน reading mode)
+  const goToChapter = (dir: "next" | "prev") => {
+    if (!books) return;
+    if (dir === "next") {
+      if (chapter < chapterCount) {
+        onChapterChange(chapter + 1);
+      } else {
+        const next = books.find((b) => b.number === bookNumber + 1);
+        if (next) onBookChange(next.number, 1);
+      }
+    } else {
+      if (chapter > 1) {
+        onChapterChange(chapter - 1);
+      } else {
+        const prev = books.find((b) => b.number === bookNumber - 1);
+        if (prev) onBookChange(prev.number, prev.chapterCount);
+      }
+    }
+    // รอ chapter ใหม่ render เสร็จก่อนค่อย scroll (ค่า chapter/verseNumbers
+    // ในรอบ render นี้ยังเป็นของบทเก่าอยู่)
+    requestAnimationFrame(() => {
+      headingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const canGoNextChapter =
+    !!books &&
+    (chapter < chapterCount || books.some((b) => b.number === bookNumber + 1));
+  const canGoPrevChapter =
+    !!books && (chapter > 1 || books.some((b) => b.number === bookNumber - 1));
+
   return (
     <div className={cn("flex flex-1 flex-col gap-4", variant === "page" && "sm:gap-6")}>
       {booksError ? (
@@ -149,7 +192,7 @@ export function BiblePanel({
           variant === "page" && "sm:rounded-lg sm:border sm:p-6",
         )}
       >
-        <h3 className="mb-3 text-lg font-semibold">
+        <h3 ref={headingRef} className="mb-3 scroll-mt-4 text-lg font-semibold">
           {activeBook
             ? `${activeBook.nameTh} บทที่ ${chapter}`
             : `บทที่ ${chapter}`}
@@ -183,6 +226,35 @@ export function BiblePanel({
                 onToggleSelect={() => onToggleVerse?.(v)}
               />
             ))}
+
+            {/* ปุ่มเปลี่ยนบทแบบธรรมดา — วางไว้ล่างสุดใต้ข้อสุดท้าย (ไม่ใช่
+            เหนือหัวข้อ) เพราะอ่านพระคัมภีร์ไล่บนลงล่าง อ่านจบพอดีก็เจอปุ่ม
+            เลื่อนบทต่อได้เลย ปุ่มไอคอนกลมแบบเดียวกับลูกศรลอยใน full-screen
+            reading mode (ดู grill-me 2026-08-23) */}
+            <div className="mt-6 flex items-center justify-between border-t pt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="rounded-full"
+                disabled={!canGoPrevChapter}
+                onClick={() => goToChapter("prev")}
+                aria-label="บทก่อนหน้า"
+              >
+                ‹
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="rounded-full"
+                disabled={!canGoNextChapter}
+                onClick={() => goToChapter("next")}
+                aria-label="บทถัดไป"
+              >
+                ›
+              </Button>
+            </div>
           </div>
         )}
       </div>

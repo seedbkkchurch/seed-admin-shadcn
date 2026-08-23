@@ -13,6 +13,7 @@ import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as DevotionIndexRouteImport } from './routes/devotion/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthPopupCallbackRouteImport } from './routes/auth/popup-callback'
 import { Route as errorsUnregisteredRouteImport } from './routes/(errors)/unregistered'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -83,6 +84,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthPopupCallbackRoute = AuthPopupCallbackRouteImport.update({
+  id: '/auth/popup-callback',
+  path: '/auth/popup-callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const errorsUnregisteredRoute = errorsUnregisteredRouteImport.update({
   id: '/(errors)/unregistered',
@@ -383,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unregistered': typeof errorsUnregisteredRoute
+  '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/devotion/': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unregistered': typeof errorsUnregisteredRoute
+  '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/': typeof AuthenticatedIndexRoute
   '/devotion': typeof DevotionIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -493,6 +501,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/(errors)/unregistered': typeof errorsUnregisteredRoute
+  '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/devotion/': typeof DevotionIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -550,6 +559,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unregistered'
+    | '/auth/popup-callback'
     | '/devotion/'
     | '/errors/$error'
     | '/settings/account'
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unregistered'
+    | '/auth/popup-callback'
     | '/'
     | '/devotion'
     | '/errors/$error'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/(errors)/unregistered'
+    | '/auth/popup-callback'
     | '/_authenticated/'
     | '/devotion/'
     | '/_authenticated/errors/$error'
@@ -714,6 +726,7 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   errorsUnregisteredRoute: typeof errorsUnregisteredRoute
+  AuthPopupCallbackRoute: typeof AuthPopupCallbackRoute
   DevotionIndexRoute: typeof DevotionIndexRoute
   DevotionDevotionIdIndexRoute: typeof DevotionDevotionIdIndexRoute
 }
@@ -747,6 +760,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth/popup-callback': {
+      id: '/auth/popup-callback'
+      path: '/auth/popup-callback'
+      fullPath: '/auth/popup-callback'
+      preLoaderRoute: typeof AuthPopupCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(errors)/unregistered': {
       id: '/(errors)/unregistered'
@@ -1264,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   errorsUnregisteredRoute: errorsUnregisteredRoute,
+  AuthPopupCallbackRoute: AuthPopupCallbackRoute,
   DevotionIndexRoute: DevotionIndexRoute,
   DevotionDevotionIdIndexRoute: DevotionDevotionIdIndexRoute,
 }
