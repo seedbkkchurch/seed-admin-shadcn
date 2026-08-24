@@ -7,7 +7,7 @@ import { uploadAvatar } from "@/lib/supabase/avatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB — matches bucket-seed Storage limit (grill-me 2026-08-24)
 const AVATAR_SIZE = 256;
 
 type AvatarUploadCommonProps = {
@@ -36,7 +36,7 @@ function validateFile(file: File): string | null {
     return "รองรับเฉพาะไฟล์ JPG, PNG หรือ WebP เท่านั้น";
   }
   if (file.size > MAX_FILE_BYTES) {
-    return "ขนาดไฟล์ต้องไม่เกิน 5MB";
+    return "ขนาดไฟล์ต้องไม่เกิน 10MB";
   }
   return null;
 }
