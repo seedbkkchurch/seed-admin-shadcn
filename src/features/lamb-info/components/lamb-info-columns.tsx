@@ -99,7 +99,14 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
     enableSorting: false,
   },
   {
+    // A lamb belongs to at most one care group, but accessorFn still
+    // returns a singleton array (rather than the bare id) so the faceted
+    // filter can reuse the same "arrIncludesSome" filterFn as the tags
+    // column above (see lamb-info-table.tsx) instead of a bespoke
+    // scalar-equality filterFn. Display is untouched — the cell still
+    // renders straight from row.original.group_care_info.
     id: "group",
+    accessorFn: (row) => (row.group_care_info ? [row.group_care_info.id] : []),
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Group" />
     ),
@@ -113,6 +120,7 @@ export const lambInfoColumns: ColumnDef<LambInfoRow>[] = [
         <div>-</div>
       );
     },
+    filterFn: "arrIncludesSome",
     enableSorting: false,
   },
   {

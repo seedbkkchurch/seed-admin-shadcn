@@ -40,6 +40,13 @@ import { SignOutDialog } from "@/components/sign-out-dialog";
 // (DevotionReminderSettingsForm) ที่ตั้งเวลา/broadcast หาทุกคน ซึ่งย้ายไปอยู่
 // เมนู Admin → /devotion-reminders แทน (super_admin เท่านั้น) — ทุกคนกดรับ
 // แจ้งเตือนของตัวเองจากตรงนี้ได้ ไม่มีความเสี่ยงเรื่องสิทธิ์
+//
+// avatar ตรงปุ่มเปิด — เดิม hardcode src="/avatars/01.png" (path หลอกที่ไม่
+// มีไฟล์จริง เลย 404 แล้ว fallback เป็นตัวอักษรเสมอ) เปลี่ยนมาใช้
+// myLamb.profile_picture จริง (คอลัมน์ lamb_info.profile_picture, อัปโหลดผ่าน
+// AvatarUpload บนหน้าโปรไฟล์ — ดู avatar-upload.tsx) ถ้ายังไม่เคยอัปโหลด
+// (null) ก็ยังคง fallback เป็นตัวอักษรย่ออีเมลเหมือนเดิม ไม่ต้องเปลี่ยน UX
+// (ดู grill-me 2026-08-24)
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState();
   const user = useAuthUser();
@@ -55,7 +62,9 @@ export function ProfileDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/avatars/01.png" alt={email} />
+              {myLamb?.profile_picture && (
+                <AvatarImage src={myLamb.profile_picture} alt={email} />
+              )}
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
           </Button>

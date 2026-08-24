@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination, DataTableToolbar } from "@/components/data-table";
+import { useGroupCareOptions } from "../data/queries";
 import { type LambInfoRow } from "../data/schema";
 import { lambInfoColumns as columns } from "./lamb-info-columns";
 
@@ -69,6 +70,20 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
       .map((tag) => ({ label: tag, value: tag }));
   }, [data]);
 
+  // Unlike tagOptions above, group options come from the full group_care
+  // lookup table (not just what's present in the currently loaded rows) —
+  // per grill-me 2026-08-24, so a group with zero members currently shown
+  // is still selectable rather than silently missing from the dropdown.
+  const { data: groupCareOptions } = useGroupCareOptions();
+  const groupOptions = useMemo(
+    () =>
+      (groupCareOptions ?? []).map((group) => ({
+        label: group.name,
+        value: group.id,
+      })),
+    [groupCareOptions],
+  );
+
   const {
     columnFilters,
     onColumnFiltersChange,
@@ -82,6 +97,7 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
     globalFilter: { enabled: false },
     columnFilters: [
       { columnId: "nick_name", searchKey: "nickName", type: "string" },
+      { columnId: "group", searchKey: "groupCare", type: "array" },
       { columnId: "tags", searchKey: "tags", type: "array" },
     ],
   });
@@ -126,7 +142,10 @@ export function LambInfoTable({ data, search, navigate }: DataTableProps) {
         table={table}
         searchPlaceholder="Filter by nickname..."
         searchKey="nick_name"
-        filters={[{ columnId: "tags", title: "Tags", options: tagOptions }]}
+        filters={[
+          { columnId: "group", title: "Group", options: groupOptions },
+          { columnId: "tags", title: "Tags", options: tagOptions },
+        ]}
       />
       <div className="overflow-hidden rounded-md border">
         <Table>

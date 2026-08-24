@@ -107,7 +107,10 @@ export const sidebarData: SidebarData = {
         // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
         // 2026-08-13 + เปลี่ยนใจ 2026-08-13)
         {
-          title: "พระคัมภีร์ (KJV)",
+          // เดิมชื่อ "พระคัมภีร์ (KJV)" — ตัด "(KJV)" ออก เหลือแค่
+          // "พระคัมภีร์" เฉยๆ (ดู grill-me 2026-08-24) หน้า /bible เอง
+          // (features/bible/index.tsx) ก็แก้หัวข้อให้ตรงกันด้วย
+          title: "พระคัมภีร์",
           url: "/bible/1/1",
           icon: BookOpen,
         },

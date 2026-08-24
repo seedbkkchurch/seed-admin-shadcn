@@ -8,6 +8,7 @@ export type MyLamb = {
   last_name: string;
   nick_name: string | null;
   email: string | null;
+  profile_picture: string | null;
 };
 
 // ลูกแกะที่ผูกกับ auth account ที่ล็อกอินอยู่ตอนนี้ (lamb_info.auth_user_id =
@@ -28,7 +29,7 @@ export function useMyLamb() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lamb_info")
-        .select("id, first_name, last_name, nick_name, email")
+        .select("id, first_name, last_name, nick_name, email, profile_picture")
         .eq("auth_user_id", user!.id)
         .maybeSingle();
 

@@ -81,9 +81,11 @@ export function BiblePage() {
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            พระคัมภีร์ King James Version
-          </h2>
+          {/* เดิม "พระคัมภีร์ King James Version" เต็มๆ — ตัดให้เหลือแค่
+          "พระคัมภีร์" เฉยๆ ให้ตรงกับชื่อเมนู sidebar (ดู sidebar-data.ts,
+          grill-me 2026-08-24) ฉบับแปล (KJV/NIV/ESV) เลือกได้จาก dropdown
+          ใน BibleNav อยู่แล้วด้านล่าง ไม่ต้องตรึงไว้ในหัวข้อ */}
+          <h2 className="text-2xl font-bold tracking-tight">พระคัมภีร์</h2>
           <p className="text-muted-foreground">
             มีรหัส Strong&apos;s กำกับ — แตะ/hover คำที่ขีดเส้นใต้จางๆ
             เพื่อดูความหมายจาก dictionary ภาษากรีก/ฮีบรู

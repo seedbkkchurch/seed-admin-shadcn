@@ -32,7 +32,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={sidebarData.user} />
+        <NavUser />
         <p className="px-2 pb-1 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
           v{APP_VERSION}
         </p>

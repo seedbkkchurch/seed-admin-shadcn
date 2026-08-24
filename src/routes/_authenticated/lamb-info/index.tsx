@@ -7,6 +7,14 @@ const lambInfoSearchSchema = z.object({
   page: z.number().optional().catch(1),
   pageSize: z.number().optional().catch(10),
   nickName: z.string().optional().catch(""),
+  // Faceted filters (Tags, Group) — added so their selections survive a
+  // refresh/shared URL. Previously missing here, so the table's local
+  // columnFilters state still applied the filter on screen (it doesn't
+  // re-read `search` after mount), but the URL param itself was silently
+  // stripped by zod's default "unknown keys" behavior on the next parse —
+  // fixed alongside the new `groupCare` filter (see grill-me 2026-08-24).
+  tags: z.array(z.string()).optional().catch(undefined),
+  groupCare: z.array(z.string()).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/lamb-info/")({
