@@ -18,14 +18,15 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { BookCombobox } from "./book-combobox";
+import { BibleHeadings, BibleText, type BibleTextParseMode } from "./bible-text";
 import { ChapterInput } from "./chapter-input";
-import { StrongsWord } from "./strongs-word";
 import {
   type BibleBookMeta,
   type BibleEnglishVersion,
   type BibleLanguageMode,
+  type BibleThaiVersion,
+  type BibleVerse,
 } from "../data/types";
-import { parseStrongsText } from "../lib/parse-strongs";
 import {
   ensureGoogleFontLoaded,
   findLatinFont,
@@ -45,11 +46,14 @@ type ReadingModeProps = {
   bookNumber: number;
   chapter: number;
   verseNumbers: number[];
-  enVerses: Map<number, string>;
-  thVerses: Map<number, string>;
+  enVerses: Map<number, BibleVerse>;
+  thVerses: Map<number, BibleVerse>;
   mode: BibleLanguageMode;
   showStrongs: boolean;
   enVersion: BibleEnglishVersion;
+  thVersion: BibleThaiVersion;
+  enParseMode: BibleTextParseMode;
+  thParseMode: BibleTextParseMode;
   onClose: () => void;
   // chapter=undefined ตอนเปลี่ยนหนังสือ = ไปบทที่ 1 (ปกติ) — ตอนสไวป์ข้าม
   // หนังสือถอยหลังจะส่งบทสุดท้ายของเล่มก่อนหน้ามาแทน (ดู bible-panel.tsx)
@@ -58,6 +62,7 @@ type ReadingModeProps = {
   onModeChange: (mode: BibleLanguageMode) => void;
   onShowStrongsChange: (show: boolean) => void;
   onEnVersionChange: (version: BibleEnglishVersion) => void;
+  onThVersionChange: (version: BibleThaiVersion) => void;
   // ใช้เฉพาะฝัง bottom sheet เขียนเฝ้าเดี่ยว (variant="embedded" ใน
   // BiblePanel) — แตะข้อความเพื่อเลือก/ยกเลิก แล้วกดแถบล่าง "แทรกข้อที่เลือก"
   selectable?: boolean;
@@ -76,9 +81,11 @@ const SWIPE_DIRECTION_RATIO = 1.2;
 // พระคัมภีร์ไหลต่อเนื่องแบบย่อหน้า (เลขข้อเป็น superscript), สไวป์ซ้าย-ขวา
 // เปลี่ยนบท (ข้ามเล่มต่อเนื่องเมื่อสุดบท/แรกบท), ปรับขนาด+เลือกฟอนต์ Google
 // Fonts แยกไทย/อังกฤษ, และเก็บ toggle ภาษา/Strong's/ฉบับแปลอังกฤษ (KJV/NIV/
-// ESV) ไว้ในแผงตั้งค่าเดียวกัน — ดู grill-me 2026-08-21 (ทั้ง session การ
-// สัมภาษณ์ออกแบบ และ "เพิ่ม NIV ไปด้วยนะทำเหมือนกันเลย") + 2026-08-22
-// "เพิ่ม version ESV ให้ด้วยทำเหมือนเดิม"
+// ESV/ERV) + ฉบับแปลไทย (ไทย/ERV) ไว้ในแผงตั้งค่าเดียวกัน — ดู grill-me
+// 2026-08-21 (ทั้ง session การสัมภาษณ์ออกแบบ และ "เพิ่ม NIV ไปด้วยนะทำเหมือน
+// กันเลย") + 2026-08-22 "เพิ่ม version ESV ให้ด้วยทำเหมือนเดิม" + 2026-08-24
+// "เพิ่ม ERV" (headings แสดงก่อนข้อ, เชิงอรรถเป็น superscript popover เหมือน
+// Strong's, คุมด้วยสวิตช์เดียวกัน)
 export function BibleReadingMode({
   books,
   bookNumber,
@@ -89,12 +96,16 @@ export function BibleReadingMode({
   mode,
   showStrongs,
   enVersion,
+  thVersion,
+  enParseMode,
+  thParseMode,
   onClose,
   onBookChange,
   onChapterChange,
   onModeChange,
   onShowStrongsChange,
   onEnVersionChange,
+  onThVersionChange,
   selectable = false,
   selectedVerses,
   onToggleVerse,
@@ -214,9 +225,10 @@ export function BibleReadingMode({
 
   const showEn = mode === "en" || mode === "both";
   const showTh = mode === "th" || mode === "both";
-  // แตะข้อเพื่อเลือก (embedded) กับ tap ดูความหมาย Strong's ชนกัน — เลือกทาง
-  // "เลือกข้อ" เป็นหลักตอนอยู่ใน selectable mode (ดู grill-me 2026-08-21)
-  const effectiveShowStrongs = showStrongs && !selectable;
+  // แตะข้อเพื่อเลือก (embedded) กับ tap ดูความหมาย Strong's/เชิงอรรถชนกัน —
+  // เลือกทาง "เลือกข้อ" เป็นหลักตอนอยู่ใน selectable mode (ดู grill-me
+  // 2026-08-21)
+  const effectiveShowMarkup = showStrongs && !selectable;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -272,14 +284,24 @@ export function BibleReadingMode({
           ) : (
             <>
               {showEn && (
-                <p
+                <div
                   className="mb-4"
                   style={{ fontFamily: latinFont.cssFamily, fontSize: fontSizePx }}
                 >
-                  {verseNumbers.map((v) => {
-                    const text = enVerses.get(v);
-                    if (!text) return null;
-                    return (
+                  {verseNumbers.flatMap((v) => {
+                    const verse = enVerses.get(v);
+                    if (!verse?.text) return [];
+                    // แสดงหัวข้อเฉพาะฝั่งอังกฤษ ถ้าอังกฤษกำลังแสดงอยู่ (โหมด
+                    // "ทั้งสองภาษา" ไม่ซ้ำไทยด้านล่าง) — ไม่มีหัวข้ออังกฤษ
+                    // (เช่น เลือก KJV/NIV/ESV) แต่ไทยเป็น ERV ค่อย fallback
+                    // ไปโชว์ฝั่งไทยแทน (ดู bible-text.tsx)
+                    const headings = verse.headings?.length
+                      ? verse.headings
+                      : !showTh
+                        ? thVerses.get(v)?.headings
+                        : undefined;
+                    return [
+                      <BibleHeadings key={`h-${v}`} headings={headings} />,
                       <ReadingVerse
                         key={v}
                         verseNumber={v}
@@ -287,34 +309,35 @@ export function BibleReadingMode({
                         selected={selectedVerses?.has(v)}
                         onToggle={() => onToggleVerse?.(v)}
                       >
-                        {parseStrongsText(text).map((segment, i) =>
-                          segment.type === "text" || !effectiveShowStrongs ? (
-                            segment.text
-                          ) : (
-                            <StrongsWord
-                              key={i}
-                              text={segment.text}
-                              codes={segment.codes}
-                            />
-                          ),
-                        )}
-                      </ReadingVerse>
-                    );
+                        <BibleText
+                          text={verse.text}
+                          parseMode={enParseMode}
+                          showMarkup={effectiveShowMarkup}
+                          footnotes={verse.footnotes}
+                        />
+                      </ReadingVerse>,
+                    ];
                   })}
-                </p>
+                </div>
               )}
               {showTh && (
-                <p
+                <div
                   style={{
                     fontFamily: thaiFont.cssFamily,
                     fontSize: fontSizePx,
                   }}
                   className={cn(mode === "both" && "text-muted-foreground")}
                 >
-                  {verseNumbers.map((v) => {
-                    const text = thVerses.get(v);
-                    if (!text) return null;
-                    return (
+                  {verseNumbers.flatMap((v) => {
+                    const verse = thVerses.get(v);
+                    if (!verse?.text) return [];
+                    // ถ้าโหมด "ทั้งสองภาษา" หัวข้อโชว์ไปแล้วฝั่งอังกฤษด้านบน
+                    // (หรือ fallback แล้ว) ไม่ต้องโชว์ซ้ำที่นี่อีก — โชว์เอง
+                    // เฉพาะตอนภาษาไทยแสดงเดี่ยว (mode="th") (ดู grill-me
+                    // 2026-08-24 "โชว์ครั้งเดียว")
+                    const headings = !showEn ? verse.headings : undefined;
+                    return [
+                      <BibleHeadings key={`h-${v}`} headings={headings} />,
                       <ReadingVerse
                         key={v}
                         verseNumber={v}
@@ -322,11 +345,16 @@ export function BibleReadingMode({
                         selected={selectedVerses?.has(v)}
                         onToggle={() => onToggleVerse?.(v)}
                       >
-                        {text}
-                      </ReadingVerse>
-                    );
+                        <BibleText
+                          text={verse.text}
+                          parseMode={thParseMode}
+                          showMarkup={effectiveShowMarkup}
+                          footnotes={verse.footnotes}
+                        />
+                      </ReadingVerse>,
+                    ];
                   })}
-                </p>
+                </div>
               )}
             </>
           )}
@@ -513,7 +541,8 @@ export function BibleReadingMode({
                 </SelectTrigger>
                 <SelectContent>
                   {/* NIV/ESV เป็นอังกฤษล้วน ไม่มีไฟล์ไทย — ซ่อนตัวเลือกที่มี
-                  ไทยออกเมื่อเลือก NIV/ESV (ดู grill-me 2026-08-21, 2026-08-22) */}
+                  ไทยออกเมื่อเลือก NIV/ESV (ดู grill-me 2026-08-21, 2026-08-22
+                  — ERV คงพฤติกรรมเดิม 2026-08-24) */}
                   {enVersion !== "niv" && enVersion !== "esv" && (
                     <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
                   )}
@@ -524,6 +553,26 @@ export function BibleReadingMode({
                 </SelectContent>
               </Select>
             </div>
+
+            {showTh && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">ฉบับไทย</span>
+                <Select
+                  value={thVersion}
+                  onValueChange={(v) =>
+                    onThVersionChange(v as BibleThaiVersion)
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="thai">KJV</SelectItem>
+                    <SelectItem value="erv">ERV</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {showEn && (
               <div className="flex flex-col gap-1.5">
@@ -541,18 +590,19 @@ export function BibleReadingMode({
                     <SelectItem value="kjv">KJV (มี Strong&apos;s)</SelectItem>
                     <SelectItem value="niv">NIV</SelectItem>
                     <SelectItem value="esv">ESV</SelectItem>
+                    <SelectItem value="erv">ERV</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             )}
 
-            {showEn && (
+            {(showEn || showTh) && (
               <label className="flex items-center gap-2 text-sm">
                 <Switch
                   checked={showStrongs}
                   onCheckedChange={onShowStrongsChange}
                 />
-                แสดงคำศัพท์ Strong&apos;s (ฮีบรู/กรีก)
+                แสดงคำศัพท์ Strong&apos;s / เชิงอรรถ
               </label>
             )}
           </div>

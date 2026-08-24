@@ -5,26 +5,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useBibleBookFile, useBibleBooks } from "../data/queries";
-import { type BibleEnglishVersion, type BibleLanguageMode } from "../data/types";
+import {
+  type BibleEnglishVersion,
+  type BibleLanguageMode,
+  type BibleThaiVersion,
+} from "../data/types";
+import { type BibleTextParseMode } from "./bible-text";
 import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
 import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
-import { VerseBlock, versesToMap } from "./verse-block";
+import { indexVerses, VerseBlock } from "./verse-block";
 
 export type BiblePanelProps = {
   bookNumber: number;
   chapter: number;
   mode: BibleLanguageMode;
   showStrongs: boolean;
-  // ฉบับแปลอังกฤษ — KJV (มี Strong's) หรือ NIV/ESV (เพิ่มเข้ามา 2026-08-21 /
-  // 2026-08-22 ตามที่ผู้ใช้อัปโหลด NIV_en.SQLite3 / ESV_en.SQLite3 มาเอง
-  // ขอให้ "ทำเหมือนกันเลย" กับ KJV)
+  // ฉบับแปลอังกฤษ — KJV (มี Strong's) / NIV / ESV (ข้อความล้วน) / ERV (มี
+  // เชิงอรรถ+หัวข้อ, เพิ่มเข้ามา 2026-08-24 "เพิ่ม ERV")
   enVersion: BibleEnglishVersion;
+  // ฉบับแปลไทย — thai (ไทย KJV เดิม) / erv (มีเชิงอรรถ+หัวข้อ) เพิ่มเข้ามา
+  // คู่กัน 2026-08-24
+  thVersion: BibleThaiVersion;
   onBookChange: (bookNumber: number, chapter?: number) => void;
   onChapterChange: (chapter: number) => void;
   onModeChange: (mode: BibleLanguageMode) => void;
   onShowStrongsChange: (show: boolean) => void;
   onEnVersionChange: (version: BibleEnglishVersion) => void;
+  onThVersionChange: (version: BibleThaiVersion) => void;
   // "page" = หน้า /bible เต็มจอ (หัวข้อใหญ่ + การ์ดมีขอบบน desktop) "embedded"
   // = ฝังใน BibleQuickReferenceSheet หน้าเขียนเฝ้าเดี่ยว (แคบกว่า ไม่มีขอบ,
   // มีโหมดเลือกข้อ) — ดู grill-me 2026-08-13
@@ -45,17 +53,26 @@ export type BiblePanelProps = {
 // เพิ่มโหมดอ่านเต็มจอบนมือถือ (BibleReadingMode) 2026-08-21 — ปุ่มลอยมุมขวา
 // ล่าง (เฉพาะจอ <768px) เปิด/ปิดเอง ใช้ข้อมูล books/enVerses/thVerses ชุด
 // เดียวกับรายการปกติด้านล่าง ไม่ fetch ซ้ำ (ดู grill-me 2026-08-21)
+//
+// เพิ่ม ERV (อังกฤษ+ไทย) 2026-08-24 — ไฟล์ erv-en/erv-th มี field
+// headings/footnotes เพิ่มจากไฟล์ฉบับอื่น ใช้ indexVerses (Map<number,
+// BibleVerse> เต็ม object) แทน versesToMap (Map<number,string> เดิม) ทั่ว
+// ทั้ง panel เพื่อส่งต่อ headings/footnotes ให้ VerseBlock/BibleReadingMode/
+// buildVerseQuoteHtml เรียกใช้ได้ (build-verse-quote-html.ts ตัด footnote
+// marker ทิ้งเองก่อนแทรก editor, ไม่เคยรวม headings อยู่แล้วตั้งแต่แรก)
 export function BiblePanel({
   bookNumber,
   chapter,
   mode,
   showStrongs,
   enVersion,
+  thVersion,
   onBookChange,
   onChapterChange,
   onModeChange,
   onShowStrongsChange,
   onEnVersionChange,
+  onThVersionChange,
   variant = "page",
   selectable = false,
   selectedVerses,
@@ -77,26 +94,36 @@ export function BiblePanel({
   const activeBook = books?.find((b) => b.number === bookNumber);
   const chapterCount = activeBook?.chapterCount ?? 1;
 
-  const enFile = useBibleBookFile(
-    enVersion === "niv" || enVersion === "esv" ? enVersion : "kjv",
-    bookNumber,
-  );
-  const thaiFile = useBibleBookFile("thai", bookNumber);
+  const enFileLang =
+    enVersion === "niv" || enVersion === "esv" || enVersion === "erv"
+      ? enVersion === "erv"
+        ? "erv-en"
+        : enVersion
+      : "kjv";
+  const thFileLang = thVersion === "erv" ? "erv-th" : "thai";
+
+  const enFile = useBibleBookFile(enFileLang, bookNumber);
+  const thaiFile = useBibleBookFile(thFileLang, bookNumber);
 
   // ไฟล์ NIV/ESV ไม่มีภาษาไทย (ดึงมาจาก .SQLite3 ที่เป็นอังกฤษล้วน) — บังคับ
   // โหมดภาษาเป็น "อังกฤษอย่างเดียว" ตอนเลือก NIV/ESV โดยไม่ต้อง setState ใน
   // effect (คำนวณสดทุก render แทน) ค่า `mode` ดิบที่ผู้ใช้เคยเลือกไว้ (เช่น
   // "ทั้งสองภาษา") ยังจำอยู่เหมือนเดิม พอสลับกลับ KJV ก็คืนค่าเดิมให้เอง (ดู
   // grill-me 2026-08-21 "ถ้า NIV มีแค่ภาษาอังกฤษ ให้แสดง dropdown แค่ภาษา
-  // อังกฤษ" — esv เพิ่มมา 2026-08-22 ทำเหมือนกัน) — ใช้ effectiveMode แทน
-  // mode ดิบทุกจุดที่ตัดสินใจว่าจะโชว์/โหลดภาษาไหน (BibleNav, VerseBlock,
-  // BibleReadingMode, buildVerseQuoteHtml)
+  // อังกฤษ" — esv เพิ่มมา 2026-08-22 ทำเหมือนกัน — ERV ไม่เข้าเงื่อนไขนี้ 2026-
+  // 08-24 "คงพฤติกรรมเดิม" เพราะ ERV มีไฟล์ไทยของตัวเอง ไม่ผูกกับ enVersion)
+  // — ใช้ effectiveMode แทน mode ดิบทุกจุดที่ตัดสินใจว่าจะโชว์/โหลดภาษาไหน
+  // (BibleNav, VerseBlock, BibleReadingMode, buildVerseQuoteHtml)
   const isEnOnlyVersion = enVersion === "niv" || enVersion === "esv";
   const effectiveMode: BibleLanguageMode =
     isEnOnlyVersion && mode !== "en" ? "en" : mode;
 
-  const enVerses = versesToMap(enFile.data?.chapters[String(chapter)]);
-  const thVerses = versesToMap(thaiFile.data?.chapters[String(chapter)]);
+  const enParseMode: BibleTextParseMode =
+    enVersion === "kjv" ? "strongs" : enVersion === "erv" ? "footnotes" : "plain";
+  const thParseMode: BibleTextParseMode = thVersion === "erv" ? "footnotes" : "plain";
+
+  const enVerses = indexVerses(enFile.data?.chapters[String(chapter)]);
+  const thVerses = indexVerses(thaiFile.data?.chapters[String(chapter)]);
   const verseNumbers = Array.from(
     new Set([...enVerses.keys(), ...thVerses.keys()]),
   ).sort((a, b) => a - b);
@@ -178,11 +205,13 @@ export function BiblePanel({
           mode={effectiveMode}
           showStrongs={showStrongs}
           enVersion={enVersion}
+          thVersion={thVersion}
           onBookChange={onBookChange}
           onChapterChange={onChapterChange}
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
           onEnVersionChange={onEnVersionChange}
+          onThVersionChange={onThVersionChange}
         />
       )}
 
@@ -217,10 +246,12 @@ export function BiblePanel({
               <VerseBlock
                 key={v}
                 verseNumber={v}
-                enText={enVerses.get(v)}
-                thText={thVerses.get(v)}
+                enVerse={enVerses.get(v)}
+                thVerse={thVerses.get(v)}
                 mode={effectiveMode}
                 showStrongs={showStrongs}
+                enParseMode={enParseMode}
+                thParseMode={thParseMode}
                 selectable={selectable}
                 selected={selectedVerses?.has(v)}
                 onToggleSelect={() => onToggleVerse?.(v)}
@@ -294,12 +325,16 @@ export function BiblePanel({
           mode={effectiveMode}
           showStrongs={showStrongs}
           enVersion={enVersion}
+          thVersion={thVersion}
+          enParseMode={enParseMode}
+          thParseMode={thParseMode}
           onClose={() => setReadingMode(false)}
           onBookChange={onBookChange}
           onChapterChange={onChapterChange}
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
           onEnVersionChange={onEnVersionChange}
+          onThVersionChange={onThVersionChange}
           selectable={selectable}
           selectedVerses={selectedVerses}
           onToggleVerse={onToggleVerse}

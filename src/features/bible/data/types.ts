@@ -5,9 +5,26 @@ export type BibleBookMeta = {
   chapterCount: number;
 };
 
+// ระดับหัวข้อ ERV — 1 = หัวข้อหลัก (ตัวโตกว่า), 2 = หัวข้อย่อย/คำนำสดุดี/
+// cross-reference (ตัวเล็กกว่า) ดู grill-me 2026-08-24 "แสดงต่างกัน"
+export type BibleHeading = {
+  level: 1 | 2;
+  text: string;
+};
+
+// เชิงอรรถ ERV — marker คือตัวอักษรต่อเนื่องตลอดทั้งบท (a, b, c, ... z, aa, bb,
+// ... เมื่อเกินตัวอักษร z) ผูกกับตำแหน่งฝัง {marker} ในเนื้อ
+// ข้อความ (ดู lib/parse-footnotes.ts) — grill-me 2026-08-24
+export type BibleFootnote = {
+  marker: string;
+  note: string;
+};
+
 export type BibleVerse = {
   verse: number;
   text: string;
+  headings?: BibleHeading[];
+  footnotes?: BibleFootnote[];
 };
 
 // ไฟล์ต่อเล่ม (ไม่ใช่ต่อบท) — ดู grill-me 2026-08-13: อยากได้ preprocess แยกเป็น
@@ -45,4 +62,14 @@ export type BibleLanguageMode = "th" | "en" | "both";
 // ESV_en.SQLite3 ต้นฉบับมี markup red-letter/บทกวี/footnote (<J>/<t>/<pb/>/
 // <f>) แต่ preprocess ตัดทิ้งหมดเหลือข้อความล้วนเหมือน niv ทุกประการ ตามที่
 // ขอ "ทำเหมือนเดิม"
-export type BibleEnglishVersion = "kjv" | "niv" | "esv";
+// erv เพิ่มมา (2026-08-24 "เพิ่ม ERV") จาก HTML ต้นฉบับ (engerv_html/) มี
+// เชิงอรรถ (footnote) + หัวข้อ (heading 2 ระดับ) ฝังอยู่ ต่างจาก kjv/niv/esv
+// ที่ไม่มีข้อมูลนี้ — ดู headings/footnotes ใน BibleVerse ด้านบน และ
+// lib/parse-footnotes.ts
+export type BibleEnglishVersion = "kjv" | "niv" | "esv" | "erv";
+
+// ฉบับแปลไทย — เดิมมีแค่ฉบับเดียว (โฟลเดอร์ "thai" = ไทย KJV) ไม่มี selector
+// เลย เพิ่ม erv เข้ามาคู่กัน (2026-08-24) จาก HTML ต้นฉบับ
+// (html_THAERV/html/books/) — ไม่กระทบ URL เก่าที่แชร์ไว้ก่อนหน้า เพราะ
+// undefined = "thai" (ค่าเริ่มต้นเดิม)
+export type BibleThaiVersion = "thai" | "erv";

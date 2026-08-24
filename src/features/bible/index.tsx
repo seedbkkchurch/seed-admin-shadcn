@@ -6,7 +6,11 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { BiblePanel } from "./components/bible-panel";
-import { type BibleEnglishVersion, type BibleLanguageMode } from "./data/types";
+import {
+  type BibleEnglishVersion,
+  type BibleLanguageMode,
+  type BibleThaiVersion,
+} from "./data/types";
 
 const route = getRouteApi("/_authenticated/bible/$book/$chapter");
 
@@ -33,6 +37,7 @@ export function BiblePage() {
   // grill-me 2026-08-13)
   const showStrongs = search.strongs ?? true;
   const enVersion: BibleEnglishVersion = search.enVersion ?? "kjv";
+  const thVersion: BibleThaiVersion = search.thVersion ?? "thai";
 
   // chapter override ใช้ตอนโหมดอ่านสไวป์ข้ามหนังสือถอยหลัง (ไปบทสุดท้ายของ
   // เล่มก่อนหน้า แทนที่จะ reset เป็นบท 1 เหมือนตอนเปลี่ยนหนังสือจาก nav ปกติ)
@@ -70,6 +75,12 @@ export function BiblePage() {
     });
   };
 
+  const handleThVersionChange = (nextVersion: BibleThaiVersion) => {
+    navigate({
+      search: (prev) => ({ ...prev, thVersion: nextVersion }),
+    });
+  };
+
   return (
     <>
       <Header fixed>
@@ -99,11 +110,13 @@ export function BiblePage() {
           mode={mode}
           showStrongs={showStrongs}
           enVersion={enVersion}
+          thVersion={thVersion}
           onBookChange={handleBookChange}
           onChapterChange={handleChapterChange}
           onModeChange={handleModeChange}
           onShowStrongsChange={handleShowStrongsChange}
           onEnVersionChange={handleEnVersionChange}
+          onThVersionChange={handleThVersionChange}
         />
       </Main>
     </>

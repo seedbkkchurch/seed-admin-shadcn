@@ -1,5 +1,6 @@
 import { parseStrongsText } from "./parse-strongs";
-import { type BibleLanguageMode } from "../data/types";
+import { stripFootnoteMarkers } from "./parse-footnotes";
+import { type BibleLanguageMode, type BibleVerse } from "../data/types";
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -34,13 +35,21 @@ function cleanEnglishVerseText(raw: string): string {
     .join("");
 }
 
+// ตัด marker เชิงอรรถ ERV ({marker}) ออกด้วย — ไม่ว่าอังกฤษหรือไทย เหลือแต่
+// เนื้อข้อความล้วน ไม่มี note ติดมาด้วยเลย (headings ไม่ต้องตัดเพราะไม่เคยถูก
+// ใส่ลงในคำคมตั้งแต่แรก — ฟังก์ชันนี้อ่านแค่ field .text) ดู grill-me
+// 2026-08-24 "ตัดออกทั้งหมด เหลือแค่เนื้อข้อความข้อล้วน (เหมือน Strong's เดิม)"
+function cleanQuoteText(raw: string): string {
+  return stripFootnoteMarkers(raw);
+}
+
 type BuildVerseQuoteHtmlParams = {
   bookNameTh: string;
   chapterNumber: number;
   verseNumbers: number[];
   mode: BibleLanguageMode;
-  enVerses: Map<number, string>;
-  thVerses: Map<number, string>;
+  enVerses: Map<number, BibleVerse>;
+  thVerses: Map<number, BibleVerse>;
 };
 
 // สร้าง HTML คำคม (blockquote) เดียวจากหลายข้อที่เลือกไว้พร้อมกัน — แต่ละข้อ
@@ -60,16 +69,18 @@ export function buildVerseQuoteHtml({
   const lines: string[] = [];
   for (const v of sorted) {
     if (mode !== "th") {
-      const raw = enVerses.get(v);
+      const raw = enVerses.get(v)?.text;
       if (raw) {
-        lines.push(`<p>${v} ${escapeHtml(cleanEnglishVerseText(raw))}</p>`);
+        const clean = cleanEnglishVerseText(cleanQuoteText(raw));
+        lines.push(`<p>${v} ${escapeHtml(clean)}</p>`);
       }
     }
     if (mode !== "en") {
-      const th = thVerses.get(v);
+      const th = thVerses.get(v)?.text;
       if (th) {
+        const clean = cleanQuoteText(th);
         const prefix = mode === "both" ? "" : `${v} `;
-        lines.push(`<p>${prefix}${escapeHtml(th)}</p>`);
+        lines.push(`<p>${prefix}${escapeHtml(clean)}</p>`);
       }
     }
   }

@@ -8,7 +8,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { BiblePanel } from "./bible-panel";
-import { type BibleEnglishVersion, type BibleLanguageMode } from "../data/types";
+import {
+  type BibleEnglishVersion,
+  type BibleLanguageMode,
+  type BibleThaiVersion,
+} from "../data/types";
 import { loadQuickRefState, saveQuickRefState } from "../lib/quick-ref-storage";
 
 type Stage = "closed" | "collapsed" | "expanded";
@@ -48,6 +52,7 @@ export function BibleQuickReferenceSheet({
   const [mode, setMode] = useState<BibleLanguageMode>("both");
   const [showStrongs, setShowStrongs] = useState(true);
   const [enVersion, setEnVersion] = useState<BibleEnglishVersion>("kjv");
+  const [thVersion, setThVersion] = useState<BibleThaiVersion>("thai");
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(
     new Set(),
   );
@@ -62,11 +67,19 @@ export function BibleQuickReferenceSheet({
     setMode(saved.mode);
     setShowStrongs(saved.showStrongs);
     setEnVersion(saved.enVersion);
+    setThVersion(saved.thVersion);
   }, []);
 
   useEffect(() => {
-    saveQuickRefState({ bookNumber, chapter, mode, showStrongs, enVersion });
-  }, [bookNumber, chapter, mode, showStrongs, enVersion]);
+    saveQuickRefState({
+      bookNumber,
+      chapter,
+      mode,
+      showStrongs,
+      enVersion,
+      thVersion,
+    });
+  }, [bookNumber, chapter, mode, showStrongs, enVersion, thVersion]);
 
   // เปลี่ยนหนังสือ/บท → เลือกข้อที่ติ๊กไว้ไม่มีความหมายแล้ว เคลียร์ทิ้ง
   useEffect(() => {
@@ -169,11 +182,13 @@ export function BibleQuickReferenceSheet({
             mode={mode}
             showStrongs={showStrongs}
             enVersion={enVersion}
+            thVersion={thVersion}
             onBookChange={handleBookChange}
             onChapterChange={setChapter}
             onModeChange={setMode}
             onShowStrongsChange={setShowStrongs}
             onEnVersionChange={setEnVersion}
+            onThVersionChange={setThVersion}
             selectable
             selectedVerses={selectedVerses}
             onToggleVerse={handleToggleVerse}
