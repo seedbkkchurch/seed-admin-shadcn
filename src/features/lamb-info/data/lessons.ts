@@ -1,7 +1,9 @@
 // Fixed discipleship curriculum used on the lamb profile's Growth Progress
-// card. This list is the same for every lamb — there is no backing table
-// for it yet, so completion state on the profile page is local-only (not
-// persisted). See growth-progress-card.tsx.
+// card. This list is the same for every lamb — completion state is
+// persisted on `lamb_info.lamb_lesson_ch18_progress` /
+// `lamb_lesson_life_progress` (editable by the profile owner + cell_leader/
+// team_leader/admin/super_admin, see grill-me 2026-08-24). See
+// growth-progress-card.tsx.
 export type GrowthLesson = {
   id: number;
   title: string;

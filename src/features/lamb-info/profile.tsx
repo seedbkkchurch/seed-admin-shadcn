@@ -16,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTagColorClass } from "@/lib/tag-color";
 import { cn } from "@/lib/utils";
+import { useMyLamb } from "@/hooks/use-my-lamb";
+import { useMyRoles } from "@/hooks/use-my-roles";
 import { useLambInfoDetail, useUpdateLambInfo } from "./data/queries";
 import { type LambInfoRow } from "./data/schema";
 import { DevotionSection } from "./components/devotion-section";
@@ -25,6 +27,20 @@ import { LambInfoDialogs } from "./components/lamb-info-dialogs";
 import { LambInfoProvider, useLambInfo } from "./components/lamb-info-provider";
 
 const route = getRouteApi("/_authenticated/lamb-info/$lambId/");
+
+// Growth Progress checklist ("Progress การเติบโต") แก้ไขได้เฉพาะเจ้าของ
+// profile เอง หรือ role ในกลุ่มนี้ — ตกลงใน grill-me 2026-08-24 (เริ่มจาก
+// หัวหน้าแคร์/admin/superadmin ตามคำขอเดิม แล้วผู้ใช้เพิ่ม team_leader เข้ามา
+// ทีหลังระหว่างคุย) เช็คฝั่ง client เท่านั้น — lamb_info RLS เปิดกว้างให้
+// authenticated ทุกคน update ได้ทุก column อยู่แล้ว (เหมือนทุกฟอร์มอื่นในแอป
+// ตอนนี้) ไม่มี DB-level guard เฉพาะคอลัมน์นี้ (ต่างจาก role ที่มี trigger
+// ของตัวเอง)
+const GROWTH_PROGRESS_EDITOR_ROLES = new Set([
+  "cell_leader",
+  "team_leader",
+  "admin",
+  "super_admin",
+]);
 
 function getInitials(row: LambInfoRow) {
   const source = row.nick_name || row.first_name || "?";
@@ -233,6 +249,13 @@ function SpiritualInfoCard({ row }: { row: LambInfoRow }) {
 }
 
 function ProfileContent({ row }: { row: LambInfoRow }) {
+  const { data: myLamb } = useMyLamb();
+  const { roles } = useMyRoles();
+  const isOwnProfile = !!myLamb && myLamb.id === row.id;
+  const myRole = roles[0]?.code ?? null;
+  const canEditGrowth =
+    isOwnProfile || (!!myRole && GROWTH_PROGRESS_EDITOR_ROLES.has(myRole));
+
   return (
     <div className="flex flex-1 flex-col gap-4 sm:gap-6">
       <div>
@@ -246,8 +269,10 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
       <GeneralInfoCard row={row} />
       <SpiritualInfoCard row={row} />
       <GrowthProgressCard
+        lambId={row.id}
         chapterProgress={row.lamb_lesson_ch18_progress ?? null}
         lifeProgress={row.lamb_lesson_life_progress ?? null}
+        canEdit={canEditGrowth}
       />
       <GiftsCard key={row.id} lambId={row.id} />
       <DevotionSection key={row.id} lambId={row.id} />

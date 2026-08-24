@@ -8,7 +8,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,6 +83,7 @@ export function DevotionFeed() {
               const lambName = entry.lamb_info
                 ? (entry.lamb_info.nick_name ?? entry.lamb_info.first_name)
                 : "ไม่ทราบชื่อ";
+              const avatarUrl = entry.lamb_info?.profile_picture ?? null;
               const coverImage = entry.image_urls[0] ?? null;
 
               return (
@@ -104,6 +105,9 @@ export function DevotionFeed() {
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                           <Avatar className="size-6">
+                            {avatarUrl && (
+                              <AvatarImage src={avatarUrl} alt="" />
+                            )}
                             <AvatarFallback className="text-[10px]">
                               {getInitials(lambName)}
                             </AvatarFallback>

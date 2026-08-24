@@ -16,7 +16,7 @@ export type LambDevotion = Omit<Tables<"lamb_devotion">, "is_public"> & {
 // app has always assumed non-null here.
 export type LambDevotionRow = LambDevotion & {
   lamb_info:
-    | (Pick<Tables<"lamb_info">, "nick_name"> & {
+    | (Pick<Tables<"lamb_info">, "nick_name" | "profile_picture"> & {
         first_name: string;
         last_name: string;
       })
@@ -38,12 +38,16 @@ export function lambDisplayName(lamb: {
 // directly: those tables have RLS that only allows the `authenticated` role,
 // and lamb_info holds sensitive columns (address/phone/email/birthday/
 // remark) that must never reach an anon client. The view pre-filters
-// is_public=true and pre-joins only nick/first/last name (flat columns, not
-// a nested lamb_info object — a view has no FK relationship for PostgREST to
-// embed through). See grill-me 2026-08-16 follow-up ("เข้าดูแบบไม่ login
-// แล้วดูไม่ได้" — RLS was turned on after this feature was first built,
-// project memory `rbac_design` was stale) and the view's own DB comment
-// (migration public_devotion_feed_view_for_anon_share).
+// is_public=true and pre-joins only nick/first/last name + profile_picture
+// (flat columns, not a nested lamb_info object — a view has no FK
+// relationship for PostgREST to embed through). profile_picture was added
+// alongside the name columns (not treated as sensitive, unlike
+// address/phone/email/birthday — grill-me 2026-08-24). See grill-me
+// 2026-08-16 follow-up ("เข้าดูแบบไม่ login แล้วดูไม่ได้" — RLS was turned on
+// after this feature was first built, project memory `rbac_design` was
+// stale) and the view's own DB comment (migration
+// public_devotion_feed_view_for_anon_share,
+// public_devotion_feed_add_profile_picture).
 export type PublicDevotionFeedEntry = {
   id: string;
   title: string;
@@ -54,4 +58,5 @@ export type PublicDevotionFeedEntry = {
   lamb_nick_name: string | null;
   lamb_first_name: string | null;
   lamb_last_name: string | null;
+  lamb_profile_picture: string | null;
 };

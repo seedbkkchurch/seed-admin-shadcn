@@ -3,7 +3,7 @@ import { format, parseISO } from "date-fns";
 import { AlertCircle } from "lucide-react";
 import { Main } from "@/components/layout/main";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePublicDevotionFeed } from "@/features/lamb-info/data/queries";
@@ -74,6 +74,7 @@ export function DevotionPublicFeed() {
               // คืน flat column ไม่ใช่ nested lamb_info เหมือนตัวเดิม
               const lambName =
                 entry.lamb_nick_name ?? entry.lamb_first_name ?? "ไม่ทราบชื่อ";
+              const avatarUrl = entry.lamb_profile_picture ?? null;
               const coverImage = entry.image_urls[0] ?? null;
 
               return (
@@ -95,6 +96,9 @@ export function DevotionPublicFeed() {
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                           <Avatar className="size-6">
+                            {avatarUrl && (
+                              <AvatarImage src={avatarUrl} alt="" />
+                            )}
                             <AvatarFallback className="text-[10px]">
                               {getInitials(lambName)}
                             </AvatarFallback>

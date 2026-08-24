@@ -8,7 +8,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButton } from "@/features/devotion-public/components/share-button";
@@ -98,6 +98,9 @@ export function DevotionDetail() {
             <h1 className="text-3xl font-bold md:text-4xl">{entry.title}</h1>
             <div className="flex items-center gap-2">
               <Avatar className="size-8">
+                {entry.lamb_info?.profile_picture && (
+                  <AvatarImage src={entry.lamb_info.profile_picture} alt="" />
+                )}
                 <AvatarFallback className="text-xs">
                   {entry.lamb_info
                     ? getInitials(lambDisplayName(entry.lamb_info))

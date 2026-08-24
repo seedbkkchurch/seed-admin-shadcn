@@ -156,8 +156,14 @@ export function useUpdateLambInfo() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    // Invalidate both the list AND this one lamb's detail query — the list
+    // invalidation alone (original behaviour) misses profile.tsx's
+    // useLambInfoDetail(id), so edits made there (e.g. Growth Progress
+    // checkboxes, grill-me 2026-08-24) wouldn't show up until a manual
+    // refetch/navigation.
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: lambInfoKeys.list });
+      queryClient.invalidateQueries({ queryKey: lambInfoKeys.detail(data.id) });
     },
   });
 }
@@ -250,7 +256,9 @@ export function useLambDevotionFeed() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lamb_devotion")
-        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .select(
+          "*, lamb_info(nick_name, first_name, last_name, profile_picture)",
+        )
         .eq("is_public", true)
         .order("devotion_date", { ascending: false })
         .order("created_at", { ascending: false });
@@ -277,7 +285,9 @@ export function useLambDevotionTable(lambId?: string) {
     queryFn: async () => {
       let query = supabase
         .from("lamb_devotion")
-        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .select(
+          "*, lamb_info(nick_name, first_name, last_name, profile_picture)",
+        )
         .order("devotion_date", { ascending: false })
         .order("created_at", { ascending: false });
 
@@ -313,7 +323,9 @@ export function useLambDevotionDetail(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lamb_devotion")
-        .select("*, lamb_info(nick_name, first_name, last_name)")
+        .select(
+          "*, lamb_info(nick_name, first_name, last_name, profile_picture)",
+        )
         .eq("id", id as string)
         .single();
 

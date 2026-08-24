@@ -3,7 +3,7 @@ import { format, parseISO } from "date-fns";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Main } from "@/components/layout/main";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
@@ -93,6 +93,9 @@ export function DevotionPublicDetail() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <Avatar className="size-8">
+                    {entry.lamb_profile_picture && (
+                      <AvatarImage src={entry.lamb_profile_picture} alt="" />
+                    )}
                     <AvatarFallback className="text-xs">
                       {lambName ? getInitials(lambName) : "?"}
                     </AvatarFallback>
