@@ -13,7 +13,7 @@ export type BibleHeading = {
 };
 
 // เชิงอรรถ ERV — marker คือตัวอักษรต่อเนื่องตลอดทั้งบท (a, b, c, ... z, aa, bb,
-// ... เมื่อเกินตัวอักษร z) ผูกกับตำแหน่งฝัง {marker} ในเนื้อ
+// ... เมื่อเกินตัวอักษร z) ผูกกับตำแหน่งฝัง {marker} ในเนื้อ
 // ข้อความ (ดู lib/parse-footnotes.ts) — grill-me 2026-08-24
 export type BibleFootnote = {
   marker: string;
@@ -54,22 +54,16 @@ export type StrongsDictionary = Record<string, StrongsDictionaryEntry>;
 
 export type BibleLanguageMode = "th" | "en" | "both";
 
-// ฉบับแปลอังกฤษ — KJV (มีรหัส Strong's ฝังในเนื้อข้อความ) กับ NIV/ESV
-// (ข้อความล้วน ไม่มีรหัส Strong's เพราะไฟล์ต้นทาง .SQLite3 ที่แปลงมาไม่มี
-// ข้อมูลนี้) NIV เพิ่มเข้ามาทีหลัง (2026-08-21) ผู้ใช้อัปโหลดไฟล์
-// NIV_en.SQLite3 มาเองแล้วขอให้ "ทำเหมือนกันเลย" กับ KJV — ดู data/queries.ts
-// + public/bible/niv/*.json — esv เพิ่มมาอีกรอบ (2026-08-22) จาก
-// ESV_en.SQLite3 ต้นฉบับมี markup red-letter/บทกวี/footnote (<J>/<t>/<pb/>/
-// <f>) แต่ preprocess ตัดทิ้งหมดเหลือข้อความล้วนเหมือน niv ทุกประการ ตามที่
-// ขอ "ทำเหมือนเดิม"
-// erv เพิ่มมา (2026-08-24 "เพิ่ม ERV") จาก HTML ต้นฉบับ (engerv_html/) มี
-// เชิงอรรถ (footnote) + หัวข้อ (heading 2 ระดับ) ฝังอยู่ ต่างจาก kjv/niv/esv
-// ที่ไม่มีข้อมูลนี้ — ดู headings/footnotes ใน BibleVerse ด้านบน และ
-// lib/parse-footnotes.ts
-export type BibleEnglishVersion = "kjv" | "niv" | "esv" | "erv";
-
-// ฉบับแปลไทย — เดิมมีแค่ฉบับเดียว (โฟลเดอร์ "thai" = ไทย KJV) ไม่มี selector
-// เลย เพิ่ม erv เข้ามาคู่กัน (2026-08-24) จาก HTML ต้นฉบับ
-// (html_THAERV/html/books/) — ไม่กระทบ URL เก่าที่แชร์ไว้ก่อนหน้า เพราะ
-// undefined = "thai" (ค่าเริ่มต้นเดิม)
-export type BibleThaiVersion = "thai" | "erv";
+// ฉบับพระคัมภีร์ — เดิมแยก "ฉบับอังกฤษ"/"ฉบับไทย" เป็นสอง dropdown เลือกผสม
+// ข้ามฉบับกันได้ (เช่น อังกฤษ NIV + ไทย ERV) ผู้ใช้ขอเปลี่ยน (grill-me
+// 2026-08-24 รอบ 2 "เปลี่ยน กดเลือกภาษาก่อน แล้วจะแสดง dropdown bible")
+// ให้เหลือ "ชุดฉบับ" เดียว ตายตัวว่าแต่ละชุดรองรับภาษาไหนบ้าง — KJV/ERV มี
+// ทั้งไทย+อังกฤษ (คนละไฟล์ต่อภาษาแต่จับคู่กันเป็นฉบับเดียว), NIV/ESV มีแค่
+// อังกฤษ, TCV มีแค่ไทย (เพิ่มมารอบ 3 2026-08-24 "เพิ่ม TCV" — Thai Common
+// Version 2025 จาก USX ต้นฉบับที่ผู้ใช้อัปโหลด ไม่มีคู่ภาษาอังกฤษเลย) TNCV
+// เพิ่มมารอบ 6 (2026-08-24 "เพิ่ม TNCV") ก็มีแค่ไทยเหมือนกัน — Biblica Open
+// Thai New Contemporary Version 2007 คนละคลังข้อมูล/คนละไฟล์กับ TCV โดย
+// สิ้นเชิง — dropdown ฉบับจะกรองตามโหมดภาษาที่เลือกไว้ก่อน (ดู
+// lib/bible-versions.ts: versionsForMode/resolveVersionForMode) ไม่มีทาง
+// เลือกผสมข้ามฉบับแบบเดิมได้อีกแล้ว
+export type BibleVersion = "kjv" | "niv" | "esv" | "erv" | "tcv" | "tncv";

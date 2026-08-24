@@ -22,11 +22,15 @@ import { BibleHeadings, BibleText, type BibleTextParseMode } from "./bible-text"
 import { ChapterInput } from "./chapter-input";
 import {
   type BibleBookMeta,
-  type BibleEnglishVersion,
   type BibleLanguageMode,
-  type BibleThaiVersion,
   type BibleVerse,
+  type BibleVersion,
 } from "../data/types";
+import {
+  resolveVersionForMode,
+  VERSION_LABELS,
+  versionsForMode,
+} from "../lib/bible-versions";
 import {
   ensureGoogleFontLoaded,
   findLatinFont,
@@ -50,8 +54,7 @@ type ReadingModeProps = {
   thVerses: Map<number, BibleVerse>;
   mode: BibleLanguageMode;
   showStrongs: boolean;
-  enVersion: BibleEnglishVersion;
-  thVersion: BibleThaiVersion;
+  version: BibleVersion;
   enParseMode: BibleTextParseMode;
   thParseMode: BibleTextParseMode;
   onClose: () => void;
@@ -61,8 +64,7 @@ type ReadingModeProps = {
   onChapterChange: (chapter: number) => void;
   onModeChange: (mode: BibleLanguageMode) => void;
   onShowStrongsChange: (show: boolean) => void;
-  onEnVersionChange: (version: BibleEnglishVersion) => void;
-  onThVersionChange: (version: BibleThaiVersion) => void;
+  onVersionChange: (version: BibleVersion) => void;
   // ใช้เฉพาะฝัง bottom sheet เขียนเฝ้าเดี่ยว (variant="embedded" ใน
   // BiblePanel) — แตะข้อความเพื่อเลือก/ยกเลิก แล้วกดแถบล่าง "แทรกข้อที่เลือก"
   selectable?: boolean;
@@ -80,12 +82,18 @@ const SWIPE_DIRECTION_RATIO = 1.2;
 // โหมดอ่านเต็มจอบนมือถือ — ซ่อน header/nav ทั้งหมด เหลือ top bar บางๆ,
 // พระคัมภีร์ไหลต่อเนื่องแบบย่อหน้า (เลขข้อเป็น superscript), สไวป์ซ้าย-ขวา
 // เปลี่ยนบท (ข้ามเล่มต่อเนื่องเมื่อสุดบท/แรกบท), ปรับขนาด+เลือกฟอนต์ Google
-// Fonts แยกไทย/อังกฤษ, และเก็บ toggle ภาษา/Strong's/ฉบับแปลอังกฤษ (KJV/NIV/
-// ESV/ERV) + ฉบับแปลไทย (ไทย/ERV) ไว้ในแผงตั้งค่าเดียวกัน — ดู grill-me
-// 2026-08-21 (ทั้ง session การสัมภาษณ์ออกแบบ และ "เพิ่ม NIV ไปด้วยนะทำเหมือน
-// กันเลย") + 2026-08-22 "เพิ่ม version ESV ให้ด้วยทำเหมือนเดิม" + 2026-08-24
-// "เพิ่ม ERV" (headings แสดงก่อนข้อ, เชิงอรรถเป็น superscript popover เหมือน
-// Strong's, คุมด้วยสวิตช์เดียวกัน)
+// Fonts แยกไทย/อังกฤษ, และเก็บ toggle ภาษา/Strong's/ฉบับ ไว้ในแผงตั้งค่า
+// เดียวกัน — ดู grill-me 2026-08-21 (ทั้ง session การสัมภาษณ์ออกแบบ และ
+// "เพิ่ม NIV ไปด้วยนะทำเหมือนกันเลย") + 2026-08-22 "เพิ่ม version ESV ให้ด้วย
+// ทำเหมือนเดิม" + 2026-08-24 "เพิ่ม ERV" (headings แสดงก่อนข้อ, เชิงอรรถเป็น
+// superscript popover เหมือน Strong's, คุมด้วยสวิตช์เดียวกัน)
+//
+// เปลี่ยนเป็น "ชุดฉบับ" เดียว 2026-08-24 รอบ 2 (grill-me "เปลี่ยน กดเลือก
+// ภาษาก่อน แล้วจะแสดง dropdown bible") — เดิมมีสอง Select "ฉบับไทย"/
+// "ฉบับอังกฤษ" แยกกัน เลือกผสมข้ามฉบับได้ ตอนนี้เหลือ Select "ฉบับ" เดียว
+// กรองตามภาษาที่เลือกไว้ก่อน (เหมือน bible-nav.tsx ทุกประการ แต่ไม่ได้ใช้
+// component เดียวกันเพราะ settings sheet นี้มี layout ของตัวเอง) — mode
+// Select โชว์ครบ 3 ตัวเลือกเสมอ ไม่ซ่อนตามฉบับแบบเดิมอีกแล้ว
 export function BibleReadingMode({
   books,
   bookNumber,
@@ -95,8 +103,7 @@ export function BibleReadingMode({
   thVerses,
   mode,
   showStrongs,
-  enVersion,
-  thVersion,
+  version,
   enParseMode,
   thParseMode,
   onClose,
@@ -104,8 +111,7 @@ export function BibleReadingMode({
   onChapterChange,
   onModeChange,
   onShowStrongsChange,
-  onEnVersionChange,
-  onThVersionChange,
+  onVersionChange,
   selectable = false,
   selectedVerses,
   onToggleVerse,
@@ -136,6 +142,13 @@ export function BibleReadingMode({
   const activeBook = books.find((b) => b.number === bookNumber);
   const chapterCount = activeBook?.chapterCount ?? 1;
   const fontSizePx = READING_FONT_SIZE_STEPS[settings.fontSizeStepIndex];
+  const availableVersions = versionsForMode(mode);
+
+  const handleModeChange = (nextMode: BibleLanguageMode) => {
+    onModeChange(nextMode);
+    const nextVersion = resolveVersionForMode(version, nextMode);
+    if (nextVersion !== version) onVersionChange(nextVersion);
+  };
 
   // จำทิศทางล่าสุด (สไวป์ซ้าย/ขวา) ไว้เลือกทิศแอนิเมชันเข้าของเนื้อหาบทใหม่ —
   // เปลี่ยนผ่านตัวเลือกบท/หนังสือใน sheet ไม่ต้องมีทิศ (fade เฉยๆ) ใช้ state
@@ -534,67 +547,37 @@ export function BibleReadingMode({
               <span className="text-sm font-medium">ภาษา</span>
               <Select
                 value={mode}
-                onValueChange={(v) => onModeChange(v as BibleLanguageMode)}
+                onValueChange={(v) => handleModeChange(v as BibleLanguageMode)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* NIV/ESV เป็นอังกฤษล้วน ไม่มีไฟล์ไทย — ซ่อนตัวเลือกที่มี
-                  ไทยออกเมื่อเลือก NIV/ESV (ดู grill-me 2026-08-21, 2026-08-22
-                  — ERV คงพฤติกรรมเดิม 2026-08-24) */}
-                  {enVersion !== "niv" && enVersion !== "esv" && (
-                    <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
-                  )}
-                  {enVersion !== "niv" && enVersion !== "esv" && (
-                    <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
-                  )}
+                  <SelectItem value="both">ไทย + อังกฤษ</SelectItem>
+                  <SelectItem value="th">ไทยอย่างเดียว</SelectItem>
                   <SelectItem value="en">อังกฤษอย่างเดียว</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {showTh && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">ฉบับไทย</span>
-                <Select
-                  value={thVersion}
-                  onValueChange={(v) =>
-                    onThVersionChange(v as BibleThaiVersion)
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="thai">KJV</SelectItem>
-                    <SelectItem value="erv">ERV</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {showEn && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">ฉบับอังกฤษ</span>
-                <Select
-                  value={enVersion}
-                  onValueChange={(v) =>
-                    onEnVersionChange(v as BibleEnglishVersion)
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kjv">KJV (มี Strong&apos;s)</SelectItem>
-                    <SelectItem value="niv">NIV</SelectItem>
-                    <SelectItem value="esv">ESV</SelectItem>
-                    <SelectItem value="erv">ERV</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">ฉบับ</span>
+              <Select
+                value={version}
+                onValueChange={(v) => onVersionChange(v as BibleVersion)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableVersions.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {VERSION_LABELS[v]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {(showEn || showTh) && (
               <label className="flex items-center gap-2 text-sm">

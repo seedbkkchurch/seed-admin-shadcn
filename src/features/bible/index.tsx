@@ -6,11 +6,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { BiblePanel } from "./components/bible-panel";
-import {
-  type BibleEnglishVersion,
-  type BibleLanguageMode,
-  type BibleThaiVersion,
-} from "./data/types";
+import { type BibleLanguageMode, type BibleVersion } from "./data/types";
 
 const route = getRouteApi("/_authenticated/bible/$book/$chapter");
 
@@ -18,13 +14,16 @@ const route = getRouteApi("/_authenticated/bible/$book/$chapter");
 // public ไม่ต้อง login แต่ผู้ใช้เปลี่ยนใจภายหลังให้ย้ายเข้า _authenticated +
 // เพิ่มเมนู sidebar 2026-08-13) ใช้ Header/Main pattern เดียวกับหน้า
 // attendance เพื่อให้ได้ sidebar ของแอปมาด้วยฟรีๆ จาก AuthenticatedLayout
-// book/chapter/lang/enVersion sync ลง path param + URL search (?lang=&enVersion=)
+// book/chapter/lang/version sync ลง path param + URL search (?lang=&version=)
 // ส่วนแสดงผลจริง (nav + verse list + โหมดอ่านมือถือ) ย้ายไปอยู่ใน
 // components/bible-panel.tsx แล้ว — แยกออกมาเพื่อใช้ร่วมกับ
 // BibleQuickReferenceSheet ในหน้าเขียนเฝ้าเดี่ยวด้วย (ดู grill-me 2026-08-13
 // "เอา bible ไปใช้กับตอนเขียนเฝ้าเดี่ยว") หน้านี้ยังคง sync state ลง URL
-// path/search เหมือนเดิมทุกประการ enVersion เพิ่มมาทีหลัง (2026-08-21 "เพิ่ม
-// NIV") ไม่มีอะไรเปลี่ยนพฤติกรรมเดิม
+// path/search เหมือนเดิมทุกประการ — เดิม (2026-08-21..24) มี enVersion/
+// thVersion แยกกันสองพารามิเตอร์ ผู้ใช้ขอเปลี่ยนใหม่ (grill-me 2026-08-24
+// รอบ 2 "เปลี่ยน กดเลือกภาษาก่อน แล้วจะแสดง dropdown bible") ให้เหลือ
+// ?version= เดียว ไม่เก็บ backward-compat กับพารามิเตอร์เดิม (ผู้ใช้ยืนยัน —
+// ฟีเจอร์เพิ่งเพิ่มมายังไม่ทันแชร์ลิงก์เก่าไปไหน)
 export function BiblePage() {
   const { book, chapter } = route.useParams();
   const search = route.useSearch();
@@ -36,8 +35,7 @@ export function BiblePage() {
   // โหมดปิด hover/tap คำ Strong's ฮีบรู/กรีก ทั้งหมด — เริ่มต้นเปิด (ดู
   // grill-me 2026-08-13)
   const showStrongs = search.strongs ?? true;
-  const enVersion: BibleEnglishVersion = search.enVersion ?? "kjv";
-  const thVersion: BibleThaiVersion = search.thVersion ?? "thai";
+  const version: BibleVersion = search.version ?? "kjv";
 
   // chapter override ใช้ตอนโหมดอ่านสไวป์ข้ามหนังสือถอยหลัง (ไปบทสุดท้ายของ
   // เล่มก่อนหน้า แทนที่จะ reset เป็นบท 1 เหมือนตอนเปลี่ยนหนังสือจาก nav ปกติ)
@@ -69,15 +67,9 @@ export function BiblePage() {
     });
   };
 
-  const handleEnVersionChange = (nextVersion: BibleEnglishVersion) => {
+  const handleVersionChange = (nextVersion: BibleVersion) => {
     navigate({
-      search: (prev) => ({ ...prev, enVersion: nextVersion }),
-    });
-  };
-
-  const handleThVersionChange = (nextVersion: BibleThaiVersion) => {
-    navigate({
-      search: (prev) => ({ ...prev, thVersion: nextVersion }),
+      search: (prev) => ({ ...prev, version: nextVersion }),
     });
   };
 
@@ -109,14 +101,12 @@ export function BiblePage() {
           chapter={chapterNumber}
           mode={mode}
           showStrongs={showStrongs}
-          enVersion={enVersion}
-          thVersion={thVersion}
+          version={version}
           onBookChange={handleBookChange}
           onChapterChange={handleChapterChange}
           onModeChange={handleModeChange}
           onShowStrongsChange={handleShowStrongsChange}
-          onEnVersionChange={handleEnVersionChange}
-          onThVersionChange={handleThVersionChange}
+          onVersionChange={handleVersionChange}
         />
       </Main>
     </>

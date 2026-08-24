@@ -5,11 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useBibleBookFile, useBibleBooks } from "../data/queries";
-import {
-  type BibleEnglishVersion,
-  type BibleLanguageMode,
-  type BibleThaiVersion,
-} from "../data/types";
+import { type BibleLanguageMode, type BibleVersion } from "../data/types";
+import { enFileLangFor, resolveVersionForMode, thFileLangFor } from "../lib/bible-versions";
 import { type BibleTextParseMode } from "./bible-text";
 import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
@@ -21,18 +18,15 @@ export type BiblePanelProps = {
   chapter: number;
   mode: BibleLanguageMode;
   showStrongs: boolean;
-  // ฉบับแปลอังกฤษ — KJV (มี Strong's) / NIV / ESV (ข้อความล้วน) / ERV (มี
-  // เชิงอรรถ+หัวข้อ, เพิ่มเข้ามา 2026-08-24 "เพิ่ม ERV")
-  enVersion: BibleEnglishVersion;
-  // ฉบับแปลไทย — thai (ไทย KJV เดิม) / erv (มีเชิงอรรถ+หัวข้อ) เพิ่มเข้ามา
-  // คู่กัน 2026-08-24
-  thVersion: BibleThaiVersion;
+  // ฉบับพระคัมภีร์ — เดิมแยก enVersion/thVersion สอง prop เลือกผสมข้ามฉบับกัน
+  // ได้ ผู้ใช้ขอเปลี่ยนใหม่ (grill-me 2026-08-24 รอบ 2) เหลือ prop เดียว
+  // ("ชุดฉบับ" ตายตัวว่ารองรับภาษาไหนบ้าง — ดู lib/bible-versions.ts)
+  version: BibleVersion;
   onBookChange: (bookNumber: number, chapter?: number) => void;
   onChapterChange: (chapter: number) => void;
   onModeChange: (mode: BibleLanguageMode) => void;
   onShowStrongsChange: (show: boolean) => void;
-  onEnVersionChange: (version: BibleEnglishVersion) => void;
-  onThVersionChange: (version: BibleThaiVersion) => void;
+  onVersionChange: (version: BibleVersion) => void;
   // "page" = หน้า /bible เต็มจอ (หัวข้อใหญ่ + การ์ดมีขอบบน desktop) "embedded"
   // = ฝังใน BibleQuickReferenceSheet หน้าเขียนเฝ้าเดี่ยว (แคบกว่า ไม่มีขอบ,
   // มีโหมดเลือกข้อ) — ดู grill-me 2026-08-13
@@ -60,19 +54,26 @@ export type BiblePanelProps = {
 // ทั้ง panel เพื่อส่งต่อ headings/footnotes ให้ VerseBlock/BibleReadingMode/
 // buildVerseQuoteHtml เรียกใช้ได้ (build-verse-quote-html.ts ตัด footnote
 // marker ทิ้งเองก่อนแทรก editor, ไม่เคยรวม headings อยู่แล้วตั้งแต่แรก)
+//
+// เปลี่ยนเป็น "ชุดฉบับ" เดียว 2026-08-24 รอบ 2 (grill-me "เปลี่ยน กดเลือก
+// ภาษาก่อน แล้วจะแสดง dropdown bible") — เดิมมี isEnOnlyVersion/effectiveMode
+// hack คอยบังคับ mode เป็น "en" เองตอนเลือก NIV/ESV เพราะ dropdown เดิมเลือก
+// ผสมข้ามฉบับได้อิสระ ตอนนี้ dropdown ฉบับกรองตาม mode ให้แล้วตั้งแต่ต้น (ดู
+// lib/bible-versions.ts: versionsForMode) ทำให้ state ผิดรูปแบบนั้นเป็นไปไม่ได้
+// อีกต่อไป — ใช้ `mode` ดิบตรงๆ ได้ทุกจุด ไม่ต้องมี effectiveMode override
+// เหลือแค่ effectiveVersion (resolveVersionForMode) เป็นเซฟตี้เน็ตตอนคำนวณ
+// เส้นทางไฟล์ กันกรณี state ยังไม่ทันซิงค์ตอนเปลี่ยน mode
 export function BiblePanel({
   bookNumber,
   chapter,
   mode,
   showStrongs,
-  enVersion,
-  thVersion,
+  version,
   onBookChange,
   onChapterChange,
   onModeChange,
   onShowStrongsChange,
-  onEnVersionChange,
-  onThVersionChange,
+  onVersionChange,
   variant = "page",
   selectable = false,
   selectedVerses,
@@ -94,33 +95,31 @@ export function BiblePanel({
   const activeBook = books?.find((b) => b.number === bookNumber);
   const chapterCount = activeBook?.chapterCount ?? 1;
 
-  const enFileLang =
-    enVersion === "niv" || enVersion === "esv" || enVersion === "erv"
-      ? enVersion === "erv"
-        ? "erv-en"
-        : enVersion
-      : "kjv";
-  const thFileLang = thVersion === "erv" ? "erv-th" : "thai";
+  const effectiveVersion = resolveVersionForMode(version, mode);
+  const enFileLang = enFileLangFor(effectiveVersion);
+  const thFileLang = thFileLangFor(effectiveVersion);
 
   const enFile = useBibleBookFile(enFileLang, bookNumber);
   const thaiFile = useBibleBookFile(thFileLang, bookNumber);
 
-  // ไฟล์ NIV/ESV ไม่มีภาษาไทย (ดึงมาจาก .SQLite3 ที่เป็นอังกฤษล้วน) — บังคับ
-  // โหมดภาษาเป็น "อังกฤษอย่างเดียว" ตอนเลือก NIV/ESV โดยไม่ต้อง setState ใน
-  // effect (คำนวณสดทุก render แทน) ค่า `mode` ดิบที่ผู้ใช้เคยเลือกไว้ (เช่น
-  // "ทั้งสองภาษา") ยังจำอยู่เหมือนเดิม พอสลับกลับ KJV ก็คืนค่าเดิมให้เอง (ดู
-  // grill-me 2026-08-21 "ถ้า NIV มีแค่ภาษาอังกฤษ ให้แสดง dropdown แค่ภาษา
-  // อังกฤษ" — esv เพิ่มมา 2026-08-22 ทำเหมือนกัน — ERV ไม่เข้าเงื่อนไขนี้ 2026-
-  // 08-24 "คงพฤติกรรมเดิม" เพราะ ERV มีไฟล์ไทยของตัวเอง ไม่ผูกกับ enVersion)
-  // — ใช้ effectiveMode แทน mode ดิบทุกจุดที่ตัดสินใจว่าจะโชว์/โหลดภาษาไหน
-  // (BibleNav, VerseBlock, BibleReadingMode, buildVerseQuoteHtml)
-  const isEnOnlyVersion = enVersion === "niv" || enVersion === "esv";
-  const effectiveMode: BibleLanguageMode =
-    isEnOnlyVersion && mode !== "en" ? "en" : mode;
-
+  // ฉบับที่มีเชิงอรรถฝัง (parseMode="footnotes"): erv (อังกฤษ+ไทย), tcv
+  // (ไทยล้วน — เพิ่มมารอบ 3 "เพิ่ม TCV" แต่ตอนแรกลืมเช็คตรงนี้ ทำให้ marker
+  // เชิงอรรถ TCV โผล่เป็นตัวอักษรแปลกปลอมกลางประโยคแทนที่จะ parse เป็น
+  // popover — เจอตอนผู้ใช้แจ้งบั๊ก "เลือก TCV แล้วเลือกไม่ได้") — เพิ่ม tncv
+  // เข้าเช็คนี้ทันทีตอนเพิ่มฉบับ (2026-08-24 รอบ 6) เพราะมีเชิงอรรถฝังแบบ
+  // เดียวกันทุกประการ (เจอบั๊กเดิมมาแล้วรอบ TCV ไม่อยากพลาดซ้ำ)
   const enParseMode: BibleTextParseMode =
-    enVersion === "kjv" ? "strongs" : enVersion === "erv" ? "footnotes" : "plain";
-  const thParseMode: BibleTextParseMode = thVersion === "erv" ? "footnotes" : "plain";
+    effectiveVersion === "kjv"
+      ? "strongs"
+      : effectiveVersion === "erv"
+        ? "footnotes"
+        : "plain";
+  const thParseMode: BibleTextParseMode =
+    effectiveVersion === "erv" ||
+    effectiveVersion === "tcv" ||
+    effectiveVersion === "tncv"
+      ? "footnotes"
+      : "plain";
 
   const enVerses = indexVerses(enFile.data?.chapters[String(chapter)]);
   const thVerses = indexVerses(thaiFile.data?.chapters[String(chapter)]);
@@ -129,8 +128,7 @@ export function BiblePanel({
   ).sort((a, b) => a - b);
 
   const isLoadingChapter =
-    (effectiveMode !== "th" && enFile.isPending) ||
-    (effectiveMode !== "en" && thaiFile.isPending);
+    (mode !== "th" && enFile.isPending) || (mode !== "en" && thaiFile.isPending);
   const isChapterError = enFile.isError || thaiFile.isError;
 
   const selectedCount = selectedVerses?.size ?? 0;
@@ -142,7 +140,7 @@ export function BiblePanel({
       bookNameTh: activeBook.nameTh,
       chapterNumber: chapter,
       verseNumbers: [...selectedVerses],
-      mode: effectiveMode,
+      mode,
       enVerses,
       thVerses,
     });
@@ -202,16 +200,14 @@ export function BiblePanel({
           books={books}
           bookNumber={bookNumber}
           chapter={chapter}
-          mode={effectiveMode}
+          mode={mode}
           showStrongs={showStrongs}
-          enVersion={enVersion}
-          thVersion={thVersion}
+          version={version}
           onBookChange={onBookChange}
           onChapterChange={onChapterChange}
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
-          onEnVersionChange={onEnVersionChange}
-          onThVersionChange={onThVersionChange}
+          onVersionChange={onVersionChange}
         />
       )}
 
@@ -248,7 +244,7 @@ export function BiblePanel({
                 verseNumber={v}
                 enVerse={enVerses.get(v)}
                 thVerse={thVerses.get(v)}
-                mode={effectiveMode}
+                mode={mode}
                 showStrongs={showStrongs}
                 enParseMode={enParseMode}
                 thParseMode={thParseMode}
@@ -322,10 +318,9 @@ export function BiblePanel({
           verseNumbers={verseNumbers}
           enVerses={enVerses}
           thVerses={thVerses}
-          mode={effectiveMode}
+          mode={mode}
           showStrongs={showStrongs}
-          enVersion={enVersion}
-          thVersion={thVersion}
+          version={version}
           enParseMode={enParseMode}
           thParseMode={thParseMode}
           onClose={() => setReadingMode(false)}
@@ -333,8 +328,7 @@ export function BiblePanel({
           onChapterChange={onChapterChange}
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
-          onEnVersionChange={onEnVersionChange}
-          onThVersionChange={onThVersionChange}
+          onVersionChange={onVersionChange}
           selectable={selectable}
           selectedVerses={selectedVerses}
           onToggleVerse={onToggleVerse}

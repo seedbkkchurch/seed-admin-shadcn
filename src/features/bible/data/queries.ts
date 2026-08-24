@@ -16,10 +16,20 @@ import {
 // ต้นฉบับที่ผู้ใช้อัปโหลด (engerv_html/ ต่อบท, html_THAERV/ ต่อเล่ม) — รูปแบบ
 // ไฟล์เหมือนเดิม (book_name + chapters) แต่แต่ละข้อมี headings/footnotes
 // เพิ่มเข้ามา (ดู ./types.ts)
+// tcv-th/ เพิ่มมาอีกรอบ (2026-08-24 รอบ 3 "เพิ่ม TCV") preprocess จาก USX 3.0
+// ต้นฉบับ (Thai Common Version 2025 / Biblica Open Thai Common Version) —
+// รูปแบบไฟล์เหมือน erv-th ทุกประการ (มี headings/footnotes) แต่เป็นไทยล้วน
+// ไม่มีไฟล์อังกฤษคู่กัน (ดู lib/bible-versions.ts: VERSION_SUPPORTS_EN)
+// tncv-th/ เพิ่มมาอีกรอบ (2026-08-24 รอบ 6 "เพิ่ม TNCV") preprocess จาก USX
+// 3.0 ต้นฉบับอีกชุดหนึ่ง (Biblica® Open Thai New Contemporary Version 2007
+// / TNCV / อมตธรรมร่วมสมัย) คนละคลังข้อมูลกับ tcv-th โดยสิ้นเชิง — รูปแบบ
+// ไฟล์เหมือนกันทุกประการ ไทยล้วนไม่มีคู่อังกฤษเช่นกัน แต่ต้นฉบับ USX ของ
+// เวอร์ชันนี้คั่นคำด้วยตัวอักษร "/" ที่มองเห็นได้ (ต่างจาก tcv ที่ใช้ zero-
+// width space ที่มองไม่เห็น) — ตัด "/" ออกตอน preprocess แล้วเรียบร้อย
 const bibleKeys = {
   books: ["bible", "books"] as const,
   bookFile: (
-    lang: "kjv" | "thai" | "niv" | "esv" | "erv-en" | "erv-th",
+    lang: "kjv" | "thai" | "niv" | "esv" | "erv-en" | "erv-th" | "tcv-th" | "tncv-th",
     bookNumber: number,
   ) => ["bible", "book-file", lang, bookNumber] as const,
   dictionary: (lang: "hebrew" | "greek") =>
@@ -43,7 +53,7 @@ export function useBibleBooks() {
 // โหลดทั้งเล่ม (cache ไว้ด้วย react-query key ตามเล่ม+ภาษา) แล้วให้ผู้เรียก
 // slice เอาเฉพาะบทที่ต้องการเอง — สลับบทในเล่มเดียวกันจะไม่ยิง fetch ซ้ำ
 export function useBibleBookFile(
-  lang: "kjv" | "thai" | "niv" | "esv" | "erv-en" | "erv-th",
+  lang: "kjv" | "thai" | "niv" | "esv" | "erv-en" | "erv-th" | "tcv-th" | "tncv-th",
   bookNumber: number | undefined,
 ) {
   return useQuery({

@@ -8,11 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { BiblePanel } from "./bible-panel";
-import {
-  type BibleEnglishVersion,
-  type BibleLanguageMode,
-  type BibleThaiVersion,
-} from "../data/types";
+import { type BibleLanguageMode, type BibleVersion } from "../data/types";
 import { loadQuickRefState, saveQuickRefState } from "../lib/quick-ref-storage";
 
 type Stage = "closed" | "collapsed" | "expanded";
@@ -51,8 +47,7 @@ export function BibleQuickReferenceSheet({
   const [chapter, setChapter] = useState(1);
   const [mode, setMode] = useState<BibleLanguageMode>("both");
   const [showStrongs, setShowStrongs] = useState(true);
-  const [enVersion, setEnVersion] = useState<BibleEnglishVersion>("kjv");
-  const [thVersion, setThVersion] = useState<BibleThaiVersion>("thai");
+  const [version, setVersion] = useState<BibleVersion>("kjv");
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(
     new Set(),
   );
@@ -66,8 +61,7 @@ export function BibleQuickReferenceSheet({
     setChapter(saved.chapter);
     setMode(saved.mode);
     setShowStrongs(saved.showStrongs);
-    setEnVersion(saved.enVersion);
-    setThVersion(saved.thVersion);
+    setVersion(saved.version);
   }, []);
 
   useEffect(() => {
@@ -76,10 +70,9 @@ export function BibleQuickReferenceSheet({
       chapter,
       mode,
       showStrongs,
-      enVersion,
-      thVersion,
+      version,
     });
-  }, [bookNumber, chapter, mode, showStrongs, enVersion, thVersion]);
+  }, [bookNumber, chapter, mode, showStrongs, version]);
 
   // เปลี่ยนหนังสือ/บท → เลือกข้อที่ติ๊กไว้ไม่มีความหมายแล้ว เคลียร์ทิ้ง
   useEffect(() => {
@@ -181,14 +174,12 @@ export function BibleQuickReferenceSheet({
             chapter={chapter}
             mode={mode}
             showStrongs={showStrongs}
-            enVersion={enVersion}
-            thVersion={thVersion}
+            version={version}
             onBookChange={handleBookChange}
             onChapterChange={setChapter}
             onModeChange={setMode}
             onShowStrongsChange={setShowStrongs}
-            onEnVersionChange={setEnVersion}
-            onThVersionChange={setThVersion}
+            onVersionChange={setVersion}
             selectable
             selectedVerses={selectedVerses}
             onToggleVerse={handleToggleVerse}
