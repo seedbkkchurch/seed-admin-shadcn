@@ -1,4 +1,4 @@
-import { Logo } from "@/assets/logo";
+import seedAdminLogo from "@/assets/seed-admin-logo.png";
 
 type AuthLayoutProps = {
   children: React.ReactNode;
@@ -9,8 +9,11 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     <div className="container grid h-svh max-w-none items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-2 py-8 sm:p-8">
         <div className="mb-4 flex items-center justify-center">
-          <Logo className="me-2" />
-          <h1 className="text-xl font-medium">Shadcn Admin</h1>
+          <img
+            src={seedAdminLogo}
+            alt="Seed Admin"
+            className="h-16 w-auto object-contain"
+          />
         </div>
         {children}
       </div>

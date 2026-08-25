@@ -29,7 +29,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import { cn } from "@/lib/utils";
 import { DEVOTION_CONTENT_CLASS } from "../lib/devotion-content-class";
 import { DEVOTION_CONTENT_COLOR_SWATCHES } from "../lib/devotion-content-colors";
@@ -50,11 +49,15 @@ type ArticleEditorProps = {
   // image is mid-upload, so a still-uploading image never gets left out
   // of what's saved.
   onUploadingChange?: (uploading: boolean) => void;
-  // Public/private state of the form's toggle *right now* — each inserted
-  // image is uploaded to the matching bucket folder at insert time. If the
-  // toggle changes afterward, already-inserted images are left where they
-  // are (see uploadDevotionImage doc comment).
-  isPublic: boolean;
+  // Uploads one inline image and resolves to its public URL — injected by
+  // the parent so ArticleEditor stays feature-agnostic (used by both
+  // devotion-editor.tsx, which uploads to the public/private เฝ้าเดี่ยว
+  // bucket folder depending on its own is_public toggle, and
+  // features/news/news-editor.tsx, which always uploads to the news
+  // folder — see grill-me 2026-08-25 splitting this out of ArticleEditor
+  // when news needed a different upload destination than devotion's
+  // isPublic-gated uploadDevotionImage).
+  uploadImage: (file: File | Blob) => Promise<string>;
   className?: string;
 };
 
@@ -170,7 +173,7 @@ export const ArticleEditor = forwardRef<
     initialContent,
     onChangeHtml,
     onUploadingChange,
-    isPublic,
+    uploadImage,
     className,
   },
   ref,
@@ -240,7 +243,7 @@ export const ArticleEditor = forwardRef<
     setIsUploading(true);
     onUploadingChange?.(true);
     try {
-      const url = await uploadDevotionImage(file, isPublic);
+      const url = await uploadImage(file);
       editor.chain().focus().setImage({ src: url, alt: file.name }).run();
     } catch (error) {
       toast.error("อัปโหลดรูปไม่สำเร็จ", {

@@ -50,8 +50,8 @@ export default defineConfig({
         importScripts: ["/push-sw.js"],
       },
       manifest: {
-        name: "Shadcn Admin",
-        short_name: "Shadcn Admin",
+        name: "Seed Admin",
+        short_name: "Seed Admin",
         description: "Admin Dashboard UI built with Shadcn and Vite.",
         start_url: "/",
         scope: "/",

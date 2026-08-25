@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 //   import { lambDisplayName } from "./data/devotion-schema";
 // คอมเมนต์ไว้เป็น reference — ตอนนี้ auto-detect จาก auth ผ่าน useMyLamb() แทน
 import { ArticleEditor, type ArticleEditorHandle } from "./components/article-editor";
+import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import {
   useCreateLambDevotion,
   useLambDevotionDetail,
@@ -263,7 +264,7 @@ export function DevotionEditor() {
             initialContent={editorInitialContent}
             onChangeHtml={setHtml}
             onUploadingChange={setIsUploadingImage}
-            isPublic={isPublic}
+            uploadImage={(file) => uploadDevotionImage(file, isPublic)}
           />
         </div>
       </Main>
@@ -450,7 +451,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           initialContent={entry.content_html}
           onChangeHtml={setHtml}
           onUploadingChange={setIsUploadingImage}
-          isPublic={isPublic}
+          uploadImage={(file) => uploadDevotionImage(file, isPublic)}
         />
       </div>
 

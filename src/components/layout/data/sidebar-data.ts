@@ -3,9 +3,6 @@ import {
   IdCard,
   Bell,
   ShieldCheck,
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   HandHeart,
   HeartHandshake,
   Sparkles,
@@ -13,10 +10,12 @@ import {
   NotebookPen,
   Table,
   ClipboardCheck,
+  Newspaper,
   BookOpen,
   KeyRound,
   FlaskConical,
 } from "lucide-react";
+import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
 
 // ลบเมนู demo ของ template เดิม (Tasks, Apps, Users, Secured by Clerk)
@@ -33,19 +32,9 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "Shadcn Admin",
-      logo: Command,
+      name: "Seed Admin",
+      logo: Logo,
       plan: "Vite + ShadcnUI",
-    },
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
     },
   ],
   navGroups: [
@@ -77,6 +66,25 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว",
           url: "/lamb-info/devotion",
           icon: NotebookPen,
+        },
+        {
+          title: "ข่าว",
+          url: "/news",
+          icon: Newspaper,
+        },
+        // จัดการข่าว (เขียน/แก้ไข/เก็บถาวร/หมวดหมู่) — เฉพาะคนมีสิทธิ์เขียนข่าว
+        // (news:write: team_leader/admin/super_admin/cell_leader — เพิ่ม
+        // cell_leader ตามคำขอ 2026-08-25 รอบสอง, ดู migration
+        // news_write_add_cell_leader) ตกลงใน grill-me 2026-08-25 ใช้
+        // hiddenForRoles ซ่อนจาก role อื่นๆ เหมือนรายการอื่นในกลุ่ม General
+        // (ดู "Lamb Info"/"เช็คชื่อรายสัปดาห์" ด้านบน) แทนที่จะย้ายไปกลุ่ม
+        // Admin (superAdminOnly) เพราะหลายสิทธิ์ต้องเห็นเมนูนี้ ไม่ใช่แค่
+        // super_admin
+        {
+          title: "จัดการข่าว",
+          url: "/news/table",
+          icon: Table,
+          hiddenForRoles: ["member", "visitor"],
         },
         {
           title: "รายการคำอธิษฐาน",
