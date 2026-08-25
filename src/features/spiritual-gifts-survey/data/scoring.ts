@@ -132,8 +132,15 @@ export function countAnswered(answers: SurveyAnswers): number {
 }
 
 export function isSurveyComplete(answers: SurveyAnswers): boolean {
+  return getMissingQuestionIndices(answers).length === 0;
+}
+
+// ลำดับข้อ (1-125) ที่ยังไม่ได้ตอบ เรียงจากน้อยไปมาก — ใช้บอกผู้ใช้ตรงๆ ว่า
+// เหลือข้อไหนบ้าง แทนที่จะบอกแค่จำนวน (ตกลงใน grill-me 2026-08-25)
+export function getMissingQuestionIndices(answers: SurveyAnswers): number[] {
+  const missing: number[] = [];
   for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
-    if (answers[i] === undefined) return false;
+    if (answers[i] === undefined) missing.push(i);
   }
-  return true;
+  return missing;
 }

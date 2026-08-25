@@ -1,5 +1,14 @@
 import { useMemo } from "react";
-import { Info } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CheckCircle2, Info } from "lucide-react";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -8,20 +17,36 @@ import {
 } from "@/components/ui/popover";
 import {
   GIFT_SCORE_MAX,
+  getGiftRadarData,
+  mergeGiftScores,
   type GiftScores,
 } from "@/features/lamb-info/data/gifts";
 import { GIFT_SCORING } from "../data/scoring";
 
+// สีเดียวกับ radar chart ในการ์ด Gifts from God ที่หน้าโปรไฟล์
+// (features/lamb-info/components/gifts-card.tsx) — ให้หน้าตาสอดคล้องกัน
+const GIFT_COLOR = "#7c6ff0";
+
 type SurveyResultsProps = {
+  lambId: string;
   scores: GiftScores;
   onRetake: () => void;
 };
 
-// หน้าสรุปผลหลังส่งแบบสำรวจสำเร็จ — เรียงของประทานมากไปน้อยตามคะแนน (0-15)
-// แต่ละชื่อคลิก/แตะแล้วเปิด popover โชว์รูปคำอธิบาย (ตกลงใน grill-me
-// 2026-08-25 — popover อยู่ที่หน้านี้เท่านั้น ไม่โชว์ระหว่างทำแบบสำรวจ กัน
-// คนตอบเดาว่าข้อไหนคือของประทานอะไรแล้วตอบเอนเอียง)
-export function SurveyResults({ scores, onRetake }: SurveyResultsProps) {
+// หน้าสรุปผลหลังส่งแบบสำรวจสำเร็จ — โชว์ radar chart แบบเดียวกับที่หน้า
+// โปรไฟล์ (GiftsCard) ใช้ + ลิสต์คะแนนของประทานทั้ง 25 ชนิดเรียงมากไปน้อย
+// แต่ละชื่อคลิก/แตะแล้วเปิด popover โชว์รูปคำอธิบาย ไม่โชว์ระหว่างทำแบบ
+// สำรวจ (กันคนตอบเดาว่าข้อไหนคือของประทานอะไรแล้วตอบเอนเอียง) — บอกด้วยว่า
+// ข้อมูลอัปเดตในหน้าโปรไฟล์แล้ว พร้อมลิงก์กลับไปดู (ตกลงใน grill-me
+// 2026-08-25)
+export function SurveyResults({
+  lambId,
+  scores,
+  onRetake,
+}: SurveyResultsProps) {
+  const gifts = useMemo(() => mergeGiftScores(scores), [scores]);
+  const radarData = useMemo(() => getGiftRadarData(gifts), [gifts]);
+
   const ranked = useMemo(
     () =>
       [...GIFT_SCORING].sort(
@@ -32,8 +57,54 @@ export function SurveyResults({ scores, onRetake }: SurveyResultsProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-2">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" />
+          <p className="text-sm">
+            บันทึกผลแล้ว — ข้อมูลของคุณอัปเดตในหน้าโปรไฟล์ (การ์ด Gifts from
+            God) เรียบร้อยแล้ว
+          </p>
+        </div>
+        <Button variant="outline" size="sm" asChild className="shrink-0">
+          <Link to="/lamb-info/$lambId" params={{ lambId }}>
+            ไปที่หน้าโปรไฟล์
+          </Link>
+        </Button>
+      </div>
+
+      <div className="rounded-lg border p-4">
+        <ResponsiveContainer width="100%" height={340}>
+          <RadarChart data={radarData} outerRadius="75%">
+            <PolarGrid />
+            <PolarAngleAxis
+              dataKey="category"
+              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+            />
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, 100]}
+              tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            />
+            <Radar
+              name="Gifts"
+              dataKey="score"
+              stroke={GIFT_COLOR}
+              fill={GIFT_COLOR}
+              fillOpacity={0.5}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+        <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+          <span
+            className="inline-block size-2.5 rounded-xs"
+            style={{ backgroundColor: GIFT_COLOR }}
+          />
+          <span style={{ color: GIFT_COLOR }}>Gifts</span>
+        </div>
+      </div>
+
       <p className="text-sm text-muted-foreground">
-        ผลของประทานฝ่ายวิญญาณของคุณ เรียงจากมากไปน้อย —
+        ของประทานฝ่ายวิญญาณของคุณ เรียงจากมากไปน้อย —
         แตะชื่อของประทานเพื่อดูคำอธิบาย
       </p>
 
