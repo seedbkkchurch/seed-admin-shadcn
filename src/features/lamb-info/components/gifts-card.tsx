@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Pencil } from "lucide-react";
 import {
   Bar,
@@ -36,9 +37,13 @@ const GIFT_COLOR = "#7c6ff0";
 
 type GiftsCardProps = {
   lambId: string;
+  // ปุ่ม "ทำแบบสำรวจ" เป็น self-service เท่านั้น (เหมือน prayer-list) —
+  // โชว์เฉพาะตอนดูโปรไฟล์ตัวเอง ไม่โชว์ตอน admin ดูโปรไฟล์คนอื่น (ตกลงใน
+  // grill-me 2026-08-25)
+  isOwnProfile?: boolean;
 };
 
-export function GiftsCard({ lambId }: GiftsCardProps) {
+export function GiftsCard({ lambId, isOwnProfile }: GiftsCardProps) {
   const { data: giftRow, isPending, isError } = useGiftFromGod(lambId);
   const upsertGiftFromGod = useUpsertGiftFromGod();
   const [editOpen, setEditOpen] = useState(false);
@@ -63,7 +68,12 @@ export function GiftsCard({ lambId }: GiftsCardProps) {
             Spiritual gifts assessment
           </p>
         </div>
-        <CardAction>
+        <CardAction className="flex items-center gap-1">
+          {isOwnProfile && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/spiritual-gifts-survey">ทำแบบสำรวจ</Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

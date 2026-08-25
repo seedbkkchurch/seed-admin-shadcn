@@ -8,6 +8,7 @@ import {
   GalleryVerticalEnd,
   HandHeart,
   HeartHandshake,
+  Sparkles,
   BrainCircuit,
   NotebookPen,
   Table,
@@ -81,6 +82,11 @@ export const sidebarData: SidebarData = {
           title: "รายการคำอธิษฐาน",
           url: "/prayer-list",
           icon: HandHeart,
+        },
+        {
+          title: "แบบสำรวจของประทาน",
+          url: "/spiritual-gifts-survey",
+          icon: Sparkles,
         },
         // Public page (no login) where a lamb picks their name and
         // subscribes to push reminders — linked here so staff can reach it

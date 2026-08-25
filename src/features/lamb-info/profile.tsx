@@ -142,7 +142,9 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
                 variant="outline"
                 className="bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200 px-3 py-1 text-sm"
               >
-                {row.role === "team_leader" ? "ทีมผู้รับใช้หลัก" : "หัวหน้าแคร์"}
+                {row.role === "team_leader"
+                  ? "ทีมผู้รับใช้หลัก"
+                  : "หัวหน้าแคร์"}
               </Badge>
             )}
             {row.tags && (
@@ -274,7 +276,7 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
         lifeProgress={row.lamb_lesson_life_progress ?? null}
         canEdit={canEditGrowth}
       />
-      <GiftsCard key={row.id} lambId={row.id} />
+      <GiftsCard key={row.id} lambId={row.id} isOwnProfile={isOwnProfile} />
       <DevotionSection key={row.id} lambId={row.id} />
     </div>
   );
