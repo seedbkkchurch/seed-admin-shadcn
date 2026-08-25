@@ -1,28 +1,38 @@
-import {
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import TextStyle from "@tiptap/extension-text-style";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
+  Baseline,
   Bold,
+  Code,
   Heading2,
+  Highlighter,
   ImageIcon,
   Italic,
   List,
   ListOrdered,
   Loader2,
   Quote,
+  SquareCode,
+  Strikethrough,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import { cn } from "@/lib/utils";
+import { DEVOTION_CONTENT_CLASS } from "../lib/devotion-content-class";
+import { DEVOTION_CONTENT_COLOR_SWATCHES } from "../lib/devotion-content-colors";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -56,25 +66,123 @@ export type ArticleEditorHandle = {
   insertHtml: (html: string) => void;
 };
 
-// Medium-style rich text editor — bold/italic/headings/lists/quote plus
-// inline image insertion at the cursor. Images are resized client-side
-// (see image-resize.ts) and uploaded to Supabase Storage immediately on
-// selection (see devotion-image.ts) — the URL inserted into the editor
-// is the real, persisted public URL, not a local object URL.
-export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>(
-  function ArticleEditor(
-    {
-      placeholder,
-      initialContent,
-      onChangeHtml,
-      onUploadingChange,
-      isPublic,
-      className,
-    },
-    ref,
-  ) {
+// ปุ่มจานสี ใช้ร่วมกันทั้ง Color (สีตัวอักษร) และ Highlight (สีเน้นข้อความ)
+// — popover เดียวกัน ต่างกันแค่ apply/clear/isActive ที่ parent ส่งเข้ามา
+// (ตกลงใน grill-me 2026-08-25 ให้ทั้งสองปุ่มมี UI แบบเดียวกัน คือจานสี
+// พรีเซ็ต 8 สีเหมือนกัน + ปุ่ม "เอาสีออก")
+type ColorPopoverButtonProps = {
+  icon: React.ComponentType<{ className?: string }>;
+  ariaLabel: string;
+  activeColor: string | undefined;
+  isActive: boolean;
+  onPick: (color: string) => void;
+  onClear: () => void;
+};
+
+function ColorPopoverButton({
+  icon: Icon,
+  ariaLabel,
+  activeColor,
+  isActive,
+  onPick,
+  onClear,
+}: ColorPopoverButtonProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant={isActive ? "secondary" : "ghost"}
+          size="icon"
+          aria-label={ariaLabel}
+          className="relative"
+        >
+          <Icon className="size-4" />
+          {activeColor && (
+            <span
+              className="absolute inset-x-2 bottom-1.5 h-0.5 rounded-full"
+              style={{ backgroundColor: activeColor }}
+            />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-2">
+        <div className="grid grid-cols-4 gap-1">
+          {DEVOTION_CONTENT_COLOR_SWATCHES.map((swatch) => (
+            <button
+              key={swatch.value}
+              type="button"
+              title={swatch.label}
+              aria-label={swatch.label}
+              onClick={() => {
+                onPick(swatch.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "size-7 rounded-full border transition-transform hover:scale-110",
+                activeColor === swatch.value &&
+                  "ring-2 ring-ring ring-offset-2 ring-offset-popover",
+              )}
+              style={{ backgroundColor: swatch.value }}
+            />
+          ))}
+        </div>
+        <Separator className="my-2" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start"
+          onClick={() => {
+            onClear();
+            setOpen(false);
+          }}
+        >
+          เอาสีออก
+        </Button>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Medium-style rich text editor — bold/italic/strike/inline code/headings/
+// quote/lists/code block/สี/เน้นข้อความ plus inline image insertion at the
+// cursor. Images are resized client-side (see image-resize.ts) and
+// uploaded to Supabase Storage immediately on selection (see
+// devotion-image.ts) — the URL inserted into the editor is the real,
+// persisted public URL, not a local object URL.
+//
+// Color/Highlight ต้องเพิ่ม TextStyle + Color + Highlight extension เข้ามา
+// (StarterKit เดิมไม่มี mark สี) — จานสีพรีเซ็ตอยู่ที่
+// lib/devotion-content-colors.ts เลือกมาให้อ่านได้ทั้ง light/dark theme
+// เพราะสีถูกฝัง inline style ตรงๆ ไม่ปรับตาม theme (ดู grill-me
+// 2026-08-25) ส่วน heading คงไว้แค่ level 2-3 เหมือนเดิม (เนื้อหาอยู่ใต้
+// หัวข้อบทความ h2 ของหน้าอยู่แล้ว) Strike/Code/CodeBlock มากับ StarterKit
+// อยู่แล้ว แค่เพิ่มปุ่มเรียกใช้เท่านั้น
+export const ArticleEditor = forwardRef<
+  ArticleEditorHandle,
+  ArticleEditorProps
+>(function ArticleEditor(
+  {
+    placeholder,
+    initialContent,
+    onChangeHtml,
+    onUploadingChange,
+    isPublic,
+    className,
+  },
+  ref,
+) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  // บังคับ re-render toolbar ตอน selection/mark เปลี่ยน — editor.isActive()
+  // กับ editor.getAttributes() อ่านจาก state ปัจจุบันของ editor โดยตรง
+  // (ไม่ใช่ React state) จึงต้อง subscribe เองผ่าน onSelectionUpdate/
+  // onTransaction ไม่งั้นปุ่ม (โดยเฉพาะ underline สีใต้ปุ่ม Color/
+  // Highlight) จะไม่ sync กับตำแหน่ง cursor ที่ขยับ
+  const [, forceUpdate] = useState(0);
 
   const editor = useEditor({
     content: initialContent,
@@ -82,6 +190,9 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
       StarterKit.configure({
         heading: { levels: [2, 3] },
       }),
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
       Image,
       Placeholder.configure({
         placeholder: placeholder ?? "เขียนเนื้อหาบทความของคุณที่นี่...",
@@ -91,17 +202,14 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
       attributes: {
         class: cn(
           "min-h-[320px] text-sm leading-relaxed focus:outline-none sm:text-base",
-          "[&_p]:my-3 [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold",
-          "[&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold",
-          "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-6",
-          "[&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-6",
-          "[&_blockquote]:my-3 [&_blockquote]:border-s-4 [&_blockquote]:border-muted-foreground/30 [&_blockquote]:ps-4 [&_blockquote]:text-muted-foreground [&_blockquote]:italic",
-          "[&_img]:my-4 [&_img]:max-h-[480px] [&_img]:w-full [&_img]:rounded-md [&_img]:object-contain",
           "[&_p.is-editor-empty:first-child::before]:text-muted-foreground [&_p.is-editor-empty:first-child::before]:float-start [&_p.is-editor-empty:first-child::before]:h-0 [&_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]",
+          DEVOTION_CONTENT_CLASS,
         ),
       },
     },
     onUpdate: ({ editor }) => onChangeHtml(editor.getHTML()),
+    onSelectionUpdate: () => forceUpdate((n) => n + 1),
+    onTransaction: () => forceUpdate((n) => n + 1),
   });
 
   // แทรก HTML ที่ท้ายเอกสารเสมอ (ไม่ใช่ตำแหน่ง cursor เดิม) เพราะผู้ใช้เพิ่ง
@@ -146,6 +254,13 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
 
   if (!editor) return null;
 
+  const textColor = editor.getAttributes("textStyle").color as
+    | string
+    | undefined;
+  const highlightColor = editor.getAttributes("highlight").color as
+    | string
+    | undefined;
+
   return (
     <div className={cn("rounded-md border", className)}>
       <div className="flex flex-wrap items-center gap-1 border-b p-2">
@@ -167,6 +282,48 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
         >
           <Italic />
         </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("strike") ? "secondary" : "ghost"}
+          size="icon"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          aria-label="ขีดฆ่า"
+        >
+          <Strikethrough />
+        </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("code") ? "secondary" : "ghost"}
+          size="icon"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          aria-label="โค้ดในบรรทัด"
+        >
+          <Code />
+        </Button>
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
+        <ColorPopoverButton
+          icon={Baseline}
+          ariaLabel="สีตัวอักษร"
+          activeColor={textColor}
+          isActive={!!textColor}
+          onPick={(color) => editor.chain().focus().setColor(color).run()}
+          onClear={() => editor.chain().focus().unsetColor().run()}
+        />
+        <ColorPopoverButton
+          icon={Highlighter}
+          ariaLabel="เน้นข้อความ"
+          activeColor={highlightColor}
+          isActive={editor.isActive("highlight")}
+          onPick={(color) =>
+            editor.chain().focus().toggleHighlight({ color }).run()
+          }
+          onClear={() => editor.chain().focus().unsetHighlight().run()}
+        />
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <Button
           type="button"
           variant={
@@ -207,6 +364,15 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
         >
           <ListOrdered />
         </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("codeBlock") ? "secondary" : "ghost"}
+          size="icon"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          aria-label="บล็อกโค้ด"
+        >
+          <SquareCode />
+        </Button>
 
         <Separator orientation="vertical" className="mx-1 h-6" />
 
@@ -234,5 +400,4 @@ export const ArticleEditor = forwardRef<ArticleEditorHandle, ArticleEditorProps>
       </div>
     </div>
   );
-  },
-);
+});

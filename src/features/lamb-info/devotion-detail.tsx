@@ -12,8 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButton } from "@/features/devotion-public/components/share-button";
+import { cn } from "@/lib/utils";
 import { lambDisplayName } from "./data/devotion-schema";
 import { useLambDevotionDetail } from "./data/queries";
+import { DEVOTION_CONTENT_CLASS } from "./lib/devotion-content-class";
 
 function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
@@ -120,15 +122,10 @@ export function DevotionDetail() {
             </div>
 
             <div
-              className={
-                "text-sm leading-relaxed sm:text-base " +
-                "[&_p]:my-3 [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold " +
-                "[&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold " +
-                "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-6 " +
-                "[&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-6 " +
-                "[&_blockquote]:my-3 [&_blockquote]:border-s-4 [&_blockquote]:border-muted-foreground/30 [&_blockquote]:ps-4 [&_blockquote]:text-muted-foreground [&_blockquote]:italic " +
-                "[&_img]:my-4 [&_img]:max-h-[480px] [&_img]:w-full [&_img]:rounded-md [&_img]:object-contain"
-              }
+              className={cn(
+                "text-sm leading-relaxed sm:text-base",
+                DEVOTION_CONTENT_CLASS,
+              )}
               dangerouslySetInnerHTML={{ __html: entry.content_html }}
             />
           </article>
