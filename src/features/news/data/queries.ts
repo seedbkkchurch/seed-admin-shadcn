@@ -99,7 +99,9 @@ export function useUpdateNewsCategory() {
       values,
     }: {
       id: string;
-      values: Omit<NewsCategoryInput, "id">;
+      // code แก้ไม่ได้หลังสร้าง (ฟอร์มปิด input ไว้ตอน edit) จึงไม่บังคับส่งมา
+      // ต่างจาก NewsCategoryInput ทั้งก้อนที่ code เป็น required column
+      values: Partial<Pick<NewsCategoryInput, "name_th" | "sort_order">>;
     }) => {
       const { data, error } = await supabase
         .from("news_category")

@@ -1,4 +1,4 @@
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { AlertCircle, ArrowLeft, Pencil } from "lucide-react";
 import { ConfigDrawer } from "@/components/config-drawer";
@@ -22,14 +22,15 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-const route = getRouteApi("/_authenticated/news/$newsId/");
-
 // มุมมองเต็มบทความแบบ authenticated — เปิดได้ทุกสถานะถ้า RLS อนุญาต (คนมี
 // news:write เห็นได้หมดรวม draft/archived ใช้ preview ก่อนเผยแพร่จริง คนอื่น
 // เห็นได้เฉพาะ published — ดู queries.ts) ใช้ DEVOTION_CONTENT_CLASS ร่วมกับ
 // เฝ้าเดี่ยว (เนื้อหามาจาก ArticleEditor ตัวเดียวกัน สไตล์เนื้อหาต้องตรงกัน)
-export function NewsDetail() {
-  const { newsId } = route.useParams();
+// หมายเหตุ: component นี้ไม่มี route ผูกอยู่แล้ว (เดิมคือ
+// /_authenticated/news/$newsId ถูกลบไปแก้บัก router ชนกัน 2026-08-25) รับ
+// newsId เป็น prop แทน getRouteApi เพื่อไม่ให้ build พังจากการอ้างอิง route
+// ที่ไม่มีอยู่จริง — ตอนนี้เป็นไฟล์ orphaned ไม่มีใคร import ใช้งาน
+export function NewsDetail({ newsId }: { newsId: string }) {
   const { data: entry, isPending, isError, error } = useNewsDetail(newsId);
   const { data: canWrite } = useCanWriteNews();
 
