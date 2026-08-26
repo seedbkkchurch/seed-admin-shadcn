@@ -52,7 +52,8 @@ export default defineConfig({
       manifest: {
         name: "Seed Admin",
         short_name: "Seed Admin",
-        description: "Admin Dashboard UI built with Shadcn and Vite.",
+        description:
+          "ระบบบริหารจัดการสมาชิกคริสตจักร Seed Church — ติดตามการเติบโตฝ่ายวิญญาณของสมาชิก (Lamb), การเข้าร่วมกลุ่มแคร์และการเฝ้าเดี่ยว, สถิติการเข้าร่วมนมัสการ, พระคัมภีร์ออนไลน์หลายฉบับ และข่าวสารคริสตจักร ครบในที่เดียว",
         start_url: "/",
         scope: "/",
         display: "standalone",
