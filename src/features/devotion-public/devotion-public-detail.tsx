@@ -4,9 +4,13 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Main } from "@/components/layout/main";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { lambDisplayName } from "@/features/lamb-info/data/devotion-schema";
+import {
+  DEVOTION_CONTENT_TYPE_LABELS,
+  lambDisplayName,
+} from "@/features/lamb-info/data/devotion-schema";
 import { usePublicLambDevotionDetail } from "@/features/lamb-info/data/queries";
 import { DEVOTION_CONTENT_CLASS } from "@/features/lamb-info/lib/devotion-content-class";
 import { cn } from "@/lib/utils";
@@ -90,6 +94,12 @@ export function DevotionPublicDetail() {
                     className="max-h-96 w-full rounded-md object-cover"
                   />
                 )}
+                <div className="flex items-center gap-2">
+                  {/* badge ประเภท — เพิ่มโดย grill-me 2026-08-26 */}
+                  <Badge variant="secondary">
+                    {DEVOTION_CONTENT_TYPE_LABELS[entry.content_type]}
+                  </Badge>
+                </div>
                 <h1 className="text-3xl font-bold md:text-4xl">
                   {entry.title}
                 </h1>

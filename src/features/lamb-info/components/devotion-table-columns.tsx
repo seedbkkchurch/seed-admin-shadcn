@@ -5,13 +5,42 @@ import { ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table";
-import { lambDisplayName, type LambDevotionRow } from "../data/devotion-schema";
+import {
+  DEVOTION_CONTENT_TYPE_LABELS,
+  devotionContentTypeOptions,
+  lambDisplayName,
+  type LambDevotionRow,
+} from "../data/devotion-schema";
 import { DevotionTableRowActions } from "./devotion-table-row-actions";
 
 export const devotionVisibilityOptions = [
   { label: "สาธารณะ", value: "public" },
   { label: "ส่วนตัว", value: "private" },
 ];
+
+// ตัวเลือกตัวกรอง "ประเภท" (เฝ้าเดี่ยว/คำเทศนา) — ใช้ร่วมกันทั้งตาราง
+// admin (devotion-table.tsx) และตารางรายลูกแกะ (lamb-devotion-table.tsx)
+// เพิ่มโดย grill-me 2026-08-26
+export const devotionContentTypeFilterOptions = devotionContentTypeOptions;
+
+// คอลัมน์ badge + filter ประเภทเนื้อหา — ใช้ร่วมกันทั้ง devotionTableColumns
+// (ด้านล่าง) และ lambDevotionTableColumns (lamb-devotion-table-columns.tsx)
+// เป็นฟังก์ชันสร้าง ColumnDef แทนที่จะ export ตัว object ตรงๆ เพื่อให้ type
+// ตรงกับ ColumnDef<LambDevotionRow> เต็มรูปแบบ (ไม่ใช้ any/never hack)
+export function makeDevotionContentTypeColumn(): ColumnDef<LambDevotionRow> {
+  return {
+    accessorKey: "content_type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ประเภท" />
+    ),
+    cell: ({ row }) => (
+      <Badge variant="secondary">
+        {DEVOTION_CONTENT_TYPE_LABELS[row.original.content_type]}
+      </Badge>
+    ),
+    filterFn: (row, id, value: string[]) => value.includes(row.getValue(id)),
+  };
+}
 
 export const devotionTableColumns: ColumnDef<LambDevotionRow>[] = [
   {
@@ -73,6 +102,7 @@ export const devotionTableColumns: ColumnDef<LambDevotionRow>[] = [
       </Link>
     ),
   },
+  makeDevotionContentTypeColumn(),
   {
     id: "is_public",
     accessorFn: (row) => (row.is_public ? "public" : "private"),

@@ -46,9 +46,12 @@ export function useDevotionOverviewEntries(activeLambIds: string[]) {
     enabled: activeLambIds.length > 0,
     queryFn: async () => {
       const cutoff = format(subDays(new Date(), 366), "yyyy-MM-dd");
+      // นับเฉพาะ content_type = devotion — คำเทศนาไม่นับเป็นการส่งเฝ้าเดี่ยว
+      // (ตกลงใน grill-me 2026-08-26, เพิ่ม content_type ใน lamb_devotion)
       const { data, error } = await supabase
         .from("lamb_devotion")
         .select("lamb_id, devotion_date")
+        .eq("content_type", "devotion")
         .in("lamb_id", activeLambIds)
         .gte("devotion_date", cutoff);
 

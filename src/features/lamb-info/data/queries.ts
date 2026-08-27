@@ -402,7 +402,9 @@ export function useLambDevotionHistory(lambId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lamb_devotion")
-        .select("id, devotion_date, title, content_html, image_urls, is_public")
+        .select(
+          "id, devotion_date, title, content_html, image_urls, is_public, content_type",
+        )
         .eq("lamb_id", lambId as string)
         .order("devotion_date", { ascending: true });
 
@@ -445,7 +447,10 @@ export function useCreateLambDevotion() {
 // title/content/status are editable; lamb_id and devotion_date stay fixed
 // at creation (editing them would just be re-creating a different entry).
 type LambDevotionUpdateInput = Partial<
-  Pick<LambDevotion, "title" | "content_html" | "image_urls" | "is_public">
+  Pick<
+    LambDevotion,
+    "title" | "content_html" | "image_urls" | "is_public" | "content_type"
+  >
 >;
 
 export function useUpdateLambDevotion() {

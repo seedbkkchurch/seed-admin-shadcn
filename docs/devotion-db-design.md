@@ -15,6 +15,32 @@
 - เก็บ**ตลอดไป ไม่มีกำหนดลบ**
 - โบสมี **50 คน**
 
+## 0. อัปเดต 2026-08-26 — เพิ่ม `content_type` แยกเฝ้าเดี่ยว/คำเทศนา
+
+grill-me 2026-08-26: เพิ่มคอลัมน์ `content_type text not null default 'devotion'
+check (content_type in ('devotion', 'sermon'))` บนตาราง `lamb_devotion` เดิม (migration
+`add_lamb_devotion_content_type`) — ไม่แยกตารางใหม่ ทุกอย่าง (schema/editor/feed/
+table/public feed) ใช้ตารางเดียวกันต่อไปเหมือนก่อนหน้านี้ทุกประการ แถวเดิมทั้งหมด
+default เป็น `'devotion'` อัตโนมัติ ไม่ต้อง backfill
+
+สิ่งที่ทำเพิ่ม:
+
+- `DevotionEditor`/`DevotionEditFormLoaded` (หน้าเขียนเต็ม) และ `DevotionUploadDialog`
+  (popup เร็ว) — เพิ่ม dropdown เลือกประเภท default เฝ้าเดี่ยว บันทึกลง draft-recovery
+  ด้วย (`devotion-draft-storage.ts`)
+- ตาราง admin (`devotion-table-columns.tsx`/`devotion-table.tsx`) และตารางรายลูกแกะ
+  (`lamb-devotion-table-columns.tsx`/`lamb-devotion-table.tsx`) — เพิ่มคอลัมน์ badge +
+  filter ประเภท (`makeDevotionContentTypeColumn`, ใช้ร่วมกันทั้งสองตาราง)
+- **ภาพรวมเฝ้าเดี่ยว** (`devotion-overview/data/queries.ts`), heatmap + สถิติ +
+  กราฟรายเดือน บนหน้าโปรไฟล์ลูกแกะ (`devotion-section.tsx`) — นับเฉพาะ
+  `content_type = 'devotion'` เท่านั้น สรุปว่า **คำเทศนาไม่ถูกนับเป็นการส่งเฝ้าเดี่ยว**
+  ("ประวัติล่าสุด" ใต้กราฟยังแสดงทั้งสองประเภทปนกัน มี badge แยก — เป็นแค่รายการดู
+  ย้อนหลัง ไม่ใช่ตัวชี้วัด)
+- Public feed (`public_devotion_feed` view + หน้า `/devotion`, `/devotion/$id`) — ไม่แยก
+  ตามประเภท ยังกรองด้วย `is_public` เดิมเหมือนทุกอย่างก่อนหน้านี้ (คำเทศนาที่ตั้ง
+  public ก็ขึ้น public feed ได้เหมือนเฝ้าเดี่ยว) แค่เพิ่ม `content_type` ในคอลัมน์ที่
+  expose ให้ badge แยกแสดงได้
+
 ## 1. ตาราง
 
 ```sql

@@ -9,9 +9,11 @@ import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DEVOTION_CONTENT_TYPE_LABELS } from "./data/devotion-schema";
 import { useLambDevotionFeed } from "./data/queries";
 
 function getInitials(name: string) {
@@ -121,6 +123,10 @@ export function DevotionFeed() {
                               "d MMM yyyy",
                             )}
                           </span>
+                          {/* badge ประเภท — เพิ่มโดย grill-me 2026-08-26 */}
+                          <Badge variant="secondary">
+                            {DEVOTION_CONTENT_TYPE_LABELS[entry.content_type]}
+                          </Badge>
                         </div>
                         <h3 className="text-lg font-semibold">{entry.title}</h3>
                         <p className="text-muted-foreground line-clamp-2 text-sm">

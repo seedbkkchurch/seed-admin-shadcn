@@ -26,6 +26,7 @@ import { DataTablePagination, DataTableToolbar } from "@/components/data-table";
 import { type LambDevotionRow } from "../data/devotion-schema";
 import { DevotionTableBulkActions } from "./devotion-table-bulk-actions";
 import {
+  devotionContentTypeFilterOptions,
   devotionTableColumns as columns,
   devotionVisibilityOptions,
 } from "./devotion-table-columns";
@@ -60,6 +61,7 @@ export function DevotionTable({ data }: DevotionTableProps) {
     globalFilter: { enabled: true, key: "filter" },
     columnFilters: [
       { columnId: "is_public", searchKey: "is_public", type: "array" },
+      { columnId: "content_type", searchKey: "content_type", type: "array" },
     ],
   });
 
@@ -112,6 +114,11 @@ export function DevotionTable({ data }: DevotionTableProps) {
         table={table}
         searchPlaceholder="ค้นหาหัวข้อหรือชื่อลูกแกะ..."
         filters={[
+          {
+            columnId: "content_type",
+            title: "ประเภท",
+            options: devotionContentTypeFilterOptions,
+          },
           {
             columnId: "is_public",
             title: "สถานะ",

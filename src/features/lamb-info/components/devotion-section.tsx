@@ -42,11 +42,21 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
 
   const { data: entries, isPending } = useLambDevotionHistory(lambId);
 
+  // เฉพาะ content_type = devotion — heatmap/สถิติ (จุดสี, oneYear/threeYear/
+  // thisWeekCount ด้านล่าง, กราฟรายเดือน) นับเฉพาะการส่งเฝ้าเดี่ยวจริง ไม่
+  // นับคำเทศนา (ตกลงใน grill-me 2026-08-26) — "ประวัติล่าสุด" ด้านล่างยัง
+  // แสดงทั้งสองประเภทปนกัน (ดู recentEntries) เพราะเป็นแค่รายการดูย้อนหลัง
+  // ไม่ใช่ตัวชี้วัดการเฝ้าเดี่ยว
+  const devotionOnlyEntries = useMemo(
+    () => (entries ?? []).filter((e) => e.content_type === "devotion"),
+    [entries],
+  );
+
   // ค่า array เพราะ 1 วันมีได้มากกว่า 1 เฝ้าเดี่ยว (คอนสตรเทนต์ 1 ครั้ง/วัน
   // เอาออกแล้ว — ดู grill-me 2026-08-14, `devotion_multi_submit_design`)
   const entriesByDate = useMemo(() => {
     const map = new Map<string, DevotionHeatmapEntry[]>();
-    for (const entry of entries ?? []) {
+    for (const entry of devotionOnlyEntries) {
       const list = map.get(entry.devotion_date) ?? [];
       list.push({
         id: entry.id,
@@ -56,7 +66,7 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       map.set(entry.devotion_date, list);
     }
     return map;
-  }, [entries]);
+  }, [devotionOnlyEntries]);
 
   const getEntries = (date: Date) =>
     entriesByDate.get(format(date, "yyyy-MM-dd")) ?? [];
@@ -135,7 +145,7 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
                 getEntries={getEntries}
               />
             ) : view === "month" ? (
-              <DevotionMonthlyChart today={today} entries={entries ?? []} />
+              <DevotionMonthlyChart today={today} entries={devotionOnlyEntries} />
             ) : (
               <DevotionHeatmap
                 today={today}

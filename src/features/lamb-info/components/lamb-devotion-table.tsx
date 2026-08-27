@@ -25,7 +25,10 @@ import {
 import { DataTablePagination, DataTableToolbar } from "@/components/data-table";
 import { type LambDevotionRow } from "../data/devotion-schema";
 import { DevotionTableBulkActions } from "./devotion-table-bulk-actions";
-import { devotionVisibilityOptions } from "./devotion-table-columns";
+import {
+  devotionContentTypeFilterOptions,
+  devotionVisibilityOptions,
+} from "./devotion-table-columns";
 import { lambDevotionTableColumns as columns } from "./lamb-devotion-table-columns";
 
 type LambDevotionTableProps = {
@@ -93,6 +96,11 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
         table={table}
         searchPlaceholder="ค้นหาหัวข้อ..."
         filters={[
+          {
+            columnId: "content_type",
+            title: "ประเภท",
+            options: devotionContentTypeFilterOptions,
+          },
           {
             columnId: "is_public",
             title: "สถานะ",

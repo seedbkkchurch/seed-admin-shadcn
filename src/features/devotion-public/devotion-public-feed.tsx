@@ -4,8 +4,10 @@ import { AlertCircle } from "lucide-react";
 import { Main } from "@/components/layout/main";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DEVOTION_CONTENT_TYPE_LABELS } from "@/features/lamb-info/data/devotion-schema";
 import { usePublicDevotionFeed } from "@/features/lamb-info/data/queries";
 import { PublicHeader } from "./components/public-header";
 
@@ -112,6 +114,10 @@ export function DevotionPublicFeed() {
                               "d MMM yyyy",
                             )}
                           </span>
+                          {/* badge ประเภท — เพิ่มโดย grill-me 2026-08-26 */}
+                          <Badge variant="secondary">
+                            {DEVOTION_CONTENT_TYPE_LABELS[entry.content_type]}
+                          </Badge>
                         </div>
                         <h3 className="text-lg font-semibold">{entry.title}</h3>
                         <p className="text-muted-foreground line-clamp-2 text-sm">

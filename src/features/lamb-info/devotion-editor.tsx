@@ -13,6 +13,13 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
@@ -31,7 +38,12 @@ import {
   useLambDevotionDetail,
   useUpdateLambDevotion,
 } from "./data/queries";
-import { lambDisplayName, type LambDevotionRow } from "./data/devotion-schema";
+import {
+  devotionContentTypeOptions,
+  lambDisplayName,
+  type DevotionContentType,
+  type LambDevotionRow,
+} from "./data/devotion-schema";
 import {
   clearDevotionEditorDraft,
   loadDevotionEditorDraft,
@@ -89,6 +101,11 @@ export function DevotionEditor() {
   const [titleTouched, setTitleTouched] = useState(false);
   const [html, setHtml] = useState(initialDraft?.html ?? "");
   const [isPublic, setIsPublic] = useState(initialDraft?.isPublic ?? true);
+  // เฝ้าเดี่ยว/คำเทศนา — เพิ่มโดย grill-me 2026-08-26, default เฝ้าเดี่ยวเสมอ
+  // (ตัวเลือกส่วนน้อย เลือกเองตอนต้องการ)
+  const [contentType, setContentType] = useState<DevotionContentType>(
+    initialDraft?.contentType ?? "devotion",
+  );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
@@ -108,8 +125,11 @@ export function DevotionEditor() {
   // (เปิดหน้ามาเฉยๆ ไม่ต้องสร้างร่างว่างทิ้งไว้ใน localStorage)
   useEffect(() => {
     if (!lambId && title.trim() === "" && isEmptyHtml(html)) return;
-    saveDevotionEditorDraft({ lambId, title, html, isPublic }, today);
-  }, [lambId, title, html, isPublic, today]);
+    saveDevotionEditorDraft(
+      { lambId, title, html, isPublic, contentType },
+      today,
+    );
+  }, [lambId, title, html, isPublic, contentType, today]);
 
   const showTitleError = titleTouched && title.trim().length === 0;
   const canSubmit =
@@ -129,11 +149,14 @@ export function DevotionEditor() {
         content_html: html,
         image_urls: extractImageUrls(html),
         is_public: isPublic,
+        content_type: contentType,
       },
       {
         onSuccess: () => {
           clearDevotionEditorDraft();
-          toast.success("ส่งเฝ้าเดี่ยวแล้ว");
+          toast.success(
+            contentType === "sermon" ? "บันทึกคำเทศนาแล้ว" : "ส่งเฝ้าเดี่ยวแล้ว",
+          );
           navigate({ to: "/lamb-info/devotion" });
         },
         onError: (error: unknown) => {
@@ -153,6 +176,7 @@ export function DevotionEditor() {
     setTitleTouched(false);
     setHtml("");
     setIsPublic(true);
+    setContentType("devotion");
     clearDevotionEditorDraft();
     setEditorInitialContent("");
     setEditorResetKey((key) => key + 1);
@@ -251,6 +275,28 @@ export function DevotionEditor() {
                 กรุณาใส่หัวข้อบทความก่อนส่ง
               </p>
             )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {/* เลือกเฝ้าเดี่ยว/คำเทศนา — เพิ่มโดย grill-me 2026-08-26 */}
+            <div className="space-y-1.5">
+              <label className="text-muted-foreground text-xs">ประเภท</label>
+              <Select
+                value={contentType}
+                onValueChange={(v) => setContentType(v as DevotionContentType)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {devotionContentTypeOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <label className="flex items-center gap-2 text-sm">
@@ -363,6 +409,10 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
   const [titleTouched, setTitleTouched] = useState(false);
   const [html, setHtml] = useState(entry.content_html);
   const [isPublic, setIsPublic] = useState(entry.is_public);
+  // เพิ่มโดย grill-me 2026-08-26 — แก้ไขประเภทได้เหมือนสถานะสาธารณะ/ส่วนตัว
+  const [contentType, setContentType] = useState<DevotionContentType>(
+    entry.content_type,
+  );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const showTitleError = titleTouched && title.trim().length === 0;
@@ -380,6 +430,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           content_html: html,
           image_urls: extractImageUrls(html),
           is_public: isPublic,
+          content_type: contentType,
         },
       },
       {
@@ -407,7 +458,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           <p className="text-muted-foreground">
             {entry.lamb_info ? lambDisplayName(entry.lamb_info) : "ไม่ทราบชื่อ"}{" "}
             · {format(parseISO(entry.devotion_date), "d MMMM yyyy")} —
-            แก้ไขได้เฉพาะหัวข้อ เนื้อหา และสถานะ
+            แก้ไขได้เฉพาะหัวข้อ เนื้อหา ประเภท และสถานะ
           </p>
         </div>
         <Button
@@ -439,6 +490,25 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
               กรุณาใส่หัวข้อบทความก่อนบันทึก
             </p>
           )}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-muted-foreground text-xs">ประเภท</label>
+          <Select
+            value={contentType}
+            onValueChange={(v) => setContentType(v as DevotionContentType)}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {devotionContentTypeOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <label className="flex items-center gap-2 text-sm">

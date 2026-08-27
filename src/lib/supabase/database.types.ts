@@ -287,6 +287,7 @@ export type Database = {
       lamb_devotion: {
         Row: {
           content_html: string
+          content_type: string
           created_at: string
           devotion_date: string
           id: string
@@ -298,6 +299,7 @@ export type Database = {
         }
         Insert: {
           content_html: string
+          content_type?: string
           created_at?: string
           devotion_date: string
           id?: string
@@ -309,6 +311,7 @@ export type Database = {
         }
         Update: {
           content_html?: string
+          content_type?: string
           created_at?: string
           devotion_date?: string
           id?: string
@@ -998,6 +1001,7 @@ export type Database = {
       public_devotion_feed: {
         Row: {
           content_html: string | null
+          content_type: string | null
           created_at: string | null
           devotion_date: string | null
           id: string | null

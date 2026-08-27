@@ -2,6 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DEVOTION_CONTENT_TYPE_LABELS,
+  type DevotionContentType,
+} from "../data/devotion-schema";
 
 export type DevotionRecentListEntry = {
   id: string;
@@ -9,6 +13,7 @@ export type DevotionRecentListEntry = {
   title: string;
   image_urls: string[];
   is_public: boolean;
+  content_type: DevotionContentType;
 };
 
 type DevotionRecentListProps = {
@@ -44,12 +49,15 @@ function DevotionListItem({ entry }: { entry: DevotionRecentListEntry }) {
           </span>
           <span className="truncate font-medium">{entry.title}</span>
         </div>
-        <Badge
-          variant={entry.is_public ? "default" : "outline"}
-          className="shrink-0"
-        >
-          {entry.is_public ? "สาธารณะ" : "ส่วนตัว"}
-        </Badge>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* badge แยกเฝ้าเดี่ยว/คำเทศนา — เพิ่มโดย grill-me 2026-08-26 */}
+          <Badge variant="secondary">
+            {DEVOTION_CONTENT_TYPE_LABELS[entry.content_type]}
+          </Badge>
+          <Badge variant={entry.is_public ? "default" : "outline"}>
+            {entry.is_public ? "สาธารณะ" : "ส่วนตัว"}
+          </Badge>
+        </div>
       </div>
     </Link>
   );

@@ -12,10 +12,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
+import {
+  devotionContentTypeOptions,
+  type DevotionContentType,
+} from "../data/devotion-schema";
 import { useCreateLambDevotion } from "../data/queries";
 import {
   clearDevotionDialogDraft,
@@ -63,6 +74,10 @@ export function DevotionUploadDialog({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  // เพิ่มโดย grill-me 2026-08-26 — default เฝ้าเดี่ยวเสมอ
+  const [contentType, setContentType] = useState<DevotionContentType>(
+    "devotion",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
@@ -75,7 +90,8 @@ export function DevotionUploadDialog({
   useEffect(() => {
     if (hasCheckedInitialDraft.current) return;
     hasCheckedInitialDraft.current = true;
-    if (loadDevotionDialogDraft(lambId, today)) {
+    const initial = loadDevotionDialogDraft(lambId, today);
+    if (initial) {
       onOpenChange(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,6 +106,7 @@ export function DevotionUploadDialog({
     if (draft) {
       setText(draft.text);
       setIsPublic(draft.isPublic);
+      setContentType(draft.contentType);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -101,8 +118,8 @@ export function DevotionUploadDialog({
       clearDevotionDialogDraft(lambId);
       return;
     }
-    saveDevotionDialogDraft(lambId, { text, isPublic }, today);
-  }, [text, isPublic, lambId, today]);
+    saveDevotionDialogDraft(lambId, { text, isPublic, contentType }, today);
+  }, [text, isPublic, contentType, lambId, today]);
 
   const resetForm = () => {
     setTab("text");
@@ -110,6 +127,7 @@ export function DevotionUploadDialog({
     setImageFile(null);
     setImagePreviewUrl(null);
     setIsPublic(true);
+    setContentType("devotion");
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -166,13 +184,19 @@ export function DevotionUploadDialog({
       await createDevotion.mutateAsync({
         lamb_id: lambId,
         devotion_date: format(today, "yyyy-MM-dd"),
-        title: `เฝ้าเดี่ยว ${format(today, "d MMMM yyyy")}`,
+        title:
+          contentType === "sermon"
+            ? `คำเทศนา ${format(today, "d MMMM yyyy")}`
+            : `เฝ้าเดี่ยว ${format(today, "d MMMM yyyy")}`,
         content_html: contentHtml,
         image_urls: imageUrls,
         is_public: isPublic,
+        content_type: contentType,
       });
 
-      toast.success("บันทึกเฝ้าเดี่ยวแล้ว");
+      toast.success(
+        contentType === "sermon" ? "บันทึกคำเทศนาแล้ว" : "บันทึกเฝ้าเดี่ยวแล้ว",
+      );
       resetForm();
       clearDevotionDialogDraft(lambId);
       onOpenChange(false);
@@ -232,6 +256,26 @@ export function DevotionUploadDialog({
               )}
             </TabsContent>
           </Tabs>
+
+          {/* เลือกเฝ้าเดี่ยว/คำเทศนา — เพิ่มโดย grill-me 2026-08-26 */}
+          <div className="space-y-1.5">
+            <label className="text-muted-foreground text-xs">ประเภท</label>
+            <Select
+              value={contentType}
+              onValueChange={(v) => setContentType(v as DevotionContentType)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {devotionContentTypeOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <label className="flex items-center gap-2 text-sm">
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />

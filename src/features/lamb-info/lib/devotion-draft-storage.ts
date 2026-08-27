@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import type { DevotionContentType } from "../data/devotion-schema";
 
 // ร่างเฝ้าเดี่ยวที่ยังไม่ได้ส่ง — กันเผลอรีเฟรชแล้วเสียของที่เขียนไว้ (ตกลงใน
 // grill-me 2026-08-14, `devotion_multi_submit_design` ใน project memory)
@@ -26,6 +27,8 @@ export type DevotionEditorDraft = {
   title: string;
   html: string;
   isPublic: boolean;
+  // เพิ่มโดย grill-me 2026-08-26 — กู้ตัวเลือกเฝ้าเดี่ยว/คำเทศนากลับมาด้วย
+  contentType: DevotionContentType;
 };
 
 type StoredEditorDraft = DevotionEditorDraft & { savedDate: string };
@@ -50,6 +53,7 @@ export function loadDevotionEditorDraft(
       title: parsed.title,
       html: parsed.html,
       isPublic: parsed.isPublic !== false,
+      contentType: parsed.contentType === "sermon" ? "sermon" : "devotion",
     };
   } catch {
     return null;
@@ -87,6 +91,8 @@ const DIALOG_DRAFT_KEY_PREFIX = "devotion-dialog-draft-v1:";
 export type DevotionDialogDraft = {
   text: string;
   isPublic: boolean;
+  // เพิ่มโดย grill-me 2026-08-26
+  contentType: DevotionContentType;
 };
 
 type StoredDialogDraft = DevotionDialogDraft & { savedDate: string };
@@ -113,6 +119,7 @@ export function loadDevotionDialogDraft(
     return {
       text: parsed.text,
       isPublic: parsed.isPublic !== false,
+      contentType: parsed.contentType === "sermon" ? "sermon" : "devotion",
     };
   } catch {
     return null;

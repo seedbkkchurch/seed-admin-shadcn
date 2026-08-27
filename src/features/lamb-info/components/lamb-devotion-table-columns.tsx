@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/data-table";
 import { type LambDevotionRow } from "../data/devotion-schema";
+import { makeDevotionContentTypeColumn } from "./devotion-table-columns";
 import { DevotionTableRowActions } from "./devotion-table-row-actions";
 
 // Column set for the per-lamb full-history table (lamb-devotion-table.tsx)
@@ -89,6 +90,7 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     },
     enableSorting: false,
   },
+  makeDevotionContentTypeColumn(),
   {
     id: "is_public",
     accessorFn: (row) => (row.is_public ? "public" : "private"),

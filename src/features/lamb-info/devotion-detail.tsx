@@ -9,11 +9,12 @@ import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButton } from "@/features/devotion-public/components/share-button";
 import { cn } from "@/lib/utils";
-import { lambDisplayName } from "./data/devotion-schema";
+import { DEVOTION_CONTENT_TYPE_LABELS, lambDisplayName } from "./data/devotion-schema";
 import { useLambDevotionDetail } from "./data/queries";
 import { DEVOTION_CONTENT_CLASS } from "./lib/devotion-content-class";
 
@@ -97,6 +98,12 @@ export function DevotionDetail() {
                 className="max-h-96 w-full rounded-md object-cover"
               />
             )}
+            <div className="flex items-center gap-2">
+              {/* badge ประเภท — เพิ่มโดย grill-me 2026-08-26 */}
+              <Badge variant="secondary">
+                {DEVOTION_CONTENT_TYPE_LABELS[entry.content_type]}
+              </Badge>
+            </div>
             <h1 className="text-3xl font-bold md:text-4xl">{entry.title}</h1>
             <div className="flex items-center gap-2">
               <Avatar className="size-8">
