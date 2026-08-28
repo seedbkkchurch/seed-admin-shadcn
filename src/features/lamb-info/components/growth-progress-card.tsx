@@ -159,7 +159,10 @@ function GrowthTabTrigger({
   total: number;
 }) {
   return (
-    <TabsTrigger value={value} className="flex-col gap-1 py-2 sm:flex-row sm:gap-2">
+    <TabsTrigger
+      value={value}
+      className="flex-none flex-col gap-1 py-2 sm:flex-row sm:gap-2"
+    >
       <span className="flex items-center gap-1.5">
         {icon}
         {title}
@@ -277,29 +280,33 @@ export function GrowthProgressCard({
       </CardHeader>
       <CardContent className="space-y-6">
         <Tabs defaultValue="chapter">
-          <TabsList className="h-auto w-full sm:w-fit">
-            <GrowthTabTrigger
-              value="chapter"
-              icon={<CircleCheckBig className="size-4 text-teal-600" />}
-              title="พื้นฐานคริสเตียน"
-              completedCount={completedCount}
-              total={GROWTH_LESSONS.length}
-            />
-            <GrowthTabTrigger
-              value="part1"
-              icon={<CircleCheckBig className="size-4 text-teal-600" />}
-              title="ลักษณะชีวิตคริสเตียน ตอน 1"
-              completedCount={part1CompletedCount}
-              total={CHRISTIAN_LIFE_LESSONS_PART1.length}
-            />
-            <GrowthTabTrigger
-              value="part2"
-              icon={<CircleCheckBig className="size-4 text-teal-600" />}
-              title="ลักษณะชีวิตคริสเตียน ตอน 2"
-              completedCount={part2CompletedCount}
-              total={CHRISTIAN_LIFE_LESSONS_PART2.length}
-            />
-          </TabsList>
+          {/* เลื่อนแนวนอนได้บนมือถือแทนการล้นจอ (ดู grill-me 2026-08-28) —
+          แก้เฉพาะจุดนี้ ไม่แตะ ui/tabs.tsx ที่ใช้ร่วมกับหน้าอื่น */}
+          <div className="-mx-1 overflow-x-auto px-1">
+            <TabsList className="h-auto w-full sm:w-fit">
+              <GrowthTabTrigger
+                value="chapter"
+                icon={<CircleCheckBig className="size-4 text-teal-600" />}
+                title="พื้นฐานคริสเตียน"
+                completedCount={completedCount}
+                total={GROWTH_LESSONS.length}
+              />
+              <GrowthTabTrigger
+                value="part1"
+                icon={<CircleCheckBig className="size-4 text-teal-600" />}
+                title="ลักษณะชีวิตคริสเตียน ตอน 1"
+                completedCount={part1CompletedCount}
+                total={CHRISTIAN_LIFE_LESSONS_PART1.length}
+              />
+              <GrowthTabTrigger
+                value="part2"
+                icon={<CircleCheckBig className="size-4 text-teal-600" />}
+                title="ลักษณะชีวิตคริสเตียน ตอน 2"
+                completedCount={part2CompletedCount}
+                total={CHRISTIAN_LIFE_LESSONS_PART2.length}
+              />
+            </TabsList>
+          </div>
 
           <TabsContent value="chapter">
             <LessonChecklist

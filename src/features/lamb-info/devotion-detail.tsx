@@ -14,7 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButton } from "@/features/devotion-public/components/share-button";
 import { cn } from "@/lib/utils";
-import { DEVOTION_CONTENT_TYPE_LABELS, lambDisplayName } from "./data/devotion-schema";
+import {
+  DEVOTION_CONTENT_TYPE_LABELS,
+  lambDisplayName,
+} from "./data/devotion-schema";
 import { useLambDevotionDetail } from "./data/queries";
 import { DEVOTION_CONTENT_CLASS } from "./lib/devotion-content-class";
 
@@ -45,13 +48,14 @@ export function DevotionDetail() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/lamb-info/devotion">
               <ArrowLeft /> กลับไปหน้าเฝ้าเดี่ยว
             </Link>
           </Button>
-          <div className="flex items-center gap-2">
+          {/* ห่อเป็นแถวใหม่เองบนมือถือเมื่อไม่พอที่ (ดู grill-me 2026-08-28) */}
+          <div className="flex flex-wrap items-center gap-2">
             {/* แสดงเฉพาะรายการ is_public — รายการ private ไม่มีหน้า public
             ให้แชร์ (ดู grill-me 2026-08-16) */}
             {entry?.is_public && (

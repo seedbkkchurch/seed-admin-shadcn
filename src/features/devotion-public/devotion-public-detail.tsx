@@ -44,7 +44,7 @@ export function DevotionPublicDetail() {
       <PublicHeader />
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/devotion">
               <ArrowLeft /> กลับไปหน้าเฝ้าเดี่ยว
