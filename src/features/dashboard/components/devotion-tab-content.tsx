@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DevotionOverviewSummary } from "@/features/devotion-overview/components/devotion-overview-summary";
+import { DevotionDailyTable } from "@/features/devotion-overview/components/devotion-daily-table";
 import { DevotionMonthlyTable } from "@/features/devotion-overview/components/devotion-monthly-table";
 import { DevotionYearlyTable } from "@/features/devotion-overview/components/devotion-yearly-table";
 import type { DevotionOverviewMember } from "@/features/devotion-overview/data/schema";
@@ -26,17 +27,28 @@ export function DevotionTabContent({
   entriesByLamb,
   percent,
 }: DevotionTabContentProps) {
-  const [view, setView] = useState<"month" | "year">("month");
+  const [view, setView] = useState<"day" | "month" | "year">("month");
 
   return (
     <div className="space-y-4">
       <DevotionOverviewSummary memberCount={members.length} percent={percent} />
 
-      <Tabs value={view} onValueChange={(v) => setView(v as "month" | "year")}>
+      <Tabs
+        value={view}
+        onValueChange={(v) => setView(v as "day" | "month" | "year")}
+      >
         <TabsList>
+          <TabsTrigger value="day">รายวัน</TabsTrigger>
           <TabsTrigger value="month">รายเดือน</TabsTrigger>
           <TabsTrigger value="year">รายปี</TabsTrigger>
         </TabsList>
+        <TabsContent value="day">
+          <DevotionDailyTable
+            today={today}
+            members={members}
+            entriesByLamb={entriesByLamb}
+          />
+        </TabsContent>
         <TabsContent value="month">
           <DevotionMonthlyTable
             today={today}

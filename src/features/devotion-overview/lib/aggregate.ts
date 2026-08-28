@@ -4,6 +4,7 @@ import {
   format,
   getDay,
   isAfter,
+  isSameMonth,
   startOfMonth,
   subMonths,
 } from "date-fns";
@@ -67,9 +68,7 @@ export function buildMonthlyWeeks(
 
   const daysByWeek = new Map<number, Date[]>();
   for (const day of eachDayOfInterval({ start: monthStart, end: monthEnd })) {
-    const weekIndex = Math.floor(
-      (day.getDate() - 1 + firstWeekdayOffset) / 7,
-    );
+    const weekIndex = Math.floor((day.getDate() - 1 + firstWeekdayOffset) / 7);
     const list = daysByWeek.get(weekIndex) ?? [];
     list.push(day);
     daysByWeek.set(weekIndex, list);
@@ -125,4 +124,50 @@ export function averagePercent(buckets: RateBucket[]): number | null {
   const totalCount = started.reduce((sum, b) => sum + b.count, 0);
   const totalElapsed = started.reduce((sum, b) => sum + b.elapsedDays, 0);
   return toPercent(totalCount, totalElapsed);
+}
+
+// วันในเดือนที่ระบุ ใช้ทั้งตารางรายวันบนจอ (ตาราง Grid วันที่ 1-N) และไฟล์
+// export excel — คนละชุดกับ buildMonthlyWeeks (สัปดาห์/%) ด้านบน ตัวนี้คืนดิบ
+// เป็นสถานะรายวันตรงๆ ไม่ aggregate เป็น % (ตกลงใน grill-me "รายงานนับเฝ้าเดี่ยว
+// รายเดือน" — ต้องการเห็นว่าส่งวันไหนบ้างชัดเจน ไม่ใช่แค่อัตรา) วันในอนาคต
+// (เดือนปัจจุบันที่ยังไม่ถึง) ได้ isFuture=true ให้ฝั่ง UI/excel เว้นว่างแยกจาก
+// วันที่ขาดส่งจริง (isFuture=false, present=false)
+export type DailyCell = {
+  date: Date;
+  dayNum: number;
+  present: boolean;
+  isFuture: boolean;
+};
+
+export function buildMonthDays(
+  monthDate: Date,
+  today: Date,
+  entryDates: Set<string>,
+): DailyCell[] {
+  const monthStart = startOfMonth(monthDate);
+  const monthEnd = endOfMonth(monthDate);
+  return eachDayOfInterval({ start: monthStart, end: monthEnd }).map((date) => {
+    const isFuture = isAfter(date, today);
+    return {
+      date,
+      dayNum: date.getDate(),
+      present: !isFuture && entryDates.has(format(date, DATE_FMT)),
+      isFuture,
+    };
+  });
+}
+
+// ตัวเลือกเดือนย้อนหลัง 12 เดือนแบบ rolling จบที่เดือนปัจจุบัน (ใช้กับ dropdown
+// เลือกเดือนของตารางรายวัน) — เรียงเดือนล่าสุดขึ้นก่อน (ต่างจาก
+// buildYearlyMonths ที่เรียงเก่า→ใหม่สำหรับกราฟแท่ง)
+export function buildMonthOptions(today: Date): Date[] {
+  const options: Date[] = [];
+  for (let i = 0; i < 12; i++) {
+    options.push(subMonths(startOfMonth(today), i));
+  }
+  return options;
+}
+
+export function isCurrentMonth(monthDate: Date, today: Date): boolean {
+  return isSameMonth(monthDate, today);
 }
