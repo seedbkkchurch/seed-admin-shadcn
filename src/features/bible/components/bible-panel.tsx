@@ -6,11 +6,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useBibleBookFile, useBibleBooks } from "../data/queries";
 import { type BibleLanguageMode, type BibleVersion } from "../data/types";
-import { enFileLangFor, resolveVersionForMode, thFileLangFor } from "../lib/bible-versions";
+import {
+  enFileLangFor,
+  resolveVersionForMode,
+  thFileLangFor,
+} from "../lib/bible-versions";
 import { type BibleTextParseMode } from "./bible-text";
 import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
 import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
+import { AiHelpButton } from "./ai-help-button";
 import { indexVerses, VerseBlock } from "./verse-block";
 
 export type BiblePanelProps = {
@@ -89,8 +94,11 @@ export function BiblePanel({
   // 2026-08-23 "ไว้ล่างสุด เราอ่าน bible จากบนลงล่างขึ้นบ้างสิ")
   const headingRef = useRef<HTMLDivElement>(null);
 
-  const { data: books, isPending: booksPending, isError: booksError } =
-    useBibleBooks();
+  const {
+    data: books,
+    isPending: booksPending,
+    isError: booksError,
+  } = useBibleBooks();
 
   const activeBook = books?.find((b) => b.number === bookNumber);
   const chapterCount = activeBook?.chapterCount ?? 1;
@@ -128,7 +136,8 @@ export function BiblePanel({
   ).sort((a, b) => a - b);
 
   const isLoadingChapter =
-    (mode !== "th" && enFile.isPending) || (mode !== "en" && thaiFile.isPending);
+    (mode !== "th" && enFile.isPending) ||
+    (mode !== "en" && thaiFile.isPending);
   const isChapterError = enFile.isError || thaiFile.isError;
 
   const selectedCount = selectedVerses?.size ?? 0;
@@ -148,7 +157,11 @@ export function BiblePanel({
   };
 
   const canOpenReadingMode =
-    isMobile && !booksPending && !booksError && !isLoadingChapter && !isChapterError;
+    isMobile &&
+    !booksPending &&
+    !booksError &&
+    !isLoadingChapter &&
+    !isChapterError;
 
   // ปุ่มเปลี่ยนบทถัดไป/ก่อนหน้าของโหมดธรรมดา (ตรงข้ามกับ full-screen reading
   // mode ด้านบน ที่มีสไวป์ + ลูกศรลอยของตัวเองอยู่แล้ว) — ตรรกะข้ามเล่มต่อเนื่อง
@@ -176,7 +189,10 @@ export function BiblePanel({
     // รอ chapter ใหม่ render เสร็จก่อนค่อย scroll (ค่า chapter/verseNumbers
     // ในรอบ render นี้ยังเป็นของบทเก่าอยู่)
     requestAnimationFrame(() => {
-      headingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      headingRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     });
   };
 
@@ -187,7 +203,12 @@ export function BiblePanel({
     !!books && (chapter > 1 || books.some((b) => b.number === bookNumber - 1));
 
   return (
-    <div className={cn("flex flex-1 flex-col gap-4", variant === "page" && "sm:gap-6")}>
+    <div
+      className={cn(
+        "flex flex-1 flex-col gap-4",
+        variant === "page" && "sm:gap-6",
+      )}
+    >
       {booksError ? (
         <Alert variant="destructive">
           <AlertTitle>โหลดรายชื่อหนังสือไม่สำเร็จ</AlertTitle>
@@ -217,11 +238,18 @@ export function BiblePanel({
           variant === "page" && "sm:rounded-lg sm:border sm:p-6",
         )}
       >
-        <h3 ref={headingRef} className="mb-3 scroll-mt-4 text-lg font-semibold">
-          {activeBook
-            ? `${activeBook.nameTh} บทที่ ${chapter}`
-            : `บทที่ ${chapter}`}
-        </h3>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 ref={headingRef} className="scroll-mt-4 text-lg font-semibold">
+            {activeBook
+              ? `${activeBook.nameTh} บทที่ ${chapter}`
+              : `บทที่ ${chapter}`}
+          </h3>
+          {/* "อยากใช้ตัวช่วยไหม?" ส่ง prompt ไปให้ ChatGPT/Gemini ช่วยอธิบาย
+          บริบททางประวัติศาสตร์ของบทนี้ (ดู grill-me 2026-08-28) */}
+          {activeBook && (
+            <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+          )}
+        </div>
 
         {isChapterError ? (
           <Alert variant="destructive">

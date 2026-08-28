@@ -15,10 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { AiHelpButton } from "./ai-help-button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { BookCombobox } from "./book-combobox";
-import { BibleHeadings, BibleText, type BibleTextParseMode } from "./bible-text";
+import {
+  BibleHeadings,
+  BibleText,
+  type BibleTextParseMode,
+} from "./bible-text";
 import { ChapterInput } from "./chapter-input";
 import {
   type BibleBookMeta,
@@ -154,9 +164,7 @@ export function BibleReadingMode({
   // เปลี่ยนผ่านตัวเลือกบท/หนังสือใน sheet ไม่ต้องมีทิศ (fade เฉยๆ) ใช้ state
   // ไม่ใช้ ref เพราะค่านี้ถูกอ่านตอน render (คำนวณ class แอนิเมชัน) — อ่านค่า
   // ref ตอน render ไม่ปลอดภัย (eslint react-hooks/refs)
-  const [direction, setDirection] = useState<"next" | "prev" | "none">(
-    "none",
-  );
+  const [direction, setDirection] = useState<"next" | "prev" | "none">("none");
   const touchStateRef = useRef<{
     x: number;
     y: number;
@@ -264,6 +272,11 @@ export function BibleReadingMode({
             ? `${activeBook.nameTh} บทที่ ${chapter}`
             : `บทที่ ${chapter}`}
         </button>
+        {/* เหมือนกับ heading ใน BiblePanel ปกติ — ดู grill-me 2026-08-28
+        "ใส่ด้วย" (โหมดอ่านเต็มจอ) */}
+        {activeBook && (
+          <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -299,7 +312,10 @@ export function BibleReadingMode({
               {showEn && (
                 <div
                   className="mb-4"
-                  style={{ fontFamily: latinFont.cssFamily, fontSize: fontSizePx }}
+                  style={{
+                    fontFamily: latinFont.cssFamily,
+                    fontSize: fontSizePx,
+                  }}
                 >
                   {verseNumbers.flatMap((v) => {
                     const verse = enVerses.get(v);
@@ -447,7 +463,10 @@ export function BibleReadingMode({
       </Sheet>
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto p-4">
+        <SheetContent
+          side="bottom"
+          className="max-h-[85vh] overflow-y-auto p-4"
+        >
           <SheetHeader className="p-0">
             <SheetTitle>ตั้งค่าการอ่าน</SheetTitle>
           </SheetHeader>
