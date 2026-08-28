@@ -119,12 +119,20 @@ function calculateAge(birthday: string, today: Date): number | null {
 }
 
 // คนที่ไม่มี birthday (null) ถูกตัดออกจากทั้งค่าเฉลี่ยและช่วงอายุทั้งหมด
-// (ไม่ fallback ไปใช้คอลัมน์ age) รวม active + inactive ตามที่ตกลง
+// (ไม่ fallback ไปใช้คอลัมน์ age) รวม active + inactive ตามที่ตกลง —
+// excludePastor (2026-08-28 grill-me) ตัดคนที่มี tag "Pastor" ออกทั้งจาก
+// ค่าเฉลี่ยและกราฟช่วงอายุ (lamb_info.tags เป็น comma-separated string เช่น
+// "Pastor, Leader team" — เช็คแบบ includes ไม่ใช่ exact match) ปิดไว้เป็น
+// default (นับรวม Pastor) ผู้ใช้กดเปิดเองจาก Dashboard
 export function computeAgeStats(
   lambs: DashboardLamb[],
   today: Date,
+  excludePastor = false,
 ): AgeStats {
-  const ages = lambs
+  const scoped = excludePastor
+    ? lambs.filter((l) => !splitTags(l.tags).includes("Pastor"))
+    : lambs;
+  const ages = scoped
     .map((l) => (l.birthday ? calculateAge(l.birthday, today) : null))
     .filter((age): age is number => age !== null && age >= 0);
 
@@ -136,8 +144,7 @@ export function computeAgeStats(
 
   const brackets: AgeBracketCount[] = AGE_BRACKETS.map((bucket) => ({
     label: bucket.label,
-    count: ages.filter((age) => age >= bucket.min && age <= bucket.max)
-      .length,
+    count: ages.filter((age) => age >= bucket.min && age <= bucket.max).length,
   }));
 
   return { averageAge, brackets };

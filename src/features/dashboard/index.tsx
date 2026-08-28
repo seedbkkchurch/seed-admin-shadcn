@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { AlertCircle, CalendarHeart, Users } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { Header } from "@/components/layout/header";
@@ -149,18 +151,18 @@ export function Dashboard() {
       : Math.round((totalCount / totalElapsed) * 100);
   }, [devotionMembers, devotionEntriesByLamb, today]);
 
-  const memberCounts = useMemo(
-    () => computeMemberCounts(lambs ?? []),
-    [lambs],
-  );
+  const memberCounts = useMemo(() => computeMemberCounts(lambs ?? []), [lambs]);
   const birthdaysThisMonth = useMemo(
     () => computeBirthdaysThisMonth(lambs ?? [], today),
     [lambs, today],
   );
   const genderCounts = useMemo(() => computeGenderCounts(lambs ?? []), [lambs]);
+  // toggle "ไม่นับ Pastor" สำหรับอายุเฉลี่ย+กราฟช่วงอายุ — ปิดไว้เป็น default
+  // (นับรวม Pastor) ตกลงใน grill-me 2026-08-28
+  const [excludePastor, setExcludePastor] = useState(false);
   const ageStats = useMemo(
-    () => computeAgeStats(lambs ?? [], today),
-    [lambs, today],
+    () => computeAgeStats(lambs ?? [], today, excludePastor),
+    [lambs, today, excludePastor],
   );
   const giftAverages = useMemo(
     () => computeGiftAverages(giftRows ?? []),
@@ -267,7 +269,11 @@ export function Dashboard() {
             <TabsContent value="analytics" className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="ชาย" value={genderCounts.male} icon={Users} />
-                <StatCard title="หญิง" value={genderCounts.female} icon={Users} />
+                <StatCard
+                  title="หญิง"
+                  value={genderCounts.female}
+                  icon={Users}
+                />
                 <StatCard
                   title="อายุเฉลี่ยทั้งโบส"
                   value={
@@ -278,6 +284,16 @@ export function Dashboard() {
                   icon={CalendarHeart}
                   description="คำนวณจากวันเกิด"
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="exclude-pastor"
+                  checked={excludePastor}
+                  onCheckedChange={setExcludePastor}
+                />
+                <Label htmlFor="exclude-pastor" className="text-sm font-normal">
+                  ไม่นับ Pastor ในอายุเฉลี่ย/ช่วงอายุ
+                </Label>
               </div>
               <AgeDistributionChart brackets={ageStats.brackets} />
               <GiftRadarChart
