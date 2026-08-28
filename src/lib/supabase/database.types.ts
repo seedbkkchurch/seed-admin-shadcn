@@ -357,6 +357,7 @@ export type Database = {
           lamb_lesson_ch18_progress: number | null
           lamb_lesson_life_progress: number | null
           last_name: string | null
+          mentor_id: string | null
           nick_name: string | null
           personality_code: string | null
           phone: string | null
@@ -387,6 +388,7 @@ export type Database = {
           lamb_lesson_ch18_progress?: number | null
           lamb_lesson_life_progress?: number | null
           last_name?: string | null
+          mentor_id?: string | null
           nick_name?: string | null
           personality_code?: string | null
           phone?: string | null
@@ -417,6 +419,7 @@ export type Database = {
           lamb_lesson_ch18_progress?: number | null
           lamb_lesson_life_progress?: number | null
           last_name?: string | null
+          mentor_id?: string | null
           nick_name?: string | null
           personality_code?: string | null
           phone?: string | null
@@ -435,6 +438,20 @@ export type Database = {
             columns: ["group_care"]
             isOneToOne: false
             referencedRelation: "group_care"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lamb_info_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "lamb_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lamb_info_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "lamb_info"
             referencedColumns: ["id"]
           },
           {

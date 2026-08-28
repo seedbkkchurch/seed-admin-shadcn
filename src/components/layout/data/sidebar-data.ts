@@ -14,6 +14,7 @@ import {
   BookOpen,
   KeyRound,
   FlaskConical,
+  GitBranch,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -109,6 +110,22 @@ export const sidebarData: SidebarData = {
           title: "Group Care",
           url: "/group-care",
           icon: HeartHandshake,
+        },
+        // พี่เลี้ยงลูกแกะ — grill-me 2026-08-28. หน้าแก้ไข (/mentorship) ซ่อน
+        // จาก member/visitor/cell_leader เพราะแก้ไขไม่ได้อยู่ดี
+        // (lamb:edit:mentor เป็นของ team_leader/admin/super_admin เท่านั้น —
+        // กันซ้ำที่ route ด้วย) ส่วนผัง (/mentorship-chart) ให้ทุกคนเห็นเมนู
+        // ได้ เพราะดูได้ทุก role ที่ login แล้ว
+        {
+          title: "พี่เลี้ยงลูกแกะ",
+          url: "/mentorship",
+          icon: HandHeart,
+          hiddenForRoles: ["member", "visitor", "cell_leader"],
+        },
+        {
+          title: "ผังพี่เลี้ยง",
+          url: "/mentorship-chart",
+          icon: GitBranch,
         },
         {
           title: "เช็คชื่อรายสัปดาห์",

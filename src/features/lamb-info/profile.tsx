@@ -19,11 +19,13 @@ import { cn } from "@/lib/utils";
 import { useMyLamb } from "@/hooks/use-my-lamb";
 import { useMyRoles } from "@/hooks/use-my-roles";
 import { useLambInfoDetail, useUpdateLambInfo } from "./data/queries";
+import { useCanEditMentor } from "@/features/mentorship/data/queries";
 import { type LambInfoRow } from "./data/schema";
 import { DevotionSection } from "./components/devotion-section";
 import { GiftsCard } from "./components/gifts-card";
 import { GrowthProgressCard } from "./components/growth-progress-card";
 import { LambInfoDialogs } from "./components/lamb-info-dialogs";
+import { MentorCard } from "./components/mentor-card";
 import { LambInfoProvider, useLambInfo } from "./components/lamb-info-provider";
 
 const route = getRouteApi("/_authenticated/lamb-info/$lambId/");
@@ -253,6 +255,7 @@ function SpiritualInfoCard({ row }: { row: LambInfoRow }) {
 function ProfileContent({ row }: { row: LambInfoRow }) {
   const { data: myLamb } = useMyLamb();
   const { roles } = useMyRoles();
+  const { data: canEditMentor } = useCanEditMentor();
   const isOwnProfile = !!myLamb && myLamb.id === row.id;
   const myRole = roles[0]?.code ?? null;
   const canEditGrowth =
@@ -275,6 +278,11 @@ function ProfileContent({ row }: { row: LambInfoRow }) {
         chapterProgress={row.lamb_lesson_ch18_progress ?? null}
         lifeProgress={row.lamb_lesson_life_progress ?? null}
         canEdit={canEditGrowth}
+      />
+      <MentorCard
+        lambId={row.id}
+        mentor={row.mentor}
+        canEdit={!!canEditMentor}
       />
       <GiftsCard key={row.id} lambId={row.id} isOwnProfile={isOwnProfile} />
       <DevotionSection key={row.id} lambId={row.id} />

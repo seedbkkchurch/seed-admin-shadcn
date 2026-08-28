@@ -69,13 +69,61 @@ export function useLambInfoDetail(id: string | undefined) {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "*, group_care_info:group_care!lamb_info_group_care_fkey(id, name), personality_type(code, description_en, description_th, explain, archetype)",
+          // mentor: อีก FK เส้นหนึ่งบน lamb_info (self-reference, migration
+          // mentorship_add_mentor_id) — ตอนแรกใช้ hint เป็นชื่อ constraint
+          // (!lamb_info_mentor_id_fkey) เหมือน group_care_info ข้างบน แต่
+          // PostgREST ตอบ 400 "Could not find a relationship" สำหรับ
+          // self-referencing table แบบนี้เสมอ ไม่ว่าจะ reload schema cache
+          // กี่รอบก็ตาม (กระทบทุกคนทุก role ไม่ใช่แค่ cell_leader — ดู
+          // grill-me 2026-08-28 "ก็ยัง Couldn't load this profile" — เช็ค
+          // Supabase edge_logs เจอ GET 400 ตรงๆ) แก้โดยเปลี่ยน hint เป็นชื่อ
+          // "คอลัมน์" (!mentor_id) แทนชื่อ constraint — self-join กับ
+          // PostgREST ต้องใช้ column-name hint ถึงจะ resolve ทิศทาง
+          // many-to-one ได้ถูกต้อง (ตามตัวอย่าง self-reference ในเอกสาร
+          // PostgREST เอง) ต่างจาก group_care_info/group_care ข้างบนที่ไม่ใช่
+          // self-join จึงใช้ชื่อ constraint ได้ปกติ
+          "*, group_care_info:group_care!lamb_info_group_care_fkey(id, name), personality_type(code, description_en, description_th, explain, archetype), mentor:lamb_info!mentor_id(id, nick_name, first_name, last_name, profile_picture, role)",
         )
         .eq("id", id as string)
         .single();
 
       if (error) throw error;
-      return data as LambInfoRow;
+      // mentor ถูก infer เป็น array โดย supabase-js เพราะเป็น self-
+      // referencing FK (isOneToOne: false ใน database.types.ts ทั้งสองทิศ
+      // ทาง — ข้อจำกัดของตัว generator เอง) แต่ runtime จริงเป็น object
+      // เดี่ยวเสมอ (many-to-one: mentor_id คอลัมน์เดียวชี้ไปแถวเดียว) แปลง
+      // ผ่าน unknown ก่อนแล้ว normalize ให้ตรงกับ type ที่ประกาศไว้จริง
+      const raw = data as unknown as Omit<LambInfoRow, "mentor"> & {
+        mentor: LambInfoRow["mentor"] | LambInfoRow["mentor"][];
+      };
+      return {
+        ...raw,
+        mentor: Array.isArray(raw.mentor)
+          ? (raw.mentor[0] ?? null)
+          : raw.mentor,
+      } as LambInfoRow;
+    },
+  });
+}
+
+// ลูกแกะทั้งหมดที่มี lambId เป็นพี่เลี้ยง (reverse ของ mentor_id) — backs
+// "ลูกแกะในความดูแล" บนหน้าโปรไฟล์ (mentor-card.tsx). แยก query ต่างหากจาก
+// useLambInfoDetail แทนที่จะพยายาม embed ย้อนทิศทางในนั้นเลย — self-FK
+// embed ย้อนทางกับ PostgREST มักกำกวม/ตั้งชื่อชนกับฝั่ง forward (mentor
+// ข้างบน) ง่ายกว่าและชัดกว่าแยกเป็น query ธรรมดา filter ด้วย .eq("mentor_id")
+export function useMentees(lambId: string | undefined) {
+  return useQuery({
+    queryKey: [...lambInfoKeys.detail(lambId ?? ""), "mentees"],
+    enabled: !!lambId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lamb_info")
+        .select("id, nick_name, first_name, last_name, profile_picture, role")
+        .eq("mentor_id", lambId as string)
+        .order("first_name", { ascending: true });
+
+      if (error) throw error;
+      return data as import("./schema").MentorRef[];
     },
   });
 }

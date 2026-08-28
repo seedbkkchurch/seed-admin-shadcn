@@ -15,6 +15,14 @@ export type GroupCare = Pick<Tables<"group_care">, "id" | "name">;
 
 export type PersonalityType = Tables<"personality_type">;
 
+// Lightweight lamb reference used for mentor/mentee display — just enough
+// to render a name + avatar + link. See mentorship_add_mentor_id migration
+// (grill-me 2026-08-28) and features/mentorship/.
+export type MentorRef = Pick<
+  LambInfo,
+  "id" | "nick_name" | "first_name" | "last_name" | "profile_picture" | "role"
+>;
+
 // Row shape returned by the list query (lamb_info joined with its
 // related lookup tables via Supabase's embedded resource syntax).
 // The embedded group lookup is aliased to `group_care_info` because the
@@ -22,4 +30,8 @@ export type PersonalityType = Tables<"personality_type">;
 export type LambInfoRow = LambInfo & {
   group_care_info: GroupCare | null;
   personality_type: PersonalityType | null;
+  // Embedded via the lamb_info_mentor_id_fkey self-reference — null when
+  // this lamb has no mentor assigned yet. Only present on
+  // useLambInfoDetail (profile page); useLambInfoList doesn't select it.
+  mentor?: MentorRef | null;
 };

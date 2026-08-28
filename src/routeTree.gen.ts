@@ -15,6 +15,7 @@ import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as DevotionIndexRouteImport } from './routes/devotion/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthPopupCallbackRouteImport } from './routes/auth/popup-callback'
+import { Route as AuthenticatedMentorshipChartRouteImport } from './routes/_authenticated/mentorship-chart'
 import { Route as errorsUnregisteredRouteImport } from './routes/(errors)/unregistered'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -41,6 +42,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedPrayerListIndexRouteImport } from './routes/_authenticated/prayer-list/index'
 import { Route as AuthenticatedPersonalityTypeIndexRouteImport } from './routes/_authenticated/personality-type/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
+import { Route as AuthenticatedMentorshipIndexRouteImport } from './routes/_authenticated/mentorship/index'
 import { Route as AuthenticatedLambInfoIndexRouteImport } from './routes/_authenticated/lamb-info/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
@@ -101,6 +103,12 @@ const AuthPopupCallbackRoute = AuthPopupCallbackRouteImport.update({
   path: '/auth/popup-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMentorshipChartRoute =
+  AuthenticatedMentorshipChartRouteImport.update({
+    id: '/mentorship-chart',
+    path: '/mentorship-chart',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const errorsUnregisteredRoute = errorsUnregisteredRouteImport.update({
   id: '/(errors)/unregistered',
   path: '/unregistered',
@@ -235,6 +243,12 @@ const AuthenticatedPermissionsIndexRoute =
   AuthenticatedPermissionsIndexRouteImport.update({
     id: '/permissions/',
     path: '/permissions/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMentorshipIndexRoute =
+  AuthenticatedMentorshipIndexRouteImport.update({
+    id: '/mentorship/',
+    path: '/mentorship/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLambInfoIndexRoute =
@@ -427,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unregistered': typeof errorsUnregisteredRoute
+  '/mentorship-chart': typeof AuthenticatedMentorshipChartRoute
   '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/devotion/': typeof DevotionIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -450,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
+  '/mentorship/': typeof AuthenticatedMentorshipIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
@@ -486,6 +502,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/unregistered': typeof errorsUnregisteredRoute
+  '/mentorship-chart': typeof AuthenticatedMentorshipChartRoute
   '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/': typeof AuthenticatedIndexRoute
   '/devotion': typeof DevotionIndexRoute
@@ -510,6 +527,7 @@ export interface FileRoutesByTo {
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/lamb-info': typeof AuthenticatedLambInfoIndexRoute
+  '/mentorship': typeof AuthenticatedMentorshipIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type': typeof AuthenticatedPersonalityTypeIndexRoute
   '/prayer-list': typeof AuthenticatedPrayerListIndexRoute
@@ -551,6 +569,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/(errors)/unregistered': typeof errorsUnregisteredRoute
+  '/_authenticated/mentorship-chart': typeof AuthenticatedMentorshipChartRoute
   '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/devotion/': typeof DevotionIndexRoute
@@ -575,6 +594,7 @@ export interface FileRoutesById {
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/lamb-info/': typeof AuthenticatedLambInfoIndexRoute
+  '/_authenticated/mentorship/': typeof AuthenticatedMentorshipIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/_authenticated/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
@@ -615,6 +635,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unregistered'
+    | '/mentorship-chart'
     | '/auth/popup-callback'
     | '/devotion/'
     | '/news/'
@@ -638,6 +659,7 @@ export interface FileRouteTypes {
     | '/group-care/'
     | '/help-center/'
     | '/lamb-info/'
+    | '/mentorship/'
     | '/permissions/'
     | '/personality-type/'
     | '/prayer-list/'
@@ -674,6 +696,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/unregistered'
+    | '/mentorship-chart'
     | '/auth/popup-callback'
     | '/'
     | '/devotion'
@@ -698,6 +721,7 @@ export interface FileRouteTypes {
     | '/group-care'
     | '/help-center'
     | '/lamb-info'
+    | '/mentorship'
     | '/permissions'
     | '/personality-type'
     | '/prayer-list'
@@ -738,6 +762,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/(errors)/unregistered'
+    | '/_authenticated/mentorship-chart'
     | '/auth/popup-callback'
     | '/_authenticated/'
     | '/devotion/'
@@ -762,6 +787,7 @@ export interface FileRouteTypes {
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
     | '/_authenticated/lamb-info/'
+    | '/_authenticated/mentorship/'
     | '/_authenticated/permissions/'
     | '/_authenticated/personality-type/'
     | '/_authenticated/prayer-list/'
@@ -850,6 +876,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/popup-callback'
       preLoaderRoute: typeof AuthPopupCallbackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/mentorship-chart': {
+      id: '/_authenticated/mentorship-chart'
+      path: '/mentorship-chart'
+      fullPath: '/mentorship-chart'
+      preLoaderRoute: typeof AuthenticatedMentorshipChartRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/(errors)/unregistered': {
       id: '/(errors)/unregistered'
@@ -1031,6 +1064,13 @@ declare module '@tanstack/react-router' {
       path: '/permissions'
       fullPath: '/permissions/'
       preLoaderRoute: typeof AuthenticatedPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mentorship/': {
+      id: '/_authenticated/mentorship/'
+      path: '/mentorship'
+      fullPath: '/mentorship/'
+      preLoaderRoute: typeof AuthenticatedMentorshipIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lamb-info/': {
@@ -1271,6 +1311,7 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
+  AuthenticatedMentorshipChartRoute: typeof AuthenticatedMentorshipChartRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedNewsNewRoute: typeof AuthenticatedNewsNewRoute
@@ -1285,6 +1326,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedLambInfoIndexRoute: typeof AuthenticatedLambInfoIndexRoute
+  AuthenticatedMentorshipIndexRoute: typeof AuthenticatedMentorshipIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedPrayerListIndexRoute: typeof AuthenticatedPrayerListIndexRoute
@@ -1307,6 +1349,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
+  AuthenticatedMentorshipChartRoute: AuthenticatedMentorshipChartRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedNewsNewRoute: AuthenticatedNewsNewRoute,
@@ -1322,6 +1365,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedLambInfoIndexRoute: AuthenticatedLambInfoIndexRoute,
+  AuthenticatedMentorshipIndexRoute: AuthenticatedMentorshipIndexRoute,
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPersonalityTypeIndexRoute:
     AuthenticatedPersonalityTypeIndexRoute,
