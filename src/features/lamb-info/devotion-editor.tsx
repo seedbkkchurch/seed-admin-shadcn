@@ -24,7 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
 import { useMyLamb } from "@/hooks/use-my-lamb";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"; 
 // เดิมมี Select ให้เลือกลูกแกะเอง (ดู commit ก่อนหน้า grill-me 2026-08-14
 // รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`) — imports ที่เคยใช้:
 //   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

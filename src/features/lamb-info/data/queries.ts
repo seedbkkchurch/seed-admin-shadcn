@@ -229,6 +229,32 @@ export function useDeleteLambInfo() {
   });
 }
 
+// grill-me 2026-08-29 (teekawin300@gmail.com "ไม่พบบัญชีของคุณในระบบ" fix,
+// item 2): manual fallback next to the auto-create DB trigger
+// (`lamb_info_auto_create_auth_account_trigger`) — lets an admin create+link
+// a login account on demand for a lamb whose email predates the trigger, or
+// for the rare case the trigger itself swallowed an error. Calls the
+// `create-lamb-auth-account` edge function (needs the service-role key to
+// write auth.users, which the client can never do directly).
+export function useCreateLambAuthAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (lambId: string) => {
+      const { data, error } = await supabase.functions.invoke<{
+        ok: boolean;
+        authUserId: string;
+        linkedExisting: boolean;
+      }>("create-lamb-auth-account", { body: { lambId } });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lambInfoKeys.list });
+    },
+  });
+}
+
 // `gift_from_god` has at most one row per lamb (lamb_id is the PK). A lamb
 // with no assessment yet simply has no row — that's expected, not an
 // error, and callers should treat a null result as all-zero scores
