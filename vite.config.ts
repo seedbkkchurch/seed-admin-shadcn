@@ -48,6 +48,11 @@ export default defineConfig({
       registerType: "autoUpdate",
       workbox: {
         importScripts: ["/push-sw.js"],
+        // Safety net: manualChunks below keeps every JS chunk well under
+        // the 2 MiB default, but bump the limit a bit so a future
+        // dependency bump that pushes one chunk just over doesn't fail the
+        // whole build outright (2026-08-29, chunking fix).
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       manifest: {
         name: "Seed Admin",
@@ -99,12 +104,17 @@ export default defineConfig({
         // users re-download less on each deploy).
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
-          if (id.includes("@tiptap")) return "vendor-tiptap";
-          if (id.includes("recharts")) return "vendor-recharts";
+          if (id.includes("exceljs")) return "vendor-exceljs";
+          if (id.includes("@supabase")) return "vendor-supabase";
+          if (id.includes("@tiptap") || id.includes("prosemirror")) return "vendor-tiptap";
+          if (id.includes("recharts") || id.includes("d3-")) return "vendor-recharts";
           if (id.includes("@radix-ui")) return "vendor-radix";
           if (id.includes("@tanstack")) return "vendor-tanstack";
           if (id.includes("react-dom") || id.includes("/react/") || id.includes("/react-router"))
             return "vendor-react";
+          if (id.includes("date-fns") || id.includes("react-day-picker"))
+            return "vendor-date";
+          if (id.includes("lucide-react")) return "vendor-icons";
           return "vendor";
         },
       },
