@@ -10,9 +10,20 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1h
 
 /**
- * Watches for new service-worker versions (i.e. new deploys) and prompts
- * the user with a toast to refresh once one is available. Mount once near
- * the root of the app, alongside <Toaster />.
+ * Watches for new service-worker versions (i.e. new deploys) and applies
+ * them automatically, reloading the page as soon as one is available.
+ *
+ * grill-me 2026-08-29: switched from a "รีเฟรช" toast the user had to
+ * click to this auto-reload — a plain browser/OS reload is NOT the same
+ * as clicking that toast's action (only the toast called
+ * updateServiceWorker(true), which does the SKIP_WAITING handshake +
+ * waits for `controllerchange` before reloading), so users on the PWA
+ * kept hitting their device's own reload and staying on the old cached
+ * version, confused about why "updating" didn't do anything. Auto-calling
+ * updateServiceWorker(true) here removes that manual step entirely — the
+ * brief toast below is purely informational (no action needed), it just
+ * explains the reload that's about to happen so it doesn't feel like a
+ * random page flash.
  */
 export function PwaUpdatePrompt() {
   const toastIdRef = useRef<string | number | null>(null);
@@ -39,21 +50,11 @@ export function PwaUpdatePrompt() {
   useEffect(() => {
     if (!needRefresh) return;
 
-    toastIdRef.current = toast("มีอัปเดตใหม่ของแอปพร้อมใช้งาน", {
-      description: "กด “รีเฟรช” เพื่อใช้เวอร์ชันล่าสุด",
-      duration: Infinity,
-      action: {
-        label: "รีเฟรช",
-        onClick: () => updateServiceWorker(true),
-      },
+    toastIdRef.current = toast("พบอัปเดตใหม่ — กำลังโหลดเวอร์ชันล่าสุด...", {
+      duration: 4000,
     });
 
-    return () => {
-      if (toastIdRef.current !== null) {
-        toast.dismiss(toastIdRef.current);
-        toastIdRef.current = null;
-      }
-    };
+    void updateServiceWorker(true);
   }, [needRefresh, updateServiceWorker]);
 
   return null;
