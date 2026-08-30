@@ -49,6 +49,7 @@ import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedDevotionRemindersIndexRouteImport } from './routes/_authenticated/devotion-reminders/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedChangePasswordIndexRouteImport } from './routes/_authenticated/change-password/index'
+import { Route as AuthenticatedBirthdaysIndexRouteImport } from './routes/_authenticated/birthdays/index'
 import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
 import { Route as AuthenticatedBibleApiTesterIndexRouteImport } from './routes/_authenticated/bible-api-tester/index'
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
@@ -286,6 +287,12 @@ const AuthenticatedChangePasswordIndexRoute =
     path: '/change-password/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBirthdaysIndexRoute =
+  AuthenticatedBirthdaysIndexRouteImport.update({
+    id: '/birthdays/',
+    path: '/birthdays/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBibleIndexRoute = AuthenticatedBibleIndexRouteImport.update({
   id: '/bible/',
   path: '/bible/',
@@ -459,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/bible-api-tester/': typeof AuthenticatedBibleApiTesterIndexRoute
   '/bible/': typeof AuthenticatedBibleIndexRoute
+  '/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
@@ -521,6 +529,7 @@ export interface FileRoutesByTo {
   '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/bible-api-tester': typeof AuthenticatedBibleApiTesterIndexRoute
   '/bible': typeof AuthenticatedBibleIndexRoute
+  '/birthdays': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password': typeof AuthenticatedChangePasswordIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/devotion-reminders': typeof AuthenticatedDevotionRemindersIndexRoute
@@ -588,6 +597,7 @@ export interface FileRoutesById {
   '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/_authenticated/bible-api-tester/': typeof AuthenticatedBibleApiTesterIndexRoute
   '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
+  '/_authenticated/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/_authenticated/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
@@ -653,6 +663,7 @@ export interface FileRouteTypes {
     | '/attendance/'
     | '/bible-api-tester/'
     | '/bible/'
+    | '/birthdays/'
     | '/change-password/'
     | '/chats/'
     | '/devotion-reminders/'
@@ -715,6 +726,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/bible-api-tester'
     | '/bible'
+    | '/birthdays'
     | '/change-password'
     | '/chats'
     | '/devotion-reminders'
@@ -781,6 +793,7 @@ export interface FileRouteTypes {
     | '/_authenticated/attendance/'
     | '/_authenticated/bible-api-tester/'
     | '/_authenticated/bible/'
+    | '/_authenticated/birthdays/'
     | '/_authenticated/change-password/'
     | '/_authenticated/chats/'
     | '/_authenticated/devotion-reminders/'
@@ -1115,6 +1128,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChangePasswordIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/birthdays/': {
+      id: '/_authenticated/birthdays/'
+      path: '/birthdays'
+      fullPath: '/birthdays/'
+      preLoaderRoute: typeof AuthenticatedBirthdaysIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bible/': {
       id: '/_authenticated/bible/'
       path: '/bible'
@@ -1320,6 +1340,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
   AuthenticatedBibleApiTesterIndexRoute: typeof AuthenticatedBibleApiTesterIndexRoute
   AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
+  AuthenticatedBirthdaysIndexRoute: typeof AuthenticatedBirthdaysIndexRoute
   AuthenticatedChangePasswordIndexRoute: typeof AuthenticatedChangePasswordIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDevotionRemindersIndexRoute: typeof AuthenticatedDevotionRemindersIndexRoute
@@ -1358,6 +1379,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
   AuthenticatedBibleApiTesterIndexRoute: AuthenticatedBibleApiTesterIndexRoute,
   AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
+  AuthenticatedBirthdaysIndexRoute: AuthenticatedBirthdaysIndexRoute,
   AuthenticatedChangePasswordIndexRoute: AuthenticatedChangePasswordIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDevotionRemindersIndexRoute:

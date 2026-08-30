@@ -56,17 +56,28 @@ export function computeMemberCounts(lambs: DashboardLamb[]): MemberCounts {
 
 // เกิดเดือนนี้ — เฉพาะสมาชิก active (สอดคล้องกับสมมติฐานว่าการ์ดนี้ไว้ฉลอง
 // วันเกิดสมาชิกปัจจุบัน ไม่ใช่คนที่ลาออกไปแล้ว) เรียงตามวันที่ในเดือน
-export function computeBirthdaysThisMonth(
+// month: 0-11 (JS Date convention). Underlies computeBirthdaysThisMonth
+// (below) and the standalone "เดือนเกิด" page (features/birthdays/) which
+// lets you pick any of the 12 months — same filter/sort as the Dashboard
+// card by design (grill-me 2026-08-30): active members only
+// (status === true), sorted by day-of-month.
+export function computeBirthdaysInMonth(
   lambs: DashboardLamb[],
-  today: Date,
+  month: number,
 ): DashboardLamb[] {
-  const month = today.getMonth();
   return lambs
     .filter((l) => l.status === true && l.birthday)
     .map((l) => ({ lamb: l, date: parseISO(l.birthday as string) }))
     .filter(({ date }) => isValid(date) && date.getMonth() === month)
     .sort((a, b) => a.date.getDate() - b.date.getDate())
     .map(({ lamb }) => lamb);
+}
+
+export function computeBirthdaysThisMonth(
+  lambs: DashboardLamb[],
+  today: Date,
+): DashboardLamb[] {
+  return computeBirthdaysInMonth(lambs, today.getMonth());
 }
 
 export type GenderCounts = { male: number; female: number };

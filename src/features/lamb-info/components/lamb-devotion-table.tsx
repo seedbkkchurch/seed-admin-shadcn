@@ -108,7 +108,10 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
           },
         ]}
       />
-      <div className="overflow-hidden rounded-md border">
+      {/* overflow-x-auto (was overflow-hidden) so the 7-column table can be
+      swiped horizontally on narrow screens instead of clipping cell text —
+      grill-me 2026-08-30 ("ข้อความมันล้นตาราง") */}
+      <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-xl">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -143,7 +143,12 @@ export function DataTableBulkActions<TData>({
         tabIndex={-1}
         onKeyDown={handleKeyDown}
         className={cn(
-          "fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl",
+          // Clears the fixed bottom mobile tab bar (grill-me 2026-08-30) —
+          // same --mobile-tab-bar-height pattern used by
+          // bible-quick-reference-sheet.tsx / bible-panel.tsx's reading-mode
+          // FAB. Shared by every table using this toolbar (devotion, news,
+          // tasks, users), so the fix applies everywhere at once.
+          "fixed bottom-[calc(var(--mobile-tab-bar-height)+1rem)] left-1/2 z-50 -translate-x-1/2 rounded-xl md:bottom-6",
           "transition-all delay-100 duration-300 ease-out hover:scale-105",
           "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none",
         )}

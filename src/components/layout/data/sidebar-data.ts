@@ -15,6 +15,7 @@ import {
   KeyRound,
   FlaskConical,
   GitBranch,
+  Cake,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -39,20 +40,30 @@ export const sidebarData: SidebarData = {
     },
   ],
   navGroups: [
+    // เดิมเป็นกลุ่ม "General" กลุ่มเดียว 13 รายการยาวเดียว — แยกเป็น 3
+    // หมวดตามที่ขอ (grill-me 2026-08-30): ภาพรวม / สมาชิก / เนื้อหา-กิจกรรม
+    // เก็บ hiddenForRoles ของแต่ละ item ไว้เหมือนเดิมทุกอัน แค่ย้ายตำแหน่ง
     {
-      title: "General",
+      title: "ภาพรวม",
       items: [
         {
           title: "Dashboard",
           url: "/",
           icon: LayoutDashboard,
         },
-        // {
-        //   title: "Chats",
-        //   url: "/chats",
-        //   badge: "3",
-        //   icon: MessagesSquare,
-        // },
+        // แยกออกมาจากการ์ด "เกิดเดือนนี้" บน Dashboard (ที่ยังคงอยู่เหมือน
+        // เดิม) ให้เลือกดูเดือนอื่นได้ด้วย — เปิดให้ทุก role เห็น เหมือน
+        // Dashboard เดิม (grill-me 2026-08-30)
+        {
+          title: "เดือนเกิด",
+          url: "/birthdays",
+          icon: Cake,
+        },
+      ],
+    },
+    {
+      title: "สมาชิก",
+      items: [
         {
           title: "Lamb Info",
           url: "/lamb-info",
@@ -63,49 +74,6 @@ export const sidebarData: SidebarData = {
           // grill-me 2026-08-23)
           hiddenForRoles: ["member", "visitor"],
         },
-        {
-          title: "เฝ้าเดี่ยว",
-          url: "/lamb-info/devotion",
-          icon: NotebookPen,
-        },
-        {
-          title: "ข่าว",
-          url: "/news",
-          icon: Newspaper,
-        },
-        // จัดการข่าว (เขียน/แก้ไข/เก็บถาวร/หมวดหมู่) — เฉพาะคนมีสิทธิ์เขียนข่าว
-        // (news:write: team_leader/admin/super_admin/cell_leader — เพิ่ม
-        // cell_leader ตามคำขอ 2026-08-25 รอบสอง, ดู migration
-        // news_write_add_cell_leader) ตกลงใน grill-me 2026-08-25 ใช้
-        // hiddenForRoles ซ่อนจาก role อื่นๆ เหมือนรายการอื่นในกลุ่ม General
-        // (ดู "Lamb Info"/"เช็คชื่อรายสัปดาห์" ด้านบน) แทนที่จะย้ายไปกลุ่ม
-        // Admin (superAdminOnly) เพราะหลายสิทธิ์ต้องเห็นเมนูนี้ ไม่ใช่แค่
-        // super_admin
-        {
-          title: "จัดการข่าว",
-          url: "/news/table",
-          icon: Table,
-          hiddenForRoles: ["member", "visitor"],
-        },
-        {
-          title: "รายการคำอธิษฐาน",
-          url: "/prayer-list",
-          icon: HandHeart,
-        },
-        {
-          title: "แบบสำรวจของประทาน",
-          url: "/spiritual-gifts-survey",
-          icon: Sparkles,
-        },
-        // Public page (no login) where a lamb picks their name and
-        // subscribes to push reminders — linked here so staff can reach it
-        // quickly to test or share the link (grill-me follow-up,
-        // 2026-08-12).
-        // {
-        //   title: "สมัครรับแจ้งเตือนเฝ้าเดี่ยว",
-        //   url: "/subscribe",
-        //   icon: BellPlus,
-        // },
         {
           title: "Group Care",
           url: "/group-care",
@@ -135,6 +103,54 @@ export const sidebarData: SidebarData = {
           // (ดู /_authenticated/attendance, grill-me 2026-08-23)
           hiddenForRoles: ["member", "visitor"],
         },
+      ],
+    },
+    {
+      title: "เนื้อหา-กิจกรรม",
+      items: [
+        {
+          title: "เฝ้าเดี่ยว",
+          url: "/lamb-info/devotion",
+          icon: NotebookPen,
+        },
+        {
+          title: "ข่าว",
+          url: "/news",
+          icon: Newspaper,
+        },
+        // จัดการข่าว (เขียน/แก้ไข/เก็บถาวร/หมวดหมู่) — เฉพาะคนมีสิทธิ์เขียนข่าว
+        // (news:write: team_leader/admin/super_admin/cell_leader — เพิ่ม
+        // cell_leader ตามคำขอ 2026-08-25 รอบสอง, ดู migration
+        // news_write_add_cell_leader) ตกลงใน grill-me 2026-08-25 ใช้
+        // hiddenForRoles ซ่อนจาก role อื่นๆ เหมือนรายการอื่นในกลุ่มนี้ (ดู
+        // "เช็คชื่อรายสัปดาห์"/"Lamb Info" ในกลุ่ม "สมาชิก") แทนที่จะย้ายไป
+        // กลุ่ม Admin (superAdminOnly) เพราะหลายสิทธิ์ต้องเห็นเมนูนี้ ไม่ใช่
+        // แค่ super_admin
+        {
+          title: "จัดการข่าว",
+          url: "/news/table",
+          icon: Table,
+          hiddenForRoles: ["member", "visitor"],
+        },
+        {
+          title: "รายการคำอธิษฐาน",
+          url: "/prayer-list",
+          icon: HandHeart,
+        },
+        {
+          title: "แบบสำรวจของประทาน",
+          url: "/spiritual-gifts-survey",
+          icon: Sparkles,
+        },
+        // Public page (no login) where a lamb picks their name and
+        // subscribes to push reminders — linked here so staff can reach it
+        // quickly to test or share the link (grill-me follow-up,
+        // 2026-08-12).
+        // {
+        //   title: "สมัครรับแจ้งเตือนเฝ้าเดี่ยว",
+        //   url: "/subscribe",
+        //   icon: BellPlus,
+        // },
         // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
         // 2026-08-13 + เปลี่ยนใจ 2026-08-13)
         {
