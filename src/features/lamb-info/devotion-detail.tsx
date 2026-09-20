@@ -20,6 +20,7 @@ import {
 } from "./data/devotion-schema";
 import { useLambDevotionDetail } from "./data/queries";
 import { DEVOTION_CONTENT_CLASS } from "./lib/devotion-content-class";
+import { htmlToPlainTextSnippet } from "./lib/devotion-share-snippet";
 
 function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
@@ -62,6 +63,8 @@ export function DevotionDetail() {
               <ShareButton
                 url={`${window.location.origin}/devotion/${devotionId}`}
                 text={entry.title}
+                snippet={htmlToPlainTextSnippet(entry.content_html)}
+                imageUrl={entry.image_urls[0]}
               />
             )}
             {entry && (

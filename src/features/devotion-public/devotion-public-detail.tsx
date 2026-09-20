@@ -13,6 +13,7 @@ import {
 } from "@/features/lamb-info/data/devotion-schema";
 import { usePublicLambDevotionDetail } from "@/features/lamb-info/data/queries";
 import { DEVOTION_CONTENT_CLASS } from "@/features/lamb-info/lib/devotion-content-class";
+import { htmlToPlainTextSnippet } from "@/features/lamb-info/lib/devotion-share-snippet";
 import { cn } from "@/lib/utils";
 import { PublicHeader } from "./components/public-header";
 import { ShareButton } from "./components/share-button";
@@ -50,7 +51,14 @@ export function DevotionPublicDetail() {
               <ArrowLeft /> กลับไปหน้าเฝ้าเดี่ยว
             </Link>
           </Button>
-          {entry && <ShareButton url={shareUrl} text={entry.title} />}
+          {entry && (
+            <ShareButton
+              url={shareUrl}
+              text={entry.title}
+              snippet={htmlToPlainTextSnippet(entry.content_html)}
+              imageUrl={entry.image_urls[0]}
+            />
+          )}
         </div>
 
         {isError ? (
