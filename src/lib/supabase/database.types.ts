@@ -1015,6 +1015,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lamb_devotion_activity: {
+        Row: {
+          content_type: string | null
+          devotion_date: string | null
+          id: string | null
+          is_public: boolean | null
+          lamb_id: string | null
+        }
+        Insert: {
+          content_type?: string | null
+          devotion_date?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          lamb_id?: string | null
+        }
+        Update: {
+          content_type?: string | null
+          devotion_date?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          lamb_id?: string | null
+        }
+        Relationships: []
+      }
       public_devotion_feed: {
         Row: {
           content_html: string | null

@@ -15,12 +15,12 @@ import { DevotionShareCard } from "./devotion-share-card";
 // ปุ่มแชร์)
 //
 // "บันทึกภาพ" (ดู grill-me 2026-09-20) เพิ่มการ์ดสรุปแบบ og:image
-// (1200x630, รูปปก + ชื่อ + สนิปเนื้อหา) ให้ผู้ใช้เซฟเก็บ/แชร์เป็นรูปได้เอง
+// (เดิม 1200x630 ตอนนี้แนวตั้ง 1080x1350, รูปปก + ชื่อ + สนิปเนื้อหา) ให้ผู้ใช้เซฟเก็บ/แชร์เป็นรูปได้เอง
 // แยกจาก 2 ปุ่มเดิมที่แชร์เป็น "ลิงก์" — ปุ่มนี้ให้ "ไฟล์ภาพ" แทน ใช้เงื่อนไข
 // การมองเห็นเดียวกับปุ่ม LINE (ผู้เรียกต้อง render ปุ่มนี้เฉพาะ is_public
 // เหมือนที่ devotion-detail.tsx/devotion-public-detail.tsx ทำอยู่แล้ว)
 //
-// การ์ดถูก render off-screen ที่ขนาดจริง 1200x630 เสมอ (ไม่ผูกกับ responsive
+// การ์ดถูก render off-screen ที่ขนาดจริง 1080x1350 เสมอ (ไม่ผูกกับ responsive
 // layout ของหน้าจริง) แล้วจับภาพด้วย html-to-image ตอนกดปุ่มเท่านั้น
 // (ไม่ capture ล่วงหน้า เพื่อไม่ต้องดึงรูปปกทุกครั้งที่เปิดหน้า)
 // ชื่อไฟล์ใส่ชื่อ+วันที่ (grill-me 2026-09-23) เช่น
@@ -79,7 +79,7 @@ export function ShareButton({
   const captureCard = async () => {
     const node = cardRef.current;
     if (!node) return null;
-    // pixelRatio 2 ให้ไฟล์ผลลัพธ์คมบนมือถือจอ retina (2400x1260 จริง)
+    // pixelRatio 2 ให้ไฟล์ผลลัพธ์คมบนมือถือจอ retina (2160x2700 จริง)
     // cacheBust กัน browser cache รูปเก่าไว้เฉยๆ ตอน capture ครั้งถัดไป
     return toPng(node, { pixelRatio: 2, cacheBust: true });
   };

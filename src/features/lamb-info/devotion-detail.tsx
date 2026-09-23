@@ -63,7 +63,7 @@ export function DevotionDetail() {
               <ShareButton
                 url={`${window.location.origin}/devotion/${devotionId}`}
                 text={entry.title}
-                snippet={htmlToPlainTextSnippet(entry.content_html)}
+                snippet={htmlToPlainTextSnippet(entry.content_html, 280)}
                 imageUrl={entry.image_urls[0]}
                 authorName={
                   entry.lamb_info ? lambDisplayName(entry.lamb_info) : null

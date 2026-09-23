@@ -70,7 +70,7 @@ export function DevotionPublicDetail() {
             <ShareButton
               url={shareUrl}
               text={entry.title}
-              snippet={htmlToPlainTextSnippet(entry.content_html)}
+              snippet={htmlToPlainTextSnippet(entry.content_html, 280)}
               imageUrl={entry.image_urls[0]}
               authorName={lambName}
               authorAvatarUrl={entry.lamb_profile_picture}

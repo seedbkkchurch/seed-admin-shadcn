@@ -112,7 +112,9 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
       swiped horizontally on narrow screens instead of clipping cell text —
       grill-me 2026-08-30 ("ข้อความมันล้นตาราง") */}
       <div className="overflow-x-auto rounded-md border">
-        <Table className="min-w-xl">
+        {/* min-w-xl เฉพาะจอ sm ขึ้นไป — มือถือซ่อนคอลัมน์รองแล้ว (ดู
+        lamb-devotion-table-columns.tsx) ตารางจึงพอดีจอโดยไม่ต้องเลื่อน */}
+        <Table className="sm:min-w-xl">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

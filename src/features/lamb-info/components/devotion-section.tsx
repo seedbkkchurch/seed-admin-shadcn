@@ -9,7 +9,10 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLambDevotionHistory } from "../data/queries";
+import {
+  useLambDevotionActivity,
+  useLambDevotionHistory,
+} from "../data/queries";
 import { DevotionHeatmap, type DevotionHeatmapEntry } from "./devotion-heatmap";
 import { DevotionMonthlyChart } from "./devotion-monthly-chart";
 import { DevotionRecentList } from "./devotion-recent-list";
@@ -40,7 +43,14 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
   const [today] = useState(() => new Date());
   const [view, setView] = useState<DevotionView>("day");
 
-  const { data: entries, isPending } = useLambDevotionHistory(lambId);
+  const { data: entries, isPending: isEntriesPending } =
+    useLambDevotionHistory(lambId);
+  // นับสถิติ/heatmap/กราฟจาก view lamb_devotion_activity ที่รวมรายการส่วนตัว
+  // (ไม่มีเนื้อหา) — entries ข้างบนเห็นเฉพาะที่ผู้ดูมีสิทธิ์อ่าน (RLS: ส่วนตัว
+  // เห็นแค่เจ้าของ + super_admin, grill-me 2026-09-23) ใช้แสดงหัวข้อ/รูป/ลิงก์
+  const { data: activity, isPending: isActivityPending } =
+    useLambDevotionActivity(lambId);
+  const isPending = isEntriesPending || isActivityPending;
 
   // เฉพาะ content_type = devotion — heatmap/สถิติ (จุดสี, oneYear/threeYear/
   // thisWeekCount ด้านล่าง, กราฟรายเดือน) นับเฉพาะการส่งเฝ้าเดี่ยวจริง ไม่
@@ -48,7 +58,12 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
   // แสดงทั้งสองประเภทปนกัน (ดู recentEntries) เพราะเป็นแค่รายการดูย้อนหลัง
   // ไม่ใช่ตัวชี้วัดการเฝ้าเดี่ยว
   const devotionOnlyEntries = useMemo(
-    () => (entries ?? []).filter((e) => e.content_type === "devotion"),
+    () => (activity ?? []).filter((e) => e.content_type === "devotion"),
+    [activity],
+  );
+
+  const visibleById = useMemo(
+    () => new Map((entries ?? []).map((e) => [e.id, e])),
     [entries],
   );
 
@@ -58,15 +73,21 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
     const map = new Map<string, DevotionHeatmapEntry[]>();
     for (const entry of devotionOnlyEntries) {
       const list = map.get(entry.devotion_date) ?? [];
-      list.push({
-        id: entry.id,
-        title: entry.title,
-        image_urls: entry.image_urls,
-      });
+      const visible = visibleById.get(entry.id);
+      list.push(
+        visible
+          ? {
+              id: visible.id,
+              title: visible.title,
+              image_urls: visible.image_urls,
+            }
+          : // ส่วนตัวที่ผู้ดูอ่านไม่ได้ — นับ/ลงสีได้ แต่ไม่เห็นหัวข้อ
+            { id: entry.id, title: "", image_urls: [], locked: true },
+      );
       map.set(entry.devotion_date, list);
     }
     return map;
-  }, [devotionOnlyEntries]);
+  }, [devotionOnlyEntries, visibleById]);
 
   const getEntries = (date: Date) =>
     entriesByDate.get(format(date, "yyyy-MM-dd")) ?? [];
@@ -145,7 +166,10 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
                 getEntries={getEntries}
               />
             ) : view === "month" ? (
-              <DevotionMonthlyChart today={today} entries={devotionOnlyEntries} />
+              <DevotionMonthlyChart
+                today={today}
+                entries={devotionOnlyEntries}
+              />
             ) : (
               <DevotionHeatmap
                 today={today}

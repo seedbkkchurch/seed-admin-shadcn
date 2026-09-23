@@ -8,7 +8,7 @@ import {
   startOfWeek,
   subDays,
 } from "date-fns";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,9 @@ export type DevotionHeatmapEntry = {
   id: string;
   title: string;
   image_urls: string[];
+  // true = เฝ้าเดี่ยวส่วนตัวที่ผู้ดูไม่มีสิทธิ์อ่าน (รู้แค่ว่ามีการส่ง) —
+  // แสดงเป็น "เฝ้าเดี่ยวส่วนตัว" ไม่มีลิงก์ (grill-me 2026-09-23)
+  locked?: boolean;
 };
 
 type DevotionHeatmapProps = {
@@ -156,29 +159,39 @@ export function DevotionHeatmap({
                               key={entry.id}
                               className="border-b pb-3 last:border-b-0 last:pb-0"
                             >
-                              <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
-                                {entry.title}
-                              </p>
-                              {entry.image_urls[0] && (
-                                <img
-                                  src={entry.image_urls[0]}
-                                  alt={entry.title}
-                                  className="mb-2 max-h-40 w-full rounded-md border object-cover"
-                                />
+                              {entry.locked ? (
+                                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <Lock className="size-3.5" />
+                                  เฝ้าเดี่ยวส่วนตัว
+                                </p>
+                              ) : (
+                                <>
+                                  <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
+                                    {entry.title}
+                                  </p>
+                                  {entry.image_urls[0] && (
+                                    <img
+                                      src={entry.image_urls[0]}
+                                      alt={entry.title}
+                                      className="mb-2 max-h-40 w-full rounded-md border object-cover"
+                                    />
+                                  )}
+                                  <Button
+                                    asChild
+                                    variant="link"
+                                    size="sm"
+                                    className="h-auto p-0"
+                                  >
+                                    <Link
+                                      to="/lamb-info/devotion/$devotionId"
+                                      params={{ devotionId: entry.id }}
+                                    >
+                                      อ่านเต็ม{" "}
+                                      <ArrowRight className="size-3.5" />
+                                    </Link>
+                                  </Button>
+                                </>
                               )}
-                              <Button
-                                asChild
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0"
-                              >
-                                <Link
-                                  to="/lamb-info/devotion/$devotionId"
-                                  params={{ devotionId: entry.id }}
-                                >
-                                  อ่านเต็ม <ArrowRight className="size-3.5" />
-                                </Link>
-                              </Button>
                             </div>
                           ))}
                         </div>

@@ -30,6 +30,7 @@ const lambDevotionKeys = {
   feed: ["lamb-devotion", "feed"] as const,
   detail: (id: string) => ["lamb-devotion", id] as const,
   history: (lambId: string) => ["lamb-devotion", "history", lambId] as const,
+  activity: (lambId: string) => ["lamb-devotion", "activity", lambId] as const,
   // แยก namespace จากของฝั่ง authenticated ข้างบนชัดๆ — คนละ table/view กัน
   // (public_devotion_feed DB view ไม่ใช่ lamb_devotion) ไม่ควรอยู่ query key
   // เดียวกันหรือ invalidate ปนกัน
@@ -487,6 +488,35 @@ export function useLambDevotionHistory(lambId: string | undefined) {
         LambDevotion,
         "lamb_id" | "created_at" | "updated_at"
       >[];
+    },
+  });
+}
+
+// "ใครส่งวันไหน" ของลูกแกะ 1 คน จาก view lamb_devotion_activity — รวม
+// รายการส่วนตัวด้วย (ไม่มีหัวข้อ/เนื้อหา) ใช้แค่นับสถิติ/heatmap/กราฟ
+// เพราะ RLS ของ lamb_devotion ซ่อนรายการส่วนตัวจากทุกคนยกเว้นเจ้าของและ
+// super_admin แล้ว (grill-me 2026-09-23) — ถ้านับจาก useLambDevotionHistory
+// อย่างเดียว คนอื่นที่เปิดดูโปรไฟล์จะเห็นยอดเฝ้าเดี่ยวน้อยกว่าจริง
+export type LambDevotionActivity = {
+  id: string;
+  devotion_date: string;
+  content_type: "devotion" | "sermon";
+  is_public: boolean;
+};
+
+export function useLambDevotionActivity(lambId: string | undefined) {
+  return useQuery({
+    queryKey: lambDevotionKeys.activity(lambId ?? ""),
+    enabled: !!lambId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lamb_devotion_activity")
+        .select("id, devotion_date, content_type, is_public")
+        .eq("lamb_id", lambId as string)
+        .order("devotion_date", { ascending: true });
+
+      if (error) throw error;
+      return data as LambDevotionActivity[];
     },
   });
 }

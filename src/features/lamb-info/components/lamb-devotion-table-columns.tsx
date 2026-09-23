@@ -13,6 +13,13 @@ import { DevotionTableRowActions } from "./devotion-table-row-actions";
 // the "ลูกแกะ" column (redundant, the lamb is already known from the page)
 // plus a real image thumbnail in place of the admin table's icon+count.
 // Per grill-me follow-up (2026-08-11).
+//
+// มือถือ (< 640px) ซ่อนคอลัมน์ รูป / ประเภท / ส่งเมื่อ ด้วย meta.className
+// "hidden sm:table-cell" เหลือ ☐ วันที่ หัวข้อ สถานะ ⋮ ให้พอดีจอ ไม่ต้องเลื่อน
+// ซ้ายขวา และหัวข้อตัดขึ้นบรรทัดใหม่ได้สูงสุด 2 บรรทัด แทน truncate บรรทัดเดียว
+// (grill-me 2026-09-23 "ข้อความในตารางมันล้น เวลาอยู่ในเวอร์ชันมือถือ")
+const HIDE_ON_MOBILE = "hidden sm:table-cell";
+
 export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
   {
     id: "select",
@@ -43,6 +50,7 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="วันที่" />
     ),
+    meta: { className: "whitespace-nowrap" },
     cell: ({ row }) =>
       format(parseISO(row.original.devotion_date), "d MMM yyyy"),
   },
@@ -51,12 +59,14 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="หัวข้อ" />
     ),
-    meta: { className: "max-w-0 w-1/3" },
+    // มือถือ: ให้คอลัมน์หัวข้อกินที่ที่เหลือและตัดบรรทัดได้, จอใหญ่: คง
+    // max-w-0 w-1/3 + truncate แบบเดิม
+    meta: { className: "w-full whitespace-normal sm:max-w-0 sm:w-1/3" },
     cell: ({ row }) => (
       <Link
         to="/lamb-info/devotion/$devotionId"
         params={{ devotionId: row.original.id }}
-        className="truncate font-medium hover:underline"
+        className="line-clamp-2 font-medium break-words hover:underline sm:block sm:truncate"
       >
         {row.original.title}
       </Link>
@@ -88,9 +98,10 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
         </div>
       );
     },
+    meta: { className: HIDE_ON_MOBILE },
     enableSorting: false,
   },
-  makeDevotionContentTypeColumn(),
+  { ...makeDevotionContentTypeColumn(), meta: { className: HIDE_ON_MOBILE } },
   {
     id: "is_public",
     accessorFn: (row) => (row.is_public ? "public" : "private"),
@@ -109,6 +120,7 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ส่งเมื่อ" />
     ),
+    meta: { className: `${HIDE_ON_MOBILE} whitespace-nowrap` },
     cell: ({ row }) =>
       format(parseISO(row.original.created_at), "d MMM yyyy HH:mm"),
   },

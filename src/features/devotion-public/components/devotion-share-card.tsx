@@ -14,13 +14,17 @@ function formatThaiBuddhistDate(isoDate: string): string {
 // ที่คนเซฟเก็บไว้แชร์เองได้ ไม่ใช่ meta tag จริง เพราะแอปนี้เป็น SPA ไม่มี
 // per-page SSR ที่จะทำ dynamic og:image ได้ — ดู grill-me 2026-09-20)
 //
-// Render แบบ off-screen ที่ขนาดจริง 1200x630 (ตาม og:image convention) แล้ว
+// เปลี่ยนเป็นแนวตั้ง 1080x1350 (4:5) — grill-me 2026-09-23 "จะส่งใน LINE"
+// ภาพแนวนอนดูเล็กในแชต รูปปกบน 600px ที่เหลือเป็นชื่อเรื่อง (3 บรรทัด) +
+// สนิปเนื้อหา (6 บรรทัด ~280 ตัวอักษร) + แถวผู้เขียนชิดล่างสุด
+//
+// เดิม: Render แบบ off-screen ที่ขนาดจริง 1200x630 (ตาม og:image convention) แล้ว
 // ให้ ShareButton จับภาพด้วย html-to-image — ไม่ใช่ screenshot ของหน้าจริง
 // จึงคุม layout/ขนาดตัวอักษรให้อ่านง่ายในภาพนิ่งได้เอง
 //
 // ขนาด/สีทุกอย่างล็อกเป็น px และใช้ CSS var ของ shadcn theme ตรงๆ (ไม่ใช้
 // Tailwind class ที่พึ่ง rem เพราะตอน capture เราอยากให้ output คงที่
-// 1200x630 เป๊ะไม่ว่า root font-size ของหน้าจะเป็นเท่าไหร่)
+// 1080x1350 เป๊ะไม่ว่า root font-size ของหน้าจะเป็นเท่าไหร่)
 export const DevotionShareCard = forwardRef<
   HTMLDivElement,
   {
@@ -49,14 +53,13 @@ export const DevotionShareCard = forwardRef<
   // รูปโปรไฟล์ทิ้งด้วยเหมือนรูปปก แล้วใช้ตัวย่อชื่อแทน
   const showAvatar = Boolean(authorAvatarUrl) && !imageFailed;
   const dateLabel = devotionDate ? formatThaiBuddhistDate(devotionDate) : null;
-  const authorLine = [authorName, dateLabel].filter(Boolean).join(" · ");
 
   return (
     <div
       ref={ref}
       style={{
-        width: 1200,
-        height: 630,
+        width: 1080,
+        height: 1350,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -68,7 +71,7 @@ export const DevotionShareCard = forwardRef<
     >
       <div
         style={{
-          flex: "1 1 0%",
+          flex: "0 0 600px",
           position: "relative",
           background: showImage
             ? undefined
@@ -104,7 +107,7 @@ export const DevotionShareCard = forwardRef<
             }}
           >
             <BookOpen
-              size={140}
+              size={180}
               strokeWidth={1.25}
               color="var(--primary-foreground)"
               style={{ opacity: 0.9 }}
@@ -115,20 +118,22 @@ export const DevotionShareCard = forwardRef<
 
       <div
         style={{
+          flex: "1 1 0%",
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          gap: 14,
-          padding: "40px 48px 36px",
+          gap: 24,
+          padding: "56px 64px 52px",
         }}
       >
         <h2
           style={{
             margin: 0,
-            fontSize: 40,
+            fontSize: 54,
             fontWeight: 700,
             lineHeight: 1.3,
             display: "-webkit-box",
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 3,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}
@@ -138,11 +143,11 @@ export const DevotionShareCard = forwardRef<
         <p
           style={{
             margin: 0,
-            fontSize: 22,
-            lineHeight: 1.5,
+            fontSize: 30,
+            lineHeight: 1.6,
             color: "var(--muted-foreground)",
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 6,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}
@@ -153,7 +158,8 @@ export const DevotionShareCard = forwardRef<
         (grill-me 2026-09-23 — เหมือนแถวผู้เขียนบนหน้าเว็บ) */}
         <div
           style={{
-            marginTop: 8,
+            // ดันแถวผู้เขียนไปชิดล่างสุดของการ์ดเสมอ ไม่ว่าเนื้อหาจะสั้นแค่ไหน
+            marginTop: "auto",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -171,8 +177,8 @@ export const DevotionShareCard = forwardRef<
             {authorName && (
               <div
                 style={{
-                  width: 48,
-                  height: 48,
+                  width: 72,
+                  height: 72,
                   flexShrink: 0,
                   borderRadius: "9999px",
                   overflow: "hidden",
@@ -181,7 +187,7 @@ export const DevotionShareCard = forwardRef<
                   justifyContent: "center",
                   background: "var(--muted)",
                   color: "var(--muted-foreground)",
-                  fontSize: 18,
+                  fontSize: 26,
                   fontWeight: 600,
                 }}
               >
@@ -201,24 +207,50 @@ export const DevotionShareCard = forwardRef<
                 )}
               </div>
             )}
-            {authorLine && (
+            {/* ชื่อบรรทัดแรก วันที่บรรทัดที่สอง (grill-me 2026-09-23 — เดิมต่อกัน
+            บรรทัดเดียว "ชื่อ · วันที่" ยาวจนถูกตัด) */}
+            {(authorName || dateLabel) && (
               <div
                 style={{
-                  fontSize: 20,
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  minWidth: 0,
                 }}
               >
-                {authorLine}
+                {authorName && (
+                  <div
+                    style={{
+                      fontSize: 28,
+                      fontWeight: 600,
+                      lineHeight: 1.35,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {authorName}
+                  </div>
+                )}
+                {dateLabel && (
+                  <div
+                    style={{
+                      fontSize: 24,
+                      lineHeight: 1.35,
+                      color: "var(--muted-foreground)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {dateLabel}
+                  </div>
+                )}
               </div>
             )}
           </div>
           <div
             style={{
               flexShrink: 0,
-              fontSize: 16,
+              fontSize: 22,
               fontWeight: 500,
               color: "var(--muted-foreground)",
             }}
