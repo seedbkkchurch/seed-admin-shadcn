@@ -65,6 +65,11 @@ export function DevotionDetail() {
                 text={entry.title}
                 snippet={htmlToPlainTextSnippet(entry.content_html)}
                 imageUrl={entry.image_urls[0]}
+                authorName={
+                  entry.lamb_info ? lambDisplayName(entry.lamb_info) : null
+                }
+                authorAvatarUrl={entry.lamb_info?.profile_picture}
+                devotionDate={entry.devotion_date}
               />
             )}
             {entry && (

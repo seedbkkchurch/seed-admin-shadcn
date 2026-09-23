@@ -21,4 +21,5 @@ export const DEVOTION_CONTENT_CLASS =
   "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-[0.85em] [&_pre]:leading-relaxed " +
   "[&_pre_code]:bg-transparent [&_pre_code]:p-0 " +
   "[&_mark]:rounded-sm [&_mark]:px-0.5 [&_mark]:py-px " +
+  "[&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary " +
   "[&_img]:my-4 [&_img]:max-h-[480px] [&_img]:w-full [&_img]:rounded-md [&_img]:object-contain";

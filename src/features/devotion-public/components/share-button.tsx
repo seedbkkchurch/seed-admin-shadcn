@@ -23,16 +23,40 @@ import { DevotionShareCard } from "./devotion-share-card";
 // การ์ดถูก render off-screen ที่ขนาดจริง 1200x630 เสมอ (ไม่ผูกกับ responsive
 // layout ของหน้าจริง) แล้วจับภาพด้วย html-to-image ตอนกดปุ่มเท่านั้น
 // (ไม่ capture ล่วงหน้า เพื่อไม่ต้องดึงรูปปกทุกครั้งที่เปิดหน้า)
+// ชื่อไฟล์ใส่ชื่อ+วันที่ (grill-me 2026-09-23) เช่น
+// "เฝ้าเดี่ยว-เอ-สมชาย-ใจดี-2026-09-23.png" กันเซฟหลายรูปแล้วชื่อซ้ำ/สับสน
+// — ตัดอักขระที่ใช้ในชื่อไฟล์ไม่ได้/วงเล็บออก แล้วแทนช่องว่างด้วย "-"
+function buildImageFileName(
+  authorName?: string | null,
+  devotionDate?: string | null,
+) {
+  const safeName = authorName
+    ?.replace(/[\\/:*?"<>|()]/g, " ")
+    .trim()
+    .replace(/\s+/g, "-");
+  return (
+    ["เฝ้าเดี่ยว", safeName, devotionDate?.slice(0, 10)]
+      .filter(Boolean)
+      .join("-") + ".png"
+  );
+}
+
 export function ShareButton({
   url,
   text,
   snippet,
   imageUrl,
+  authorName,
+  authorAvatarUrl,
+  devotionDate,
 }: {
   url: string;
   text?: string;
   snippet?: string;
   imageUrl?: string | null;
+  authorName?: string | null;
+  authorAvatarUrl?: string | null;
+  devotionDate?: string | null;
 }) {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -79,7 +103,7 @@ export function ShareButton({
       if (!dataUrl) throw new Error("capture failed");
 
       const link = document.createElement("a");
-      link.download = "เฝ้าเดี่ยว.png";
+      link.download = buildImageFileName(authorName, devotionDate);
       link.href = dataUrl;
       link.click();
     } catch {
@@ -138,6 +162,9 @@ export function ShareButton({
           snippet={snippet ?? ""}
           imageUrl={imageUrl}
           imageFailed={imageFailed}
+          authorName={authorName}
+          authorAvatarUrl={authorAvatarUrl}
+          devotionDate={devotionDate}
         />
       </div>
     </>

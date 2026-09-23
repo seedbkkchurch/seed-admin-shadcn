@@ -1,5 +1,14 @@
+import { format, parseISO } from "date-fns";
+import { th } from "date-fns/locale";
 import { BookOpen } from "lucide-react";
 import { forwardRef } from "react";
+
+// วันที่บนการ์ดเป็นไทยเต็ม ปี พ.ศ. เช่น "23 กันยายน 2569" (grill-me 2026-09-23)
+// — date-fns format ปี ค.ศ. เสมอ จึงบวก 543 เอง
+function formatThaiBuddhistDate(isoDate: string): string {
+  const d = parseISO(isoDate);
+  return `${format(d, "d MMMM", { locale: th })} ${d.getFullYear() + 543}`;
+}
 
 // การ์ดสรุปเฝ้าเดี่ยวสำหรับ "เซฟเป็นภาพ" (เหมือน og:image/og:description แบบ
 // ที่คนเซฟเก็บไว้แชร์เองได้ ไม่ใช่ meta tag จริง เพราะแอปนี้เป็น SPA ไม่มี
@@ -19,9 +28,28 @@ export const DevotionShareCard = forwardRef<
     snippet: string;
     imageUrl?: string | null;
     imageFailed?: boolean;
+    authorName?: string | null;
+    authorAvatarUrl?: string | null;
+    devotionDate?: string | null;
   }
->(function DevotionShareCard({ title, snippet, imageUrl, imageFailed }, ref) {
+>(function DevotionShareCard(
+  {
+    title,
+    snippet,
+    imageUrl,
+    imageFailed,
+    authorName,
+    authorAvatarUrl,
+    devotionDate,
+  },
+  ref,
+) {
   const showImage = Boolean(imageUrl) && !imageFailed;
+  // imageFailed = รอบ retry หลัง capture ล้ม (น่าจะเพราะรูปข้ามโดเมน) — ตัด
+  // รูปโปรไฟล์ทิ้งด้วยเหมือนรูปปก แล้วใช้ตัวย่อชื่อแทน
+  const showAvatar = Boolean(authorAvatarUrl) && !imageFailed;
+  const dateLabel = devotionDate ? formatThaiBuddhistDate(devotionDate) : null;
+  const authorLine = [authorName, dateLabel].filter(Boolean).join(" · ");
 
   return (
     <div
@@ -121,15 +149,82 @@ export const DevotionShareCard = forwardRef<
         >
           {snippet}
         </p>
+        {/* แถวท้าย: [รูปโปรไฟล์] ชื่อ · วันที่ ซ้าย, แบรนด์ชิดขวา
+        (grill-me 2026-09-23 — เหมือนแถวผู้เขียนบนหน้าเว็บ) */}
         <div
           style={{
             marginTop: 8,
-            fontSize: 16,
-            fontWeight: 500,
-            color: "var(--muted-foreground)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 24,
           }}
         >
-          เฝ้าเดี่ยว · Seed Church
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              minWidth: 0,
+            }}
+          >
+            {authorName && (
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  flexShrink: 0,
+                  borderRadius: "9999px",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "var(--muted)",
+                  color: "var(--muted-foreground)",
+                  fontSize: 18,
+                  fontWeight: 600,
+                }}
+              >
+                {showAvatar ? (
+                  <img
+                    src={authorAvatarUrl ?? undefined}
+                    crossOrigin="anonymous"
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  authorName.slice(0, 2).toUpperCase()
+                )}
+              </div>
+            )}
+            {authorLine && (
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {authorLine}
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              flexShrink: 0,
+              fontSize: 16,
+              fontWeight: 500,
+              color: "var(--muted-foreground)",
+            }}
+          >
+            เฝ้าเดี่ยว · Seed Church
+          </div>
         </div>
       </div>
     </div>

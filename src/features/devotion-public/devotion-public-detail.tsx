@@ -40,6 +40,21 @@ export function DevotionPublicDetail() {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
+  // view คืน first/last name แบบ nullable (left join + คอลัมน์ DB เองก็
+  // nullable) — lambDisplayName เดิมรับ first/last แบบ non-null เท่านั้น
+  // ต่างจาก LambDevotionRow ปกติที่การันตีไม่ null ผ่าน type override (ดู
+  // PublicDevotionFeedEntry comment) จึงต้องเช็คเองตรงนี้แทน แสดง
+  // "ไม่ทราบชื่อ" ถ้าไม่มีทั้งสองชื่อ — hoist ขึ้นมาไว้นอก article เพื่อส่งให้
+  // การ์ด "บันทึกภาพ" ใน ShareButton ด้วย (grill-me 2026-09-23)
+  const lambName =
+    entry?.lamb_first_name && entry.lamb_last_name
+      ? lambDisplayName({
+          nick_name: entry.lamb_nick_name,
+          first_name: entry.lamb_first_name,
+          last_name: entry.lamb_last_name,
+        })
+      : null;
+
   return (
     <>
       <PublicHeader />
@@ -57,6 +72,9 @@ export function DevotionPublicDetail() {
               text={entry.title}
               snippet={htmlToPlainTextSnippet(entry.content_html)}
               imageUrl={entry.image_urls[0]}
+              authorName={lambName}
+              authorAvatarUrl={entry.lamb_profile_picture}
+              devotionDate={entry.devotion_date}
             />
           )}
         </div>
@@ -79,20 +97,6 @@ export function DevotionPublicDetail() {
           </div>
         ) : (
           (() => {
-            // view คืน first/last name แบบ nullable (left join + คอลัมน์ DB
-            // เองก็ nullable) — lambDisplayName เดิมรับ first/last แบบ
-            // non-null เท่านั้น ต่างจาก LambDevotionRow ปกติที่การันตีไม่ null
-            // ผ่าน type override (ดู PublicDevotionFeedEntry comment) จึงต้อง
-            // เช็คเองตรงนี้แทน แสดง "ไม่ทราบชื่อ" ถ้าไม่มีทั้งสองชื่อ
-            const lambName =
-              entry.lamb_first_name && entry.lamb_last_name
-                ? lambDisplayName({
-                    nick_name: entry.lamb_nick_name,
-                    first_name: entry.lamb_first_name,
-                    last_name: entry.lamb_last_name,
-                  })
-                : null;
-
             return (
               <article className="mx-auto w-full max-w-3xl space-y-4">
                 {entry.image_urls[0] && (

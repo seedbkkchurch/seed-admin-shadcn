@@ -13,16 +13,21 @@ import {
   Heading2,
   Highlighter,
   ImageIcon,
+  ImageUp,
   Italic,
   List,
   ListOrdered,
   Loader2,
   Quote,
+  Search,
   SquareCode,
   Strikethrough,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { type PexelsPhoto } from "../data/pexels";
+import { LinkMark } from "../lib/tiptap-link-mark";
+import { PexelsPickerDialog } from "./pexels-picker-dialog";
 import {
   Popover,
   PopoverContent,
@@ -180,6 +185,7 @@ export const ArticleEditor = forwardRef<
 ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [pexelsOpen, setPexelsOpen] = useState(false);
   // บังคับ re-render toolbar ตอน selection/mark เปลี่ยน — editor.isActive()
   // กับ editor.getAttributes() อ่านจาก state ปัจจุบันของ editor โดยตรง
   // (ไม่ใช่ React state) จึงต้อง subscribe เองผ่าน onSelectionUpdate/
@@ -197,6 +203,7 @@ export const ArticleEditor = forwardRef<
       Color,
       Highlight.configure({ multicolor: true }),
       Image,
+      LinkMark,
       Placeholder.configure({
         placeholder: placeholder ?? "เขียนเนื้อหาบทความของคุณที่นี่...",
       }),
@@ -253,6 +260,51 @@ export const ArticleEditor = forwardRef<
       setIsUploading(false);
       onUploadingChange?.(false);
     }
+  };
+
+  // แทรกรูปจาก Pexels ที่ตำแหน่ง cursor ตามด้วยบรรทัดเครดิต
+  // "ภาพ: ชื่อช่างภาพ / Pexels" (ลิงก์ไปหน้าช่างภาพและหน้ารูป) ตามแนวทาง
+  // Pexels — ใช้ลิงก์รูปของ Pexels ตรงๆ ไม่อัปโหลดซ้ำ (grill-me 2026-09-23)
+  // ผู้เขียนลบบรรทัดเครดิตเองได้ถ้าไม่ต้องการ
+  const handlePexelsSelect = (photo: PexelsPhoto) => {
+    setPexelsOpen(false);
+    editor
+      ?.chain()
+      .focus()
+      .insertContent([
+        {
+          type: "image",
+          attrs: {
+            src: photo.imageUrl,
+            alt: photo.alt || `ภาพโดย ${photo.photographer} จาก Pexels`,
+          },
+        },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", marks: [{ type: "italic" }], text: "ภาพ: " },
+            {
+              type: "text",
+              marks: [
+                { type: "italic" },
+                { type: "link", attrs: { href: photo.photographerUrl } },
+              ],
+              text: photo.photographer,
+            },
+            { type: "text", marks: [{ type: "italic" }], text: " / " },
+            {
+              type: "text",
+              marks: [
+                { type: "italic" },
+                { type: "link", attrs: { href: photo.pexelsUrl } },
+              ],
+              text: "Pexels",
+            },
+          ],
+        },
+        { type: "paragraph" },
+      ])
+      .run();
   };
 
   if (!editor) return null;
@@ -385,9 +437,23 @@ export const ArticleEditor = forwardRef<
           size="icon"
           onClick={handleImageButtonClick}
           disabled={isUploading}
-          aria-label="แทรกรูปภาพ"
+          aria-label="แทรกรูปภาพจากเครื่อง"
+          title="แทรกรูปจากเครื่อง"
         >
-          {isUploading ? <Loader2 className="animate-spin" /> : <ImageIcon />}
+          {isUploading ? <Loader2 className="animate-spin" /> : <ImageUp />}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setPexelsOpen(true)}
+          aria-label="ค้นหารูปจาก Pexels"
+          title="ค้นหารูปจาก Pexels"
+        >
+          <span className="relative">
+            <ImageIcon />
+            <Search className="bg-background absolute -end-1.5 -bottom-1.5 size-3 rounded-full" />
+          </span>
         </Button>
         <input
           ref={fileInputRef}
@@ -401,6 +467,12 @@ export const ArticleEditor = forwardRef<
       <div className="px-4 py-3">
         <EditorContent editor={editor} />
       </div>
+
+      <PexelsPickerDialog
+        open={pexelsOpen}
+        onOpenChange={setPexelsOpen}
+        onSelect={handlePexelsSelect}
+      />
     </div>
   );
 });
