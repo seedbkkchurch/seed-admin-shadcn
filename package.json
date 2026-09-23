@@ -1,7 +1,7 @@
 {
   "name": "shadcn-admin",
   "private": false,
-  "version": "2.2.31",
+  "version": "2.2.32",
   "type": "module",
   "scripts": {
     "dev": "vite",
