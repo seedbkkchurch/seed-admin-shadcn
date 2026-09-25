@@ -1,4 +1,5 @@
 import { useIsSuperAdmin } from "@/features/user-roles/data/queries";
+import { useMyLamb } from "@/hooks/use-my-lamb";
 import { useMyRoles } from "@/hooks/use-my-roles";
 import { sidebarData } from "./sidebar-data";
 import { type NavGroup, type NavItem } from "../types";
@@ -30,17 +31,40 @@ function isItemVisible(
   return !item.hiddenForRoles.includes(myRole);
 }
 
+// เมนูที่ url มี "$myLambId" (เช่น "ประวัติเฝ้าเดี่ยวทั้งหมด") ชี้ไปหน้าของ
+// ลูกแกะตัวเอง — แทนค่าด้วย lamb_info.id ของคนที่ล็อกอิน ถ้ายังโหลดไม่เสร็จ
+// หรือบัญชีไม่ผูกกับลูกแกะ (เช่น staff/hardcoded super_admin) ซ่อนเมนูไว้
+// (grill-me 2026-09-23)
+const MY_LAMB_ID_PLACEHOLDER = "$myLambId";
+
+function resolveMyLambUrl(
+  item: NavItem,
+  myLambId: string | null,
+): NavItem | null {
+  if (
+    typeof item.url !== "string" ||
+    !item.url.includes(MY_LAMB_ID_PLACEHOLDER)
+  ) {
+    return item;
+  }
+  if (!myLambId) return null;
+  return { ...item, url: item.url.replace(MY_LAMB_ID_PLACEHOLDER, myLambId) };
+}
+
 export function useVisibleNavGroups(): NavGroup[] {
   const { data: isSuperAdmin } = useIsSuperAdmin();
   const { roles, isLoading: isRoleLoading } = useMyRoles();
   const myRole = roles[0]?.code ?? null;
+  const { data: myLamb } = useMyLamb();
+  const myLambId = myLamb?.id ?? null;
 
   return sidebarData.navGroups
     .filter((group) => !group.superAdminOnly || isSuperAdmin === true)
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) =>
-        isItemVisible(item, myRole, isRoleLoading),
-      ),
+      items: group.items
+        .filter((item) => isItemVisible(item, myRole, isRoleLoading))
+        .map((item) => resolveMyLambUrl(item, myLambId))
+        .filter((item): item is NavItem => item !== null),
     }));
 }

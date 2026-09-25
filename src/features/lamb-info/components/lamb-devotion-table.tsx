@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   type ColumnFiltersState,
   type PaginationState,
@@ -22,14 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTablePagination, DataTableToolbar } from "@/components/data-table";
-import { type LambDevotionRow } from "../data/devotion-schema";
-import { DevotionTableBulkActions } from "./devotion-table-bulk-actions";
 import {
-  devotionContentTypeFilterOptions,
-  devotionVisibilityOptions,
-} from "./devotion-table-columns";
+  DEVOTION_CONTENT_TYPE_LABELS,
+  type DevotionContentType,
+  type LambDevotionRow,
+} from "../data/devotion-schema";
+import { DevotionTableBulkActions } from "./devotion-table-bulk-actions";
+import { devotionVisibilityOptions } from "./devotion-table-columns";
 import { lambDevotionTableColumns as columns } from "./lamb-devotion-table-columns";
+
+type ContentTypeTab = "all" | DevotionContentType;
 
 type LambDevotionTableProps = {
   data: LambDevotionRow[];
@@ -52,6 +56,33 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+
+  // แท็บ ทั้งหมด / เฝ้าเดี่ยว / คำเทศนา แทน dropdown "ประเภท" เดิมในแถบ
+  // เครื่องมือ (grill-me 2026-09-23 — เห็นชัดกว่า โดยเฉพาะบนมือถือ) ยังกรอง
+  // ผ่าน column filter "content_type" ตัวเดิม แท็บเป็นแค่ UI ที่คุมค่านั้น
+  const contentTypeFilter = columnFilters.find((f) => f.id === "content_type")
+    ?.value as string[] | undefined;
+  const activeTab: ContentTypeTab =
+    contentTypeFilter?.length === 1
+      ? (contentTypeFilter[0] as DevotionContentType)
+      : "all";
+  const counts = useMemo(
+    () => ({
+      all: data.length,
+      devotion: data.filter((d) => d.content_type === "devotion").length,
+      sermon: data.filter((d) => d.content_type === "sermon").length,
+    }),
+    [data],
+  );
+  const handleTabChange = (value: string) => {
+    const tab = value as ContentTypeTab;
+    setColumnFilters((prev) => [
+      ...prev.filter((f) => f.id !== "content_type"),
+      ...(tab === "all" ? [] : [{ id: "content_type", value: [tab] }]),
+    ]);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+    setRowSelection({});
+  };
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -92,15 +123,22 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
         "flex flex-1 flex-col gap-4",
       )}
     >
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList>
+          {(["all", "devotion", "sermon"] as const).map((tab) => (
+            <TabsTrigger key={tab} value={tab}>
+              {tab === "all" ? "ทั้งหมด" : DEVOTION_CONTENT_TYPE_LABELS[tab]}
+              <span className="text-muted-foreground ms-1 text-xs">
+                ({counts[tab]})
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <DataTableToolbar
         table={table}
         searchPlaceholder="ค้นหาหัวข้อ..."
         filters={[
-          {
-            columnId: "content_type",
-            title: "ประเภท",
-            options: devotionContentTypeFilterOptions,
-          },
           {
             columnId: "is_public",
             title: "สถานะ",

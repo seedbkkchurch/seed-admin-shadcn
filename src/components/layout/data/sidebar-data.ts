@@ -8,6 +8,7 @@ import {
   Sparkles,
   BrainCircuit,
   NotebookPen,
+  History,
   Table,
   ClipboardCheck,
   Newspaper,
@@ -112,6 +113,15 @@ export const sidebarData: SidebarData = {
           title: "เฝ้าเดี่ยว",
           url: "/lamb-info/devotion",
           icon: NotebookPen,
+        },
+        // ประวัติเฝ้าเดี่ยวทั้งหมดของ "ตัวเอง" (ตารางเดียวกับปุ่ม "ดูทั้งหมด" ใน
+        // โปรไฟล์) — $myLambId ถูกแทนด้วย lamb_info.id ของคนที่ล็อกอินใน
+        // useVisibleNavGroups() และซ่อนเมนูนี้ถ้าบัญชีไม่ผูกกับลูกแกะ
+        // (grill-me 2026-09-23)
+        {
+          title: "ประวัติเฝ้าเดี่ยวทั้งหมด",
+          url: "/lamb-info/$myLambId/devotion",
+          icon: History,
         },
         {
           title: "ข่าว",
