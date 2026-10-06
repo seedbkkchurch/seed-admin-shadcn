@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import type { TablesInsert } from "@/lib/supabase/database.types";
 import {
+  type DevotionContentType,
   type LambDevotion,
   type LambDevotionRow,
   type PublicDevotionFeedEntry,
@@ -500,7 +501,7 @@ export function useLambDevotionHistory(lambId: string | undefined) {
 export type LambDevotionActivity = {
   id: string;
   devotion_date: string;
-  content_type: "devotion" | "sermon";
+  content_type: DevotionContentType;
   is_public: boolean;
 };
 

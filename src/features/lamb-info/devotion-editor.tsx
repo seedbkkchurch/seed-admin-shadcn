@@ -24,14 +24,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
 import { useMyLamb } from "@/hooks/use-my-lamb";
-import { cn } from "@/lib/utils"; 
+import { cn } from "@/lib/utils";
 // เดิมมี Select ให้เลือกลูกแกะเอง (ดู commit ก่อนหน้า grill-me 2026-08-14
 // รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`) — imports ที่เคยใช้:
 //   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 //   import { useLambNameOptions } from "./data/queries";
 //   import { lambDisplayName } from "./data/devotion-schema";
 // คอมเมนต์ไว้เป็น reference — ตอนนี้ auto-detect จาก auth ผ่าน useMyLamb() แทน
-import { ArticleEditor, type ArticleEditorHandle } from "./components/article-editor";
+import {
+  ArticleEditor,
+  type ArticleEditorHandle,
+} from "./components/article-editor";
 import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import {
   useCreateLambDevotion,
@@ -40,6 +43,7 @@ import {
 } from "./data/queries";
 import {
   devotionContentTypeOptions,
+  devotionSavedMessage,
   lambDisplayName,
   type DevotionContentType,
   type LambDevotionRow,
@@ -154,9 +158,7 @@ export function DevotionEditor() {
       {
         onSuccess: () => {
           clearDevotionEditorDraft();
-          toast.success(
-            contentType === "sermon" ? "บันทึกคำเทศนาแล้ว" : "ส่งเฝ้าเดี่ยวแล้ว",
-          );
+          toast.success(devotionSavedMessage(contentType));
           navigate({ to: "/lamb-info/devotion" });
         },
         onError: (error: unknown) => {
@@ -235,9 +237,7 @@ export function DevotionEditor() {
           ด้านบน) — โชว์ error ถ้า auth account นี้ไม่มีลูกแกะผูกอยู่ แทนที่จะ
           ปล่อยให้ส่งได้แบบไม่มี lamb_id */}
           <div className="space-y-1.5">
-            <label className="text-muted-foreground text-xs">
-              ส่งในนามของ
-            </label>
+            <label className="text-muted-foreground text-xs">ส่งในนามของ</label>
             {isMyLambResolvingUser || isMyLambLoading ? (
               <Skeleton className="h-9 w-full sm:w-80" />
             ) : isMyLambError || !myLamb ? (

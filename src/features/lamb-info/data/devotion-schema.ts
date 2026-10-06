@@ -7,15 +7,38 @@ import type { Tables } from "@/lib/supabase/database.types";
 // ร่วมกันทั้งหมด — สิ่งที่ต่างกันมีแค่ตัวเลือกนี้ กับว่าจะถูกนับใน
 // ภาพรวมเฝ้าเดี่ยว/heatmap/กราฟรายเดือนไหม (นับเฉพาะ devotion เท่านั้น —
 // ดู devotion-overview/data/queries.ts, devotion-section.tsx)
-export type DevotionContentType = "devotion" | "sermon";
+//
+// เพิ่ม "thanksgiving" (ขอบคุณพระเจ้า) — grill-me 2026-10-06, migration
+// lamb_devotion_content_type_add_thanksgiving — ไม่นับในสถิติเฝ้าเดี่ยว
+// เหมือนคำเทศนา
+export type DevotionContentType = "devotion" | "sermon" | "thanksgiving";
 
-export const DEVOTION_CONTENT_TYPE_LABELS: Record<DevotionContentType, string> = {
-  devotion: "เฝ้าเดี่ยว",
-  sermon: "คำเทศนา",
-};
+export const DEVOTION_CONTENT_TYPE_LABELS: Record<DevotionContentType, string> =
+  {
+    devotion: "เฝ้าเดี่ยว",
+    sermon: "คำเทศนา",
+    thanksgiving: "ขอบคุณพระเจ้า",
+  };
+
+export function isDevotionContentType(
+  value: unknown,
+): value is DevotionContentType {
+  return typeof value === "string" && value in DEVOTION_CONTENT_TYPE_LABELS;
+}
+
+// ข้อความ toast หลังบันทึกสำเร็จ — เฝ้าเดี่ยวใช้ "ส่ง…" ตามเดิม ประเภทอื่น
+// ใช้ "บันทึก…"
+export function devotionSavedMessage(type: DevotionContentType): string {
+  return type === "devotion"
+    ? "ส่งเฝ้าเดี่ยวแล้ว"
+    : `บันทึก${DEVOTION_CONTENT_TYPE_LABELS[type]}แล้ว`;
+}
 
 export const devotionContentTypeOptions = (
-  Object.entries(DEVOTION_CONTENT_TYPE_LABELS) as [DevotionContentType, string][]
+  Object.entries(DEVOTION_CONTENT_TYPE_LABELS) as [
+    DevotionContentType,
+    string,
+  ][]
 ).map(([value, label]) => ({ value, label }));
 
 // Row shape from the generated Supabase schema. `is_public` is overridden

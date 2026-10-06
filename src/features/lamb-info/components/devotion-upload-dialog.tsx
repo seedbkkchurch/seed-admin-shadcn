@@ -24,7 +24,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadDevotionImage } from "@/lib/supabase/devotion-image";
 import {
+  DEVOTION_CONTENT_TYPE_LABELS,
   devotionContentTypeOptions,
+  devotionSavedMessage,
   type DevotionContentType,
 } from "../data/devotion-schema";
 import { useCreateLambDevotion } from "../data/queries";
@@ -75,9 +77,8 @@ export function DevotionUploadDialog({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   // เพิ่มโดย grill-me 2026-08-26 — default เฝ้าเดี่ยวเสมอ
-  const [contentType, setContentType] = useState<DevotionContentType>(
-    "devotion",
-  );
+  const [contentType, setContentType] =
+    useState<DevotionContentType>("devotion");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
@@ -184,10 +185,7 @@ export function DevotionUploadDialog({
       await createDevotion.mutateAsync({
         lamb_id: lambId,
         devotion_date: format(today, "yyyy-MM-dd"),
-        title:
-          contentType === "sermon"
-            ? `คำเทศนา ${format(today, "d MMMM yyyy")}`
-            : `เฝ้าเดี่ยว ${format(today, "d MMMM yyyy")}`,
+        title: `${DEVOTION_CONTENT_TYPE_LABELS[contentType]} ${format(today, "d MMMM yyyy")}`,
         content_html: contentHtml,
         image_urls: imageUrls,
         is_public: isPublic,
@@ -195,7 +193,9 @@ export function DevotionUploadDialog({
       });
 
       toast.success(
-        contentType === "sermon" ? "บันทึกคำเทศนาแล้ว" : "บันทึกเฝ้าเดี่ยวแล้ว",
+        contentType === "devotion"
+          ? "บันทึกเฝ้าเดี่ยวแล้ว"
+          : devotionSavedMessage(contentType),
       );
       resetForm();
       clearDevotionDialogDraft(lambId);

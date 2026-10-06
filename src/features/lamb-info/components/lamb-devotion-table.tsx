@@ -71,6 +71,8 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
       all: data.length,
       devotion: data.filter((d) => d.content_type === "devotion").length,
       sermon: data.filter((d) => d.content_type === "sermon").length,
+      thanksgiving: data.filter((d) => d.content_type === "thanksgiving")
+        .length,
     }),
     [data],
   );
@@ -123,16 +125,23 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
         "flex flex-1 flex-col gap-4",
       )}
     >
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
+      {/* 4 แท็บ (เพิ่มขอบคุณพระเจ้า 2026-10-06) อาจล้นจอมือถือ — เลื่อนซ้ายขวาได้ */}
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="max-w-full overflow-x-auto"
+      >
         <TabsList>
-          {(["all", "devotion", "sermon"] as const).map((tab) => (
-            <TabsTrigger key={tab} value={tab}>
-              {tab === "all" ? "ทั้งหมด" : DEVOTION_CONTENT_TYPE_LABELS[tab]}
-              <span className="text-muted-foreground ms-1 text-xs">
-                ({counts[tab]})
-              </span>
-            </TabsTrigger>
-          ))}
+          {(["all", "devotion", "sermon", "thanksgiving"] as const).map(
+            (tab) => (
+              <TabsTrigger key={tab} value={tab}>
+                {tab === "all" ? "ทั้งหมด" : DEVOTION_CONTENT_TYPE_LABELS[tab]}
+                <span className="text-muted-foreground ms-1 text-xs">
+                  ({counts[tab]})
+                </span>
+              </TabsTrigger>
+            ),
+          )}
         </TabsList>
       </Tabs>
       <DataTableToolbar
