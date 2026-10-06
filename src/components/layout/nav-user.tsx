@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, QrCode } from "lucide-react";
 import useDialogState from "@/hooks/use-dialog-state";
 import { useAuthUser } from "@/hooks/use-auth-user";
 import { useMyLamb } from "@/hooks/use-my-lamb";
@@ -21,6 +22,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ShareAppDialog } from "@/components/share-app-dialog";
 import { SignOutDialog } from "@/components/sign-out-dialog";
 
 // ปุ่มมุมซ้ายล่างของ sidebar — เดิมรับ props เป็น sidebarData.user ซึ่งเป็น
@@ -45,6 +47,8 @@ import { SignOutDialog } from "@/components/sign-out-dialog";
 export function NavUser() {
   const { isMobile } = useSidebar();
   const [open, setOpen] = useDialogState();
+  // "แชร์แอปให้เพื่อน" (QR) — grill-me 2026-10-07
+  const [shareOpen, setShareOpen] = useState(false);
 
   const authUser = useAuthUser();
   const email = authUser?.email ?? "";
@@ -82,9 +86,7 @@ export function NavUser() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-start text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {displayName}
-                  </span>
+                  <span className="truncate font-semibold">{displayName}</span>
                   <span className="truncate text-xs">{email}</span>
                 </div>
                 <ChevronsUpDown className="ms-auto size-4" />
@@ -126,7 +128,10 @@ export function NavUser() {
               <DropdownMenuGroup>
                 {myLamb ? (
                   <DropdownMenuItem asChild>
-                    <Link to="/lamb-info/$lambId" params={{ lambId: myLamb.id }}>
+                    <Link
+                      to="/lamb-info/$lambId"
+                      params={{ lambId: myLamb.id }}
+                    >
                       Profile
                       <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                     </Link>
@@ -147,6 +152,12 @@ export function NavUser() {
                 <DropdownMenuItem asChild>
                   <Link to="/change-password">เปลี่ยนรหัสผ่าน</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShareOpen(true)}>
+                  แชร์แอปให้เพื่อน
+                  <DropdownMenuShortcut>
+                    <QrCode className="size-4" />
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -165,6 +176,7 @@ export function NavUser() {
       </SidebarMenu>
 
       <SignOutDialog open={!!open} onOpenChange={setOpen} />
+      <ShareAppDialog open={shareOpen} onOpenChange={setShareOpen} />
     </>
   );
 }

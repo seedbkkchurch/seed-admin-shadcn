@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { QrCode } from "lucide-react";
 import useDialogState from "@/hooks/use-dialog-state";
 import { useAuthUser } from "@/hooks/use-auth-user";
 import { useMyLamb } from "@/hooks/use-my-lamb";
@@ -15,6 +17,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ShareAppDialog } from "@/components/share-app-dialog";
 import { SignOutDialog } from "@/components/sign-out-dialog";
 
 // ตกลงใน grill-me 2026-08-16 ("disable Setting แล้วก็ Profile เด้งไปหา
@@ -49,6 +52,8 @@ import { SignOutDialog } from "@/components/sign-out-dialog";
 // (ดู grill-me 2026-08-24)
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState();
+  // "แชร์แอปให้เพื่อน" (QR) — grill-me 2026-10-07
+  const [shareOpen, setShareOpen] = useState(false);
   const user = useAuthUser();
   const email = user?.email ?? "";
   const initials = email ? email.slice(0, 2).toUpperCase() : "??";
@@ -105,6 +110,12 @@ export function ProfileDropdown() {
             <DropdownMenuItem asChild>
               <Link to="/change-password">เปลี่ยนรหัสผ่าน</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShareOpen(true)}>
+              แชร์แอปให้เพื่อน
+              <DropdownMenuShortcut>
+                <QrCode className="size-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
@@ -117,6 +128,7 @@ export function ProfileDropdown() {
       </DropdownMenu>
 
       <SignOutDialog open={!!open} onOpenChange={setOpen} />
+      <ShareAppDialog open={shareOpen} onOpenChange={setShareOpen} />
     </>
   );
 }

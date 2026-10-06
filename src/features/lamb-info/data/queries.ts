@@ -554,7 +554,12 @@ export function useCreateLambDevotion() {
 type LambDevotionUpdateInput = Partial<
   Pick<
     LambDevotion,
-    "title" | "content_html" | "image_urls" | "is_public" | "content_type"
+    | "title"
+    | "content_html"
+    | "image_urls"
+    | "is_public"
+    | "content_type"
+    | "devotion_date"
   >
 >;
 
@@ -584,6 +589,9 @@ export function useUpdateLambDevotion() {
       // and this mutation can affect a devotion shown across several of
       // them (test table, detail page, the lamb's own history graph).
       queryClient.invalidateQueries({ queryKey: lambDevotionKeys.all });
+      // devotion_date แก้ได้แล้ว (grill-me 2026-10-07) — ภาพรวมเฝ้าเดี่ยวบน
+      // Dashboard นับตามวันที่ จึงต้อง refresh ด้วย
+      queryClient.invalidateQueries({ queryKey: ["devotion-overview"] });
     },
   });
 }

@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quick-reference-sheet";
 import { useMyLamb } from "@/hooks/use-my-lamb";
 import { cn } from "@/lib/utils";
+import { DevotionDatePicker } from "./components/devotion-date-picker";
 // เดิมมี Select ให้เลือกลูกแกะเอง (ดู commit ก่อนหน้า grill-me 2026-08-14
 // รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`) — imports ที่เคยใช้:
 //   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -414,6 +415,8 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
     entry.content_type,
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  // แก้วันที่ได้ (grill-me 2026-10-07) — วันนี้หรือย้อนหลังเท่านั้น
+  const [devotionDate, setDevotionDate] = useState(entry.devotion_date);
 
   const showTitleError = titleTouched && title.trim().length === 0;
   const canSubmit =
@@ -431,6 +434,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           image_urls: extractImageUrls(html),
           is_public: isPublic,
           content_type: contentType,
+          devotion_date: devotionDate,
         },
       },
       {
@@ -458,7 +462,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           <p className="text-muted-foreground">
             {entry.lamb_info ? lambDisplayName(entry.lamb_info) : "ไม่ทราบชื่อ"}{" "}
             · {format(parseISO(entry.devotion_date), "d MMMM yyyy")} —
-            แก้ไขได้เฉพาะหัวข้อ เนื้อหา ประเภท และสถานะ
+            แก้ไขได้เฉพาะหัวข้อ เนื้อหา วันที่ ประเภท และสถานะ
           </p>
         </div>
         <Button
@@ -492,23 +496,34 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-muted-foreground text-xs">ประเภท</label>
-          <Select
-            value={contentType}
-            onValueChange={(v) => setContentType(v as DevotionContentType)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {devotionContentTypeOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="space-y-1.5">
+            <label className="text-muted-foreground text-xs">ประเภท</label>
+            <Select
+              value={contentType}
+              onValueChange={(v) => setContentType(v as DevotionContentType)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {devotionContentTypeOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-muted-foreground block text-xs">
+              วันที่
+            </label>
+            <DevotionDatePicker
+              value={devotionDate}
+              onChange={setDevotionDate}
+            />
+          </div>
         </div>
 
         <label className="flex items-center gap-2 text-sm">
