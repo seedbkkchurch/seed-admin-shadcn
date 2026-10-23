@@ -11,6 +11,22 @@ export const Route = createFileRoute("/_authenticated")({
     } = await supabase.auth.getSession();
 
     if (!session) {
+      // ลิงก์รายละเอียดเฝ้าเดี่ยวฝั่ง admin ที่ถูกเปิดโดยคนที่ไม่ได้ login
+      // (ส่วนใหญ่คือกดจาก browser ในแอป LINE ซึ่งไม่มี session) — ส่งไปหน้า
+      // public /devotion/:id ให้อ่านได้เลยแทนการเด้งไปหน้า login ถ้าเป็น
+      // รายการส่วนตัว หน้า public จะแสดง "ไม่พบ" พร้อมปุ่มเข้าสู่ระบบ
+      // (grill-me 2026-10-23)
+      const devotionMatch = location.pathname.match(
+        /^\/lamb-info\/devotion\/([0-9a-f-]{36})\/?$/i,
+      );
+      if (devotionMatch) {
+        throw redirect({
+          to: "/devotion/$devotionId",
+          params: { devotionId: devotionMatch[1] },
+          replace: true,
+        });
+      }
+
       throw redirect({
         to: "/sign-in",
         search: { redirect: location.href },

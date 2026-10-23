@@ -88,6 +88,18 @@ export function DevotionPublicDetail() {
                 ? error.message
                 : "รายการนี้อาจไม่ใช่สาธารณะ ถูกลบไปแล้ว หรือลิงก์ไม่ถูกต้อง"}
             </AlertDescription>
+            {/* เผื่อเป็นรายการส่วนตัวที่ถูกส่งต่อมาจาก /lamb-info/devotion/:id
+            ตอนยังไม่ได้ login (grill-me 2026-10-23) */}
+            <div className="mt-3">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  to="/sign-in"
+                  search={{ redirect: `/lamb-info/devotion/${devotionId}` }}
+                >
+                  เข้าสู่ระบบเพื่อดู
+                </Link>
+              </Button>
+            </div>
           </Alert>
         ) : isPending ? (
           <div className="mx-auto w-full max-w-3xl space-y-4">

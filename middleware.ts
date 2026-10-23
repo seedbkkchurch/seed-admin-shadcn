@@ -21,8 +21,14 @@ export const config = {
 
 // รายชื่อ user-agent ของ crawler/bot ที่ทำ link preview ที่พบบ่อย — เพิ่มได้
 // ทีหลังถ้าเจอแพลตฟอร์มอื่นที่ preview ไม่ขึ้น ไม่ต้องครบทุกตัวตั้งแต่แรก
+//
+// สำคัญ: ห้ามใส่ `line\/` — browser ในแอป LINE เอง (คนจริงบนมือถือ) มี
+// "Line/14.x.x" อยู่ใน user-agent ด้วย เคยใส่ไว้แล้วทำให้คนกดลิงก์ใน LINE
+// โดนนับเป็นบอท ได้หน้า og stub กลับไปแทน SPA แล้วเด้ง refresh วนไม่จบ
+// (grill-me 2026-10-23) — crawler ทำ preview ของ LINE จริงใช้ "line-poker"
+// (มากับ facebookexternalhit) ซึ่งดักไว้แยกอยู่แล้ว
 const BOT_USER_AGENT_PATTERN =
-  /facebookexternalhit|line\/|line-poker|twitterbot|whatsapp|telegrambot|slackbot|discordbot|linkedinbot|pinterest|redditbot|vkshare|skypeuripreview|viber/i;
+  /facebookexternalhit|line-poker|twitterbot|whatsapp|telegrambot|slackbot|discordbot|linkedinbot|pinterest|redditbot|vkshare|skypeuripreview|viber/i;
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
@@ -122,11 +128,10 @@ export default async function middleware(request: Request) {
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:url" content="${escapeHtml(url.href)}" />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- crawler ไม่รัน JS/redirect เอง แต่เผื่อ bot ตัวไหนตามลิงก์จริงต่อ
-    ก็ให้เด้งไป URL เดิม (ซึ่งจะเจอ SPA ตามปกติ) -->
-    <meta http-equiv="refresh" content="0;url=${escapeHtml(url.href)}" />
+    <!-- ไม่ใส่ meta refresh: ถ้า UA ของคนจริงหลุดเข้ามาเป็น "บอท" มันจะ
+    refresh กลับ URL เดิมวนไม่จบ (grill-me 2026-10-23) ใส่ลิงก์ธรรมดาไว้แทน -->
   </head>
-  <body></body>
+  <body><a href="${escapeHtml(url.href)}">${escapeHtml(title)}</a></body>
 </html>`;
 
     return new Response(html, {
