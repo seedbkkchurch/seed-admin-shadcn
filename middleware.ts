@@ -112,10 +112,12 @@ export default async function middleware(request: Request) {
 
     const title = entry.title || "เฝ้าเดี่ยว";
     const description = stripHtml(entry.content_html || "").slice(0, 150);
-    const image =
-      entry.image_urls && entry.image_urls[0]
-        ? entry.image_urls[0]
-        : `${url.origin}/images/shadcn-admin.png`;
+    const hasOwnImage = !!(entry.image_urls && entry.image_urls[0]);
+    const image = hasOwnImage
+      ? entry.image_urls![0]
+      : // เฝ้าเดี่ยวที่ไม่มีรูป — ใช้รูปแมวส้มเป็น og:image default
+        // (1200x1200, grill-me 2026-10-23)
+        `${url.origin}/images/devotion-default-og.jpg`;
 
     const html = `<!doctype html>
 <html lang="th">
@@ -128,6 +130,9 @@ export default async function middleware(request: Request) {
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:url" content="${escapeHtml(url.href)}" />
     <meta name="twitter:card" content="summary_large_image" />
+    ${hasOwnImage ? "" : `<meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="1200" />
+    <meta property="og:image:type" content="image/jpeg" />`}
     <!-- ไม่ใส่ meta refresh: ถ้า UA ของคนจริงหลุดเข้ามาเป็น "บอท" มันจะ
     refresh กลับ URL เดิมวนไม่จบ (grill-me 2026-10-23) ใส่ลิงก์ธรรมดาไว้แทน -->
   </head>
