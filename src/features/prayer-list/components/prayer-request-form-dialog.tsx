@@ -13,8 +13,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AvatarUpload } from "@/components/avatar-upload";
+import { cn } from "@/lib/utils";
+import { PRAYER_ICONS } from "../data/icons";
+import {
+  deletePrayerPhoto,
+  uploadPrayerPhoto,
+  usePrayerPhotoUrl,
+} from "@/lib/supabase/prayer-photo";
 import { useCreatePrayerRequest, useUpdatePrayerRequest } from "../data/queries";
 import {
+  prayerTypeHasPhoto,
+  PRAYER_ENTRY_TYPE_COPY,
   PRAYER_ENTRY_TYPE_LABEL,
   type PrayerEntryType,
   type PrayerRequest,
@@ -50,9 +60,27 @@ export function PrayerRequestFormDialog({
   editingRequest,
 }: PrayerRequestFormDialogProps) {
   const isEditMode = !!editingRequest;
+  const copy = PRAYER_ENTRY_TYPE_COPY[type];
   const [title, setTitle] = useState(editingRequest?.title ?? "");
   const [detail, setDetail] = useState(editingRequest?.detail ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // รูปคน (เฉพาะแท็บแอนดรู) — AvatarUpload โหมด deferred ครอป/ย่อให้แล้ว
+  // เก็บ blob ไว้ก่อน อัปโหลดตอนกดบันทึก (ต้องรู้ id รายการก่อนถึงจะตั้ง
+  // path ได้) photoKey ใช้ remount AvatarUpload ตอนกด "ลบรูป" ให้ล้าง preview
+  const showPhoto = prayerTypeHasPhoto(type);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
+  const [photoKey, setPhotoKey] = useState(0);
+  const existingPhotoPath = removePhoto ? null : editingRequest?.photo_path;
+  const { data: existingPhotoUrl } = usePrayerPhotoUrl(
+    showPhoto ? existingPhotoPath : null,
+    editingRequest?.updated_at,
+  );
+  const hasPhoto = !!photoBlob || !!existingPhotoPath;
+
+  // ไอคอน (แท็บคำอธิษฐาน / สิ่งที่พระเจ้าคุยด้วย) — ไม่บังคับ, กดซ้ำ = ยกเลิก
+  const [icon, setIcon] = useState<string | null>(editingRequest?.icon ?? null);
 
   const createRequest = useCreatePrayerRequest();
   const updateRequest = useUpdatePrayerRequest();
@@ -64,8 +92,18 @@ export function PrayerRequestFormDialog({
     if (!open) return;
     setTitle(editingRequest?.title ?? "");
     setDetail(editingRequest?.detail ?? "");
+    setIcon(editingRequest?.icon ?? null);
+    setPhotoBlob(null);
+    setRemovePhoto(false);
+    setPhotoKey((k) => k + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingRequest?.id]);
+
+  const handleRemovePhoto = () => {
+    setPhotoBlob(null);
+    setRemovePhoto(true);
+    setPhotoKey((k) => k + 1);
+  };
 
   const canSubmit = title.trim().length > 0 && !isSubmitting;
 
@@ -75,22 +113,61 @@ export function PrayerRequestFormDialog({
     setIsSubmitting(true);
     try {
       if (isEditMode) {
+        let photoPath: string | null | undefined;
+        if (showPhoto && photoBlob) {
+          photoPath = await uploadPrayerPhoto({
+            blob: photoBlob,
+            lambId,
+            requestId: editingRequest.id,
+          });
+        } else if (removePhoto && editingRequest.photo_path) {
+          await deletePrayerPhoto(editingRequest.photo_path).catch(
+            () => undefined,
+          );
+          photoPath = null;
+        }
+
         await updateRequest.mutateAsync({
           id: editingRequest.id,
           lambId,
           values: {
             title: title.trim(),
             detail: detail.trim() || null,
+            ...(!showPhoto && { icon }),
+            ...(photoPath !== undefined && { photo_path: photoPath }),
           },
         });
         toast.success("แก้ไขรายการแล้ว");
       } else {
-        await createRequest.mutateAsync({
+        const created = await createRequest.mutateAsync({
           lamb_id: lambId,
           type,
           title: title.trim(),
           detail: detail.trim() || null,
+          icon: showPhoto ? null : icon,
         });
+
+        if (showPhoto && photoBlob) {
+          try {
+            const photoPath = await uploadPrayerPhoto({
+              blob: photoBlob,
+              lambId,
+              requestId: created.id,
+            });
+            await updateRequest.mutateAsync({
+              id: created.id,
+              lambId,
+              values: { photo_path: photoPath },
+            });
+          } catch (error: unknown) {
+            // แถวบันทึกแล้ว แค่รูปไม่ขึ้น — แจ้งให้กดแก้ไขแล้วใส่รูปใหม่
+            toast.warning("เพิ่มรายการแล้ว แต่อัปโหลดรูปไม่สำเร็จ", {
+              description: error instanceof Error ? error.message : undefined,
+            });
+            onOpenChange(false);
+            return;
+          }
+        }
         toast.success("เพิ่มรายการแล้ว");
       }
       onOpenChange(false);
@@ -111,27 +188,96 @@ export function PrayerRequestFormDialog({
             {isEditMode ? "แก้ไข" : "เพิ่ม"}
             {PRAYER_ENTRY_TYPE_LABEL[type]}
           </DialogTitle>
-          <DialogDescription>
-            {type === "prayer"
-              ? "จดสิ่งที่อธิษฐานเผื่อ แล้วกลับมาติ๊กเมื่อพระเจ้าตอบ"
-              : "จดสิ่งที่พระเจ้าพูดหรือสื่อกับคุณ"}
-          </DialogDescription>
+          <DialogDescription>{copy.dialogDescription}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
+          {showPhoto && (
+            <div className="flex items-center gap-4">
+              <AvatarUpload
+                key={photoKey}
+                mode="deferred"
+                imageUrl={existingPhotoUrl}
+                initials={title.trim().charAt(0) || "?"}
+                className="size-20 shrink-0"
+                disabled={isSubmitting}
+                onFileReady={(blob) => {
+                  setPhotoBlob(blob);
+                  if (blob) setRemovePhoto(false);
+                }}
+              />
+              <div className="flex flex-col gap-1 text-sm">
+                <span className="font-medium">รูป (ไม่บังคับ)</span>
+                <span className="text-muted-foreground text-xs">
+                  กดที่กรอบเพื่อเลือกรูป จะได้จำหน้าได้ — เห็นได้เฉพาะคุณ
+                </span>
+                {hasPhoto && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    disabled={isSubmitting}
+                    className="self-start text-xs font-medium text-destructive hover:underline"
+                  >
+                    ลบรูป
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!showPhoto && (
+            <div className="flex flex-col gap-1.5">
+              <Label>ไอคอน (ไม่บังคับ)</Label>
+              <div
+                role="radiogroup"
+                aria-label="เลือกไอคอน"
+                className="grid grid-cols-8 gap-1.5"
+              >
+                {PRAYER_ICONS.map(({ key, label, Icon }) => {
+                  const selected = icon === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      aria-label={label}
+                      title={label}
+                      disabled={isSubmitting}
+                      onClick={() => setIcon(selected ? null : key)}
+                      className={cn(
+                        "flex aspect-square items-center justify-center rounded-full border transition-colors",
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      <Icon className="size-4" />
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="text-muted-foreground text-xs">
+                {icon
+                  ? PRAYER_ICONS.find((i) => i.key === icon)?.label
+                  : "ไม่เลือก = ใช้ไอคอนตั้งต้นของแท็บ"}
+              </span>
+            </div>
+          )}
+
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="prayer-request-title">หัวข้อ</Label>
+            <Label htmlFor="prayer-request-title">{copy.titleLabel}</Label>
             <Input
               id="prayer-request-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="เช่น สุขภาพคุณแม่"
+              placeholder={copy.titlePlaceholder}
               autoFocus
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="prayer-request-detail">รายละเอียด (ไม่บังคับ)</Label>
+            <Label htmlFor="prayer-request-detail">{copy.detailLabel}</Label>
             <Textarea
               id="prayer-request-detail"
               value={detail}

@@ -521,10 +521,12 @@ export type Database = {
           answered_date: string | null
           created_at: string
           detail: string | null
+          icon: string | null
           id: string
           is_answered: boolean
           is_shared: boolean
           lamb_id: string
+          photo_path: string | null
           title: string
           type: Database["public"]["Enums"]["prayer_entry_type"]
           updated_at: string
@@ -533,10 +535,12 @@ export type Database = {
           answered_date?: string | null
           created_at?: string
           detail?: string | null
+          icon?: string | null
           id?: string
           is_answered?: boolean
           is_shared?: boolean
           lamb_id: string
+          photo_path?: string | null
           title: string
           type?: Database["public"]["Enums"]["prayer_entry_type"]
           updated_at?: string
@@ -545,10 +549,12 @@ export type Database = {
           answered_date?: string | null
           created_at?: string
           detail?: string | null
+          icon?: string | null
           id?: string
           is_answered?: boolean
           is_shared?: boolean
           lamb_id?: string
+          photo_path?: string | null
           title?: string
           type?: Database["public"]["Enums"]["prayer_entry_type"]
           updated_at?: string
@@ -1091,7 +1097,7 @@ export type Database = {
       }
     }
     Enums: {
-      prayer_entry_type: "prayer" | "conversation"
+      prayer_entry_type: "prayer" | "conversation" | "andrew"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1219,7 +1225,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      prayer_entry_type: ["prayer", "conversation"],
+      prayer_entry_type: ["prayer", "conversation", "andrew"],
     },
   },
 } as const

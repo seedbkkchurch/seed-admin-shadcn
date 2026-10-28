@@ -58,7 +58,8 @@ export function PrayerList() {
             รายการคำอธิษฐาน
           </h2>
           <p className="text-muted-foreground">
-            จดคำอธิษฐานและสิ่งที่พระเจ้าคุยด้วย แล้วติ๊กเมื่อพระเจ้าตอบแล้ว
+            จดคำอธิษฐาน สิ่งที่พระเจ้าคุยด้วย และรายชื่อแอนดรูที่อธิษฐานเผื่อ
+            แล้วติ๊กเมื่อพระเจ้าตอบ
           </p>
         </div>
 
@@ -70,7 +71,8 @@ export function PrayerList() {
           </p>
         ) : (
           <Tabs defaultValue="prayer" className="gap-4">
-            <TabsList>
+            {/* 3 แท็บแล้ว — ให้เลื่อนแนวนอนได้บนจอมือถือแคบๆ แทนการล้นจอ */}
+            <TabsList className="max-w-full justify-start overflow-x-auto">
               {PRAYER_ENTRY_TYPES.map((type) => (
                 <TabsTrigger key={type} value={type}>
                   {PRAYER_ENTRY_TYPE_LABEL[type]}

@@ -6,8 +6,8 @@
   (เหมือน DevotionEditor/Subscribe/MobileTabBar — auto-detect lamb จาก auth
   แทน manual picker) ไม่ใช่ admin กรอกแทนแบบ `lamb_devotion`
 - 1 lamb มีได้หลายรายการ, แยก 2 ประเภทตายตัว (`prayer_entry_type` enum):
-  `prayer` (คำอธิษฐาน) กับ `conversation` (สิ่งที่พระเจ้าคุยด้วย) — ไม่มี
-  แผนเพิ่ม type ที่ 3 ตอนนี้
+  `prayer` (คำอธิษฐาน) กับ `conversation` (สิ่งที่พระเจ้าคุยด้วย) — เพิ่ม
+  `andrew` (รายชื่อแอนดรู) เป็นประเภทที่ 3 เมื่อ 2026-10-28 ดูข้อ 3.1
 - เนื้อหาแยก `title` (บังคับ) + `detail` (ไม่บังคับ) — plain text ทั้งคู่
 - **Private โดย default** — เจ้าของเลือกเปิดแชร์ (`is_shared`) ทีละรายการ
   ให้ cell_leader (เซลตัวเอง) / team_leader (ทีม) / admin / super_admin
@@ -83,6 +83,54 @@ create policy "leaders can view shared prayer requests in scope"
 
 `create_lamb_prayer_request` — apply ตรงบน project `xfafvwecxcpidoliuqpg`
 (supabase-seed-data) วันที่ 2026-08-18
+
+`add_andrew_prayer_entry_type` — apply วันที่ 2026-10-28:
+
+```sql
+alter type prayer_entry_type add value if not exists 'andrew';
+```
+
+## 3.1 แท็บ "รายชื่อแอนดรู" (grill-me 2026-10-28)
+
+- เพิ่มเป็นประเภทที่ 3 ในตารางเดิม (enum `andrew`) — ไม่สร้างตารางใหม่
+  ใช้ RLS / `is_shared` เดิมได้ทันที
+- ใช้ฟิลด์เดิม: `title` = ชื่อคนที่อธิษฐานเผื่อ, `detail` = หมายเหตุ,
+  `is_answered` + `answered_date` = "รับเชื่อแล้ว" + วันที่ (แสดง "รอ X วัน"
+  เหมือนเดิม) — ข้อความต่อประเภทอยู่ใน `PRAYER_ENTRY_TYPE_COPY`
+- ไม่มีสถานะหลายขั้น / เบอร์โทร / จำกัดจำนวนชื่อ
+
+## 3.3 รูปคนในแท็บแอนดรู (grill-me 2026-10-28)
+
+เป็นรูปของคนภายนอกที่ไม่ได้ยินยอม จึงแยกไว้ใน **bucket private จริง**
+`prayer-private` (ไม่ใช้ `bucket-seed` ซึ่ง public ทั้ง bucket) —
+migration `add_prayer_request_photo_private_bucket`:
+
+- คอลัมน์ใหม่ `lamb_prayer_request.photo_path text` (storage path ไม่ใช่ URL)
+- bucket `prayer-private`: `public=false`, ≤ 2MB, `image/jpeg` เท่านั้น
+- path = `{lamb_id}/{request_id}.jpg` — RLS บน `storage.objects` ให้
+  select/insert/update/delete ได้เฉพาะเมื่อโฟลเดอร์แรก = `auth_lamb_id()`
+- แสดงผลผ่าน signed URL อายุ 1 ชม. (`usePrayerPhotoUrl` ใน
+  `src/lib/supabase/prayer-photo.ts`) — ไม่มีลิงก์ถาวร
+- อัปโหลดใช้ `AvatarUpload` โหมด deferred (ครอปจัตุรัส 256px) แล้วอัปตอนกด
+  บันทึก; ลบรายการ/กด "ลบรูป" จะลบไฟล์ตาม
+- หมายเหตุ: leader ที่เห็นรายการแชร์ (`is_shared`) จะ**ไม่**เห็นรูป เพราะ
+  storage RLS ให้เจ้าของเท่านั้น — ถ้าต้องการทีหลังต้องเพิ่ม policy
+
+## 3.4 ไอคอนในแท็บคำอธิษฐาน / สิ่งที่พระเจ้าคุยด้วย (grill-me 2026-10-28)
+
+- migration `add_prayer_request_icon`: คอลัมน์ `icon text` (nullable) เก็บ
+  key ไอคอน เช่น `heart-pulse` — ไม่ใช้ enum/check เพื่อให้เพิ่ม/ลดชุดได้
+  โดยไม่แก้ DB
+- ชุด 16 ไอคอน lucide ใช้ร่วมกันทั้งสองแท็บ อยู่ใน
+  `src/features/prayer-list/data/icons.ts` (`PRAYER_ICONS`)
+- ไม่บังคับเลือก — ไม่เลือก/key ไม่รู้จัก = ไอคอนตั้งต้นของแท็บ (คำอธิษฐาน
+  `hand-heart`, สิ่งที่พระเจ้าคุยด้วย `message-circle`)
+- แท็บแอนดรูไม่มีไอคอน (ใช้รูปแทน ข้อ 3.3)
+
+## 3.2 การ์ดย่อ/ขยายข้อความ (grill-me 2026-10-28)
+
+- ทุกแท็บ: `title` ตัด 1 บรรทัด, `detail` ตัด 2 บรรทัด — กดที่ข้อความหรือ
+  "ดูเพิ่มเติม" เพื่อขยายในการ์ด (ไม่ใช้ป๊อปอัป) ลิงก์โผล่เฉพาะเมื่อล้นจริง
 
 ## 4. ขอบเขตที่ยังไม่ทำรอบนี้
 

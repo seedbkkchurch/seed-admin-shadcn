@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
+import { deletePrayerPhoto } from "@/lib/supabase/prayer-photo";
 import type {
   PrayerRequest,
   PrayerRequestCreateInput,
@@ -120,12 +121,24 @@ export function useSetPrayerRequestAnswered() {
 export function useDeletePrayerRequest() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id }: { id: string; lambId: string }) => {
+    mutationFn: async ({
+      id,
+      photoPath,
+    }: {
+      id: string;
+      lambId: string;
+      photoPath?: string | null;
+    }) => {
       const { error } = await supabase
         .from("lamb_prayer_request")
         .delete()
         .eq("id", id);
       if (error) throw error;
+      // ลบรูปตามหลังแถวลบสำเร็จแล้ว — ถ้าลบรูปพลาดแค่ทิ้งไฟล์ค้าง (เจ้าของ
+      // เท่านั้นเปิดได้) ไม่ต้องให้ทั้งการลบล้มเหลว
+      if (photoPath) {
+        await deletePrayerPhoto(photoPath).catch(() => undefined);
+      }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
