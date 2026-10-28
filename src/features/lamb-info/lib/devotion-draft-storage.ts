@@ -68,12 +68,15 @@ export function loadDevotionEditorDraft(
 export function saveDevotionEditorDraft(
   draft: DevotionEditorDraft,
   today: Date,
-): void {
+): boolean {
   try {
     const stored: StoredEditorDraft = { ...draft, savedDate: todayKey(today) };
     localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify(stored));
+    return true;
   } catch {
     // localStorage เต็ม/ถูกบล็อก — ไม่ใช่เรื่องคอขาดบาดตาย เงียบไปเลย
+    // คืน false ให้ตัวบอกสถานะ "บันทึกร่างแล้ว" ไม่โผล่ (ไม่หลอกว่าปลอดภัย)
+    return false;
   }
 }
 

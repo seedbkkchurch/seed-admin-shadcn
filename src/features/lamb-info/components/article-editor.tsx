@@ -9,7 +9,6 @@ import StarterKit from "@tiptap/starter-kit";
 import {
   Baseline,
   Bold,
-  Code,
   Heading2,
   Highlighter,
   ImageIcon,
@@ -19,9 +18,10 @@ import {
   ListOrdered,
   Loader2,
   Quote,
+  Redo2,
   Search,
-  SquareCode,
   Strikethrough,
+  Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -169,6 +169,11 @@ function ColorPopoverButton({
 // 2026-08-25) ส่วน heading คงไว้แค่ level 2-3 เหมือนเดิม (เนื้อหาอยู่ใต้
 // หัวข้อบทความ h2 ของหน้าอยู่แล้ว) Strike/Code/CodeBlock มากับ StarterKit
 // อยู่แล้ว แค่เพิ่มปุ่มเรียกใช้เท่านั้น
+//
+// grill-me 2026-10-28: ตัดปุ่ม Code/CodeBlock ออกจากแถบ (เครื่องมือ
+// โปรแกรมเมอร์ ผู้เขียนเฝ้าเดี่ยว/ข่าวไม่ได้ใช้) แต่ยังเก็บ extension ใน
+// StarterKit ไว้ เนื้อหาเก่าที่เคยใช้จึงยังแสดงผลได้ปกติ — เพิ่มปุ่ม
+// เลิกทำ/ทำซ้ำ แทน เพราะบนมือถือไม่มี Ctrl+Z
 export const ArticleEditor = forwardRef<
   ArticleEditorHandle,
   ArticleEditorProps
@@ -318,7 +323,35 @@ export const ArticleEditor = forwardRef<
 
   return (
     <div className={cn("rounded-md border", className)}>
-      <div className="flex flex-wrap items-center gap-1 border-b p-2">
+      {/* แถบเครื่องมือติดใต้ Header (h-16, sticky top-0) ตอนเลื่อนลงเขียน
+          ยาวๆ ไม่ต้องเลื่อนกลับขึ้นมากดปุ่ม — บนมือถือเป็นแถวเดียวเลื่อน
+          แนวนอนได้แทนการพับหลายแถว (grill-me 2026-10-28) */}
+      <div className="bg-background sticky top-16 z-10 flex items-center gap-1 overflow-x-auto rounded-t-md border-b p-2 sm:flex-wrap [&>*]:shrink-0">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          aria-label="เลิกทำ"
+          title="เลิกทำ"
+        >
+          <Undo2 />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          aria-label="ทำซ้ำ"
+          title="ทำซ้ำ"
+        >
+          <Redo2 />
+        </Button>
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <Button
           type="button"
           variant={editor.isActive("bold") ? "secondary" : "ghost"}
@@ -346,16 +379,6 @@ export const ArticleEditor = forwardRef<
         >
           <Strikethrough />
         </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("code") ? "secondary" : "ghost"}
-          size="icon"
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          aria-label="โค้ดในบรรทัด"
-        >
-          <Code />
-        </Button>
-
         <Separator orientation="vertical" className="mx-1 h-6" />
 
         <ColorPopoverButton
@@ -418,15 +441,6 @@ export const ArticleEditor = forwardRef<
           aria-label="รายการลำดับเลข"
         >
           <ListOrdered />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("codeBlock") ? "secondary" : "ghost"}
-          size="icon"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          aria-label="บล็อกโค้ด"
-        >
-          <SquareCode />
         </Button>
 
         <Separator orientation="vertical" className="mx-1 h-6" />

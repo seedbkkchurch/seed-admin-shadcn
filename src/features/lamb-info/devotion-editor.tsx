@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useBlocker, useNavigate } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { AlertCircle, Eraser, Save, Send } from "lucide-react";
+import { AlertCircle, CloudCheck, Eraser, Save, Send } from "lucide-react";
 import { toast } from "sonner";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -128,12 +128,18 @@ export function DevotionEditor() {
 
   // บันทึกร่างทุกครั้งที่ฟิลด์เปลี่ยน — ข้ามการเขียนตอนทุกอย่างยังว่างเปล่า
   // (เปิดหน้ามาเฉยๆ ไม่ต้องสร้างร่างว่างทิ้งไว้ใน localStorage)
+  //
+  // draftSavedAt = เวลาที่บันทึกร่างล่าสุด แสดงเป็น "บันทึกร่างแล้ว HH:mm"
+  // ใต้ editor ให้คนเขียนรู้ว่าปลอดภัย (grill-me 2026-10-28) — กู้ร่างมาตอน
+  // เปิดหน้าก็นับว่าบันทึกอยู่แล้ว, ล้างข้อมูลแล้วซ่อน
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
   useEffect(() => {
     if (!lambId && title.trim() === "" && isEmptyHtml(html)) return;
-    saveDevotionEditorDraft(
+    const saved = saveDevotionEditorDraft(
       { lambId, title, html, isPublic, contentType },
       today,
     );
+    setDraftSavedAt(saved ? new Date() : null);
   }, [lambId, title, html, isPublic, contentType, today]);
 
   const showTitleError = titleTouched && title.trim().length === 0;
@@ -181,6 +187,7 @@ export function DevotionEditor() {
     setIsPublic(true);
     setContentType("devotion");
     clearDevotionEditorDraft();
+    setDraftSavedAt(null);
     setEditorInitialContent("");
     setEditorResetKey((key) => key + 1);
     setClearDialogOpen(false);
@@ -313,6 +320,18 @@ export function DevotionEditor() {
             onUploadingChange={setIsUploadingImage}
             uploadImage={(file) => uploadDevotionImage(file, isPublic)}
           />
+
+          {/* ซ่อนเมื่อยังไม่มีเนื้อหา — หลังกดล้างข้อมูล effect ด้านบนยังบันทึก
+              ร่างว่างตามพฤติกรรมเดิม (lambId มีค่าเสมอ) ไม่ต้องบอกว่า "บันทึก" */}
+          {draftSavedAt && hasContentToClear && (
+            <p
+              className="text-muted-foreground flex items-center gap-1.5 text-xs"
+              aria-live="polite"
+            >
+              <CloudCheck className="size-3.5" />
+              บันทึกร่างแล้ว {format(draftSavedAt, "HH:mm")} — ปิดหน้าแล้วกลับมาเขียนต่อได้วันนี้
+            </p>
+          )}
         </div>
       </Main>
 
@@ -422,6 +441,25 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
   const canSubmit =
     title.trim().length > 0 && !isEmptyHtml(html) && !isUploadingImage;
 
+  // กันงานแก้หาย (grill-me 2026-10-28) — หน้าแก้ไขไม่มีร่างอัตโนมัติแบบ
+  // หน้าเขียนใหม่ จึงเตือนก่อนออกจากหน้าเมื่อยังมีการแก้ที่ไม่ได้บันทึก:
+  // ทั้งการเปลี่ยนหน้าในแอป (ConfirmDialog) และปิดแท็บ/รีเฟรช (เบราว์เซอร์
+  // เตือนเอง) — `html` เปลี่ยนเฉพาะตอนผู้ใช้แก้จริง (onUpdate ของ Tiptap)
+  // จึงเทียบกับค่าเดิมตรงๆ ได้ savedRef ปลดการเตือนหลังบันทึกสำเร็จ
+  // ก่อน navigate ไปหน้ารายละเอียด
+  const isDirty =
+    title !== entry.title ||
+    html !== entry.content_html ||
+    isPublic !== entry.is_public ||
+    contentType !== entry.content_type ||
+    devotionDate !== entry.devotion_date;
+  const savedRef = useRef(false);
+  const blocker = useBlocker({
+    shouldBlockFn: () => isDirty && !savedRef.current,
+    enableBeforeUnload: () => isDirty && !savedRef.current,
+    withResolver: true,
+  });
+
   const handleSubmit = () => {
     if (!canSubmit) return;
 
@@ -439,6 +477,7 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
       },
       {
         onSuccess: () => {
+          savedRef.current = true;
           toast.success("บันทึกการแก้ไขแล้ว");
           navigate({
             to: "/lamb-info/devotion/$devotionId",
@@ -544,6 +583,19 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
         onInsertHtml={(insertedHtml) =>
           editorRef.current?.insertHtml(insertedHtml)
         }
+      />
+
+      <ConfirmDialog
+        open={blocker.status === "blocked"}
+        onOpenChange={(open) => {
+          if (!open && blocker.status === "blocked") blocker.reset();
+        }}
+        handleConfirm={() => blocker.proceed?.()}
+        title="ออกโดยไม่บันทึก?"
+        desc="ที่แก้ไว้ยังไม่ได้บันทึก ถ้าออกตอนนี้การแก้ไขจะหายไป"
+        confirmText="ออกโดยไม่บันทึก"
+        cancelBtnText="กลับไปแก้ต่อ"
+        destructive
       />
     </>
   );
