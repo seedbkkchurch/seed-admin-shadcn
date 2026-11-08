@@ -62,6 +62,43 @@ export const sidebarData: SidebarData = {
         },
       ],
     },
+    // แยก เฝ้าเดี่ยว / ประวัติ / คำอธิษฐาน / พระคัมภีร์ ออกจาก "เนื้อหา-กิจกรรม"
+    // มาเป็นกลุ่มของตัวเอง วางเป็นกลุ่มที่ 2 ให้ member เห็นเมนูที่ใช้ทุกวัน
+    // ก่อน (grill-me 2026-11-08)
+    {
+      title: "เฝ้าเดี่ยวและอธิษฐาน",
+      items: [
+        {
+          title: "เฝ้าเดี่ยว",
+          url: "/lamb-info/devotion",
+          icon: NotebookPen,
+        },
+        // ประวัติเฝ้าเดี่ยวทั้งหมดของ "ตัวเอง" (ตารางเดียวกับปุ่ม "ดูทั้งหมด" ใน
+        // โปรไฟล์) — $myLambId ถูกแทนด้วย lamb_info.id ของคนที่ล็อกอินใน
+        // useVisibleNavGroups() และซ่อนเมนูนี้ถ้าบัญชีไม่ผูกกับลูกแกะ
+        // (grill-me 2026-09-23)
+        {
+          title: "ประวัติเฝ้าเดี่ยวทั้งหมด",
+          url: "/lamb-info/$myLambId/devotion",
+          icon: History,
+        },
+        {
+          title: "รายการคำอธิษฐาน",
+          url: "/prayer-list",
+          icon: HandHeart,
+        },
+        // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
+        // 2026-08-13 + เปลี่ยนใจ 2026-08-13)
+        {
+          // เดิมชื่อ "พระคัมภีร์ (KJV)" — ตัด "(KJV)" ออก เหลือแค่
+          // "พระคัมภีร์" เฉยๆ (ดู grill-me 2026-08-24) หน้า /bible เอง
+          // (features/bible/index.tsx) ก็แก้หัวข้อให้ตรงกันด้วย
+          title: "พระคัมภีร์",
+          url: "/bible/1/1",
+          icon: BookOpen,
+        },
+      ],
+    },
     {
       title: "สมาชิก",
       items: [
@@ -107,22 +144,10 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: "เนื้อหา-กิจกรรม",
+      // เดิมชื่อ "เนื้อหา-กิจกรรม" — เปลี่ยนชื่อหลังย้ายเมนูเฝ้าเดี่ยว/คำอธิษฐาน/
+      // พระคัมภีร์ออกไปกลุ่ม "เฝ้าเดี่ยวและอธิษฐาน" (grill-me 2026-11-08)
+      title: "ข่าวและกิจกรรม",
       items: [
-        {
-          title: "เฝ้าเดี่ยว",
-          url: "/lamb-info/devotion",
-          icon: NotebookPen,
-        },
-        // ประวัติเฝ้าเดี่ยวทั้งหมดของ "ตัวเอง" (ตารางเดียวกับปุ่ม "ดูทั้งหมด" ใน
-        // โปรไฟล์) — $myLambId ถูกแทนด้วย lamb_info.id ของคนที่ล็อกอินใน
-        // useVisibleNavGroups() และซ่อนเมนูนี้ถ้าบัญชีไม่ผูกกับลูกแกะ
-        // (grill-me 2026-09-23)
-        {
-          title: "ประวัติเฝ้าเดี่ยวทั้งหมด",
-          url: "/lamb-info/$myLambId/devotion",
-          icon: History,
-        },
         {
           title: "ข่าว",
           url: "/news",
@@ -143,11 +168,6 @@ export const sidebarData: SidebarData = {
           hiddenForRoles: ["member", "visitor"],
         },
         {
-          title: "รายการคำอธิษฐาน",
-          url: "/prayer-list",
-          icon: HandHeart,
-        },
-        {
           title: "แบบสำรวจของประทาน",
           url: "/spiritual-gifts-survey",
           icon: Sparkles,
@@ -161,16 +181,6 @@ export const sidebarData: SidebarData = {
         //   url: "/subscribe",
         //   icon: BellPlus,
         // },
-        // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
-        // 2026-08-13 + เปลี่ยนใจ 2026-08-13)
-        {
-          // เดิมชื่อ "พระคัมภีร์ (KJV)" — ตัด "(KJV)" ออก เหลือแค่
-          // "พระคัมภีร์" เฉยๆ (ดู grill-me 2026-08-24) หน้า /bible เอง
-          // (features/bible/index.tsx) ก็แก้หัวข้อให้ตรงกันด้วย
-          title: "พระคัมภีร์",
-          url: "/bible/1/1",
-          icon: BookOpen,
-        },
       ],
     },
     // Permission-gated admin tools — everything here redirects non-
