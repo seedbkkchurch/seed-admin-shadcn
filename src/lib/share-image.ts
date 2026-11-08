@@ -8,7 +8,8 @@ export async function shareOrDownloadImage(
   fileName: string,
   title: string,
 ) {
-  const file = new File([blob], fileName, { type: "image/png" });
+  // ใช้ชนิดไฟล์ตาม blob (PNG หรือ GIF เคลื่อนไหว)
+  const file = new File([blob], fileName, { type: blob.type || "image/png" });
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
   if (isTouch && navigator.canShare?.({ files: [file] })) {
     try {

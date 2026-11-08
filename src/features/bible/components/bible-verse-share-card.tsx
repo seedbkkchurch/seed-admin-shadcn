@@ -12,6 +12,9 @@ type Props = {
   reference: string;
   subReference: string;
   showVerseNumbers: boolean;
+  // true = วาดเฉพาะชั้นบน (ไล่เฉด + ข้อความ + โลโก้) บนพื้นโปร่งใส ไม่มีรูป —
+  // ใช้เป็น overlay ทับทุกเฟรมตอนสร้าง GIF เคลื่อนไหว (lib/animated-gif.ts)
+  bare?: boolean;
 };
 
 const ACCENT = "#5DCAA5";
@@ -71,7 +74,15 @@ function Lines({
 // (บนวงขาว ให้โลโก้สีเขียวเห็นชัดบนรูปทุกแบบ)
 export const BibleVerseShareCard = forwardRef<HTMLDivElement, Props>(
   function BibleVerseShareCard(
-    { imageUrl, thLines, enLines, reference, subReference, showVerseNumbers },
+    {
+      imageUrl,
+      thLines,
+      enLines,
+      reference,
+      subReference,
+      showVerseNumbers,
+      bare,
+    },
     ref,
   ) {
     const thChars = thLines.reduce((n, l) => n + l.text.length, 0);
@@ -90,11 +101,11 @@ export const BibleVerseShareCard = forwardRef<HTMLDivElement, Props>(
           height: 1350,
           position: "relative",
           overflow: "hidden",
-          background: "#1F2A24",
+          background: bare ? "transparent" : "#1F2A24",
           color: "#ffffff",
         }}
       >
-        {imageUrl && (
+        {imageUrl && !bare && (
           <img
             src={imageUrl}
             crossOrigin="anonymous"

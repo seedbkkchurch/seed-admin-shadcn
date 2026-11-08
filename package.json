@@ -59,6 +59,8 @@
     "cmdk": "1.1.1",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
+    "gifenc": "^1.0.3",
+    "gifuct-js": "^2.1.2",
     "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.8.0",

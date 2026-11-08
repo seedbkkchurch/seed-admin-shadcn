@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { toBlob } from "html-to-image";
+import { toBlob, toCanvas } from "html-to-image";
 import { Check, Loader2, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useGiphySearch } from "@/features/lamb-info/data/giphy";
 import { usePexelsSearch } from "@/features/lamb-info/data/pexels";
 import { safeFileNamePart, shareOrDownloadImage } from "@/lib/share-image";
 import { cn } from "@/lib/utils";
 import { type BibleLanguageMode, type BibleVerse } from "../data/types";
+import {
+  ANIMATED_HEIGHT,
+  ANIMATED_WIDTH,
+  buildAnimatedVerseGif,
+} from "../lib/animated-gif";
 import {
   cleanEnglishVerseText,
   cleanQuoteText,
@@ -28,8 +34,13 @@ import {
 } from "./bible-verse-share-card";
 
 // คำค้นรูปเริ่มต้น — โทนแสงธรรมชาติสงบๆ เข้ากับข้อพระคัมภีร์ (grill-me 2026-11-08)
-const DEFAULT_QUERY = "sunrise nature light";
+const DEFAULT_PHOTO_QUERY = "sunrise nature light";
+// GIF เริ่มต้น: ธรรมชาติเคลื่อนไหวเบาๆ (ไม่ใช่ GIF ตลก) เหมาะเป็นพื้นหลังข้อความ
+const DEFAULT_GIF_QUERY = "nature sky clouds";
 const PREVIEW_SCALE = 0.26;
+
+type BackgroundSource = "photo" | "gif";
+type OutputMode = "still" | "animated";
 
 type Props = {
   open: boolean;
@@ -46,10 +57,15 @@ type Props = {
   versionCode: string;
 };
 
+type Thumb = { id: string; thumbUrl: string; fullUrl: string; label: string };
+
 // หน้าต่าง "แชร์เป็นการ์ด" ของหน้าพระคัมภีร์ (grill-me 2026-11-08):
-// เลือกภาษา (ไทย/อังกฤษ/ทั้งสอง ตามที่ฉบับนี้มี) + รูปพื้นหลังจาก Pexels
-// (แถวรูปแนะนำ + ช่องค้นหา) + พรีวิว + ปุ่มแชร์ใหญ่ รูปสร้างล่วงหน้าทุกครั้ง
-// ที่เปลี่ยนตัวเลือก เหมือนการ์ดสถิติเฝ้าเดี่ยว
+// - ภาษา (ไทย/อังกฤษ/ทั้งสอง ตามที่ฉบับนี้มี)
+// - พื้นหลัง: แท็บ "รูปภาพ" (Pexels) หรือ "GIF" (GIPHY) — แถวแนะนำ + ค้นหา
+// - ถ้าเป็น GIF เลือกผลลัพธ์ได้: ภาพนิ่ง (PNG 1080x1350 เฟรมเดียว) หรือ
+//   GIF เคลื่อนไหว (540x675 สร้างใน lib/animated-gif.ts)
+// รูปผลลัพธ์สร้างล่วงหน้าทุกครั้งที่เปลี่ยนตัวเลือก ปุ่มแชร์เรียกได้ทันที
+// (กัน iOS ตัดสิทธิ์ user gesture) เหมือนการ์ดสถิติเฝ้าเดี่ยว
 export function BibleVerseShareDialog({
   open,
   onOpenChange,
@@ -78,16 +94,44 @@ export function BibleVerseShareDialog({
     ? langChoice
     : (langOptions[0] ?? "th");
 
+  const [source, setSource] = useState<BackgroundSource>("photo");
+  const [outputMode, setOutputMode] = useState<OutputMode>("still");
+  const animated = source === "gif" && outputMode === "animated";
+
+  // ค้นหาแยกตามแหล่ง — ช่องค้นหาเดียว ใช้กับแท็บที่เปิดอยู่
   const [queryInput, setQueryInput] = useState("");
-  const [query, setQuery] = useState(DEFAULT_QUERY);
-  const pexels = usePexelsSearch(open ? query : "");
-  const photos = useMemo(
-    () => pexels.data?.pages.flatMap((p) => p.photos) ?? [],
-    [pexels.data],
-  );
-  const [photoId, setPhotoId] = useState<number | null>(null);
-  const photo = photos.find((p) => p.id === photoId) ?? photos[0] ?? null;
-  const [imageFailed, setImageFailed] = useState(false);
+  const [photoQuery, setPhotoQuery] = useState(DEFAULT_PHOTO_QUERY);
+  const [gifQuery, setGifQuery] = useState(DEFAULT_GIF_QUERY);
+  const pexels = usePexelsSearch(open && source === "photo" ? photoQuery : "");
+  const giphy = useGiphySearch(gifQuery, open && source === "gif");
+  const activeSearch = source === "photo" ? pexels : giphy;
+
+  const thumbs: Thumb[] = useMemo(() => {
+    if (source === "photo") {
+      return (pexels.data?.pages.flatMap((p) => p.photos) ?? []).map((p) => ({
+        id: `p${p.id}`,
+        thumbUrl: p.thumbUrl,
+        fullUrl: p.imageUrl,
+        label: p.alt || "รูปพื้นหลัง",
+      }));
+    }
+    return (giphy.data?.pages.flatMap((p) => p.gifs) ?? []).map((g) => ({
+      id: `g${g.id}`,
+      thumbUrl: g.thumbUrl,
+      fullUrl: g.gifUrl,
+      label: g.title || "GIF",
+    }));
+  }, [source, pexels.data, giphy.data]);
+
+  const [selectedId, setSelectedId] = useState<
+    Record<BackgroundSource, string | null>
+  >({
+    photo: null,
+    gif: null,
+  });
+  const selected =
+    thumbs.find((t) => t.id === selectedId[source]) ?? thumbs[0] ?? null;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
   const buildLines = (which: "th" | "en"): VerseShareLine[] =>
     sorted.flatMap((v) => {
@@ -117,21 +161,68 @@ export function BibleVerseShareDialog({
       (lang === "both" ? 0.5 : 1);
   const tooLong = totalChars > VERSE_CARD_MAX_CHARS;
 
-  const imageUrl = imageFailed ? null : (photo?.imageUrl ?? null);
+  const rawUrl = selected?.fullUrl ?? null;
+  const imageUrl = rawUrl && rawUrl !== failedUrl ? rawUrl : null;
+
   const cardRef = useRef<HTMLDivElement>(null);
-  const renderKey = `${sorted.join(",")}|${lang}|${imageUrl ?? "none"}`;
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const renderKey = `${sorted.join(",")}|${lang}|${imageUrl ?? "none"}|${animated ? "anim" : "still"}`;
   const [rendered, setRendered] = useState<{ key: string; blob: Blob } | null>(
     null,
   );
+  const [progress, setProgress] = useState<{
+    key: string;
+    ratio: number;
+  } | null>(null);
   const blob = rendered?.key === renderKey ? rendered.blob : null;
-  // รอผลค้นหารูปชุดแรกก่อนค่อยสร้าง (ไม่งั้นได้การ์ดพื้นเรียบแวบนึง)
-  const waitingPhotos = pexels.isPending && !pexels.isError;
+  const progressRatio = progress?.key === renderKey ? progress.ratio : 0;
+  // รอผลค้นหาชุดแรกก่อนค่อยสร้าง (ไม่งั้นได้การ์ดพื้นเรียบแวบนึง)
+  const waitingThumbs = activeSearch.isPending && !activeSearch.isError;
 
   useEffect(() => {
-    if (!open || tooLong || waitingPhotos) return;
-    let cancelled = false;
+    if (!open || tooLong || waitingThumbs) return;
+    const signal = { cancelled: false };
     const run = async () => {
       await new Promise((r) => setTimeout(r, 60));
+      if (signal.cancelled) return;
+
+      if (animated && imageUrl) {
+        const node = overlayRef.current;
+        if (!node) return;
+        await Promise.all(
+          [...node.querySelectorAll("img")].map((img) =>
+            img.decode().catch(() => undefined),
+          ),
+        );
+        const overlay = await toCanvas(node, {
+          width: 1080,
+          height: 1350,
+          canvasWidth: ANIMATED_WIDTH,
+          canvasHeight: ANIMATED_HEIGHT,
+          pixelRatio: 1,
+        });
+        let result: Blob | null;
+        try {
+          result = await buildAnimatedVerseGif({
+            gifUrl: imageUrl,
+            overlay,
+            signal,
+            onProgress: (ratio) => {
+              if (!signal.cancelled) setProgress({ key: renderKey, ratio });
+            },
+          });
+        } catch {
+          if (!signal.cancelled) {
+            toast.error("สร้าง GIF เคลื่อนไหวไม่สำเร็จ ลองเลือก GIF อื่น");
+          }
+          return;
+        }
+        if (!signal.cancelled && result) {
+          setRendered({ key: renderKey, blob: result });
+        }
+        return;
+      }
+
       const node = cardRef.current;
       if (!node) return;
       let result: Blob | null;
@@ -144,41 +235,43 @@ export function BibleVerseShareDialog({
         result = await toBlob(node, { pixelRatio: 1, cacheBust: true });
       } catch {
         // รูปพื้นหลังโหลดข้ามโดเมนไม่ได้ — ใช้พื้นเรียบแทน (effect จะรันใหม่)
-        if (!cancelled && imageUrl) {
-          toast.info("โหลดรูปพื้นหลังไม่สำเร็จ ใช้พื้นเรียบแทน");
-          setImageFailed(true);
+        if (!signal.cancelled && imageUrl) {
+          toast.info("โหลดพื้นหลังไม่สำเร็จ ใช้พื้นเรียบแทน");
+          setFailedUrl(imageUrl);
         }
         return;
       }
-      if (!cancelled && result) setRendered({ key: renderKey, blob: result });
+      if (!signal.cancelled && result) {
+        setRendered({ key: renderKey, blob: result });
+      }
     };
     run().catch(() => {
-      if (!cancelled) toast.error("สร้างการ์ดไม่สำเร็จ");
+      if (!signal.cancelled) toast.error("สร้างการ์ดไม่สำเร็จ");
     });
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
     };
-  }, [open, renderKey, tooLong, waitingPhotos, imageUrl]);
+  }, [open, renderKey, tooLong, waitingThumbs, animated, imageUrl]);
 
-  const fileName = `${safeFileNamePart(`${bookNameTh}-${chapter}-${range}`)}.png`;
+  const fileName = `${safeFileNamePart(`${bookNameTh}-${chapter}-${range}`)}.${animated ? "gif" : "png"}`;
 
-  const card = (ref?: React.Ref<HTMLDivElement>) => (
-    <BibleVerseShareCard
-      ref={ref}
-      imageUrl={imageUrl}
-      thLines={thLines}
-      enLines={enLines}
-      reference={reference}
-      subReference={subReference}
-      showVerseNumbers={sorted.length > 1}
-    />
-  );
+  const cardProps = {
+    thLines,
+    enLines,
+    reference,
+    subReference,
+    showVerseNumbers: sorted.length > 1,
+  };
 
   const langLabel: Record<BibleLanguageMode, string> = {
     th: "ไทย",
     en: "อังกฤษ",
     both: "ทั้งสองภาษา",
   };
+
+  const busyLabel = animated
+    ? `กำลังสร้าง GIF… ${Math.round(progressRatio * 100)}%`
+    : "กำลังสร้างการ์ด…";
 
   return (
     <>
@@ -207,53 +300,74 @@ export function BibleVerseShareDialog({
           )}
 
           <div className="space-y-2">
+            <Tabs
+              value={source}
+              onValueChange={(v) => {
+                setSource(v as BackgroundSource);
+                setQueryInput("");
+              }}
+            >
+              <TabsList className="w-full">
+                <TabsTrigger value="photo" className="flex-1">
+                  รูปภาพ
+                </TabsTrigger>
+                <TabsTrigger value="gif" className="flex-1">
+                  GIF
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
             <form
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 const q = queryInput.trim();
                 if (!q) return;
-                setQuery(q);
-                setPhotoId(null);
-                setImageFailed(false);
+                if (source === "photo") setPhotoQuery(q);
+                else setGifQuery(q);
+                setSelectedId((prev) => ({ ...prev, [source]: null }));
               }}
             >
               <Input
                 value={queryInput}
                 onChange={(e) => setQueryInput(e.target.value)}
-                placeholder="ค้นหารูปพื้นหลัง เช่น ภูเขา, ทะเล, sky"
+                placeholder={
+                  source === "photo"
+                    ? "ค้นหารูปพื้นหลัง เช่น ภูเขา, ทะเล, sky"
+                    : "ค้นหา GIF เช่น rain, ocean, light"
+                }
                 className="h-10 text-base"
               />
               <Button type="submit" variant="outline" className="h-10">
                 <Search /> ค้นหา
               </Button>
             </form>
+
             <div className="flex w-full min-w-0 gap-2 overflow-x-auto pb-1">
-              {pexels.isPending && !pexels.isError
+              {waitingThumbs
                 ? Array.from({ length: 6 }, (_, i) => (
                     <div
                       key={i}
                       className="bg-muted size-16 shrink-0 animate-pulse rounded-md"
                     />
                   ))
-                : photos.map((p) => {
-                    const active = p.id === photo?.id;
+                : thumbs.map((t) => {
+                    const active = t.id === selected?.id;
                     return (
                       <button
-                        key={p.id}
+                        key={t.id}
                         type="button"
-                        onClick={() => {
-                          setPhotoId(p.id);
-                          setImageFailed(false);
-                        }}
+                        onClick={() =>
+                          setSelectedId((prev) => ({ ...prev, [source]: t.id }))
+                        }
                         className={cn(
                           "relative size-16 shrink-0 overflow-hidden rounded-md border-2",
                           active ? "border-[#05C64F]" : "border-transparent",
                         )}
-                        aria-label={p.alt || "รูปพื้นหลัง"}
+                        aria-label={t.label}
                       >
                         <img
-                          src={p.thumbUrl}
+                          src={t.thumbUrl}
                           alt=""
                           className="size-full object-cover"
                         />
@@ -264,15 +378,34 @@ export function BibleVerseShareDialog({
                     );
                   })}
             </div>
-            {pexels.isError && (
+            {activeSearch.isError && (
               <p className="text-destructive text-sm">
-                ค้นหารูปไม่สำเร็จ — ใช้พื้นเรียบแทนได้
+                {activeSearch.error instanceof Error
+                  ? activeSearch.error.message
+                  : "ค้นหาไม่สำเร็จ"}{" "}
+                — ใช้พื้นเรียบแทนได้
               </p>
             )}
-            {!pexels.isPending && !pexels.isError && photos.length === 0 && (
+            {!waitingThumbs && !activeSearch.isError && thumbs.length === 0 && (
               <p className="text-muted-foreground text-sm">
-                ไม่พบรูป ลองคำอื่นดู
+                ไม่พบผลลัพธ์ ลองคำอื่นดู
               </p>
+            )}
+            {source === "gif" && (
+              <div className="flex items-center justify-between gap-3">
+                <Tabs
+                  value={outputMode}
+                  onValueChange={(v) => setOutputMode(v as OutputMode)}
+                >
+                  <TabsList>
+                    <TabsTrigger value="still">ภาพนิ่ง</TabsTrigger>
+                    <TabsTrigger value="animated">GIF เคลื่อนไหว</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <span className="text-muted-foreground text-xs font-semibold">
+                  Powered by GIPHY
+                </span>
+              </div>
             )}
           </div>
 
@@ -296,7 +429,8 @@ export function BibleVerseShareDialog({
                     transformOrigin: "top left",
                   }}
                 >
-                  {card()}
+                  {/* พรีวิวใช้ <img> ปกติ — ถ้าเป็น GIF จะขยับให้เห็นเลย */}
+                  <BibleVerseShareCard imageUrl={imageUrl} {...cardProps} />
                 </div>
               </div>
             </div>
@@ -321,12 +455,13 @@ export function BibleVerseShareDialog({
             ) : (
               <Share2 className="size-5" />
             )}
-            {!blob && !tooLong ? "กำลังสร้างการ์ด…" : "แชร์"}
+            {!blob && !tooLong ? busyLabel : animated ? "แชร์ GIF" : "แชร์"}
           </Button>
         </DialogContent>
       </Dialog>
 
-      {/* ตัว capture ขนาดจริง วางนอกจอ (ไม่ใช้ display:none) */}
+      {/* ตัว capture ขนาดจริง วางนอกจอ (ไม่ใช้ display:none) — การ์ดเต็ม
+      สำหรับภาพนิ่ง และชั้นบนโปร่งใส (bare) สำหรับทับเฟรม GIF เคลื่อนไหว */}
       {open && !tooLong && (
         <div
           style={{
@@ -337,7 +472,20 @@ export function BibleVerseShareDialog({
           }}
           aria-hidden
         >
-          {card(cardRef)}
+          {animated ? (
+            <BibleVerseShareCard
+              ref={overlayRef}
+              imageUrl={null}
+              bare
+              {...cardProps}
+            />
+          ) : (
+            <BibleVerseShareCard
+              ref={cardRef}
+              imageUrl={imageUrl}
+              {...cardProps}
+            />
+          )}
         </div>
       )}
     </>
