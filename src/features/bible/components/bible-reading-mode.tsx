@@ -82,6 +82,8 @@ type ReadingModeProps = {
   onToggleVerse?: (v: number) => void;
   selectedCount?: number;
   onInsert?: () => void;
+  // ข้อความปุ่มในแถบล่าง — หน้า /bible ใช้ "แชร์เป็นการ์ด" (grill-me 2026-11-08)
+  insertLabel?: string;
 };
 
 const SWIPE_COMMIT_PX = 70;
@@ -127,6 +129,7 @@ export function BibleReadingMode({
   onToggleVerse,
   selectedCount = 0,
   onInsert,
+  insertLabel = "แทรกข้อที่เลือก",
 }: ReadingModeProps) {
   const [settings, setSettings] = useState<ReadingModeSettings>(() =>
     loadReadingModeSettings(),
@@ -422,7 +425,7 @@ export function BibleReadingMode({
             เลือกไว้ {selectedCount} ข้อ
           </span>
           <Button type="button" onClick={onInsert}>
-            แทรกข้อที่เลือก
+            {insertLabel}
           </Button>
         </div>
       )}

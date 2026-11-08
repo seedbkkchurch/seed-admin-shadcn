@@ -3,11 +3,14 @@ import { stripFootnoteMarkers } from "./parse-footnotes";
 import { type BibleLanguageMode, type BibleVerse } from "../data/types";
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 // รวมเลขข้อที่เรียงต่อกันเป็นช่วง เช่น [16,17,18,20] -> "16-18, 20"
-function formatVerseRange(sorted: number[]): string {
+export function formatVerseRange(sorted: number[]): string {
   if (sorted.length === 0) return "";
   const groups: string[] = [];
   let start = sorted[0];
@@ -29,7 +32,7 @@ function formatVerseRange(sorted: number[]): string {
 // ตัดรหัส Strong's ({H1234}/{G1234}/{(H8804)}) ออกจากข้อความอังกฤษ เหลือแต่
 // เนื้อข้อความล้วนๆ สำหรับแทรกเข้า article editor (ไม่ต้องการวงเล็บปีกกา
 // ปนอยู่ในบทความ)
-function cleanEnglishVerseText(raw: string): string {
+export function cleanEnglishVerseText(raw: string): string {
   return parseStrongsText(raw)
     .map((segment) => segment.text)
     .join("");
@@ -39,7 +42,7 @@ function cleanEnglishVerseText(raw: string): string {
 // เนื้อข้อความล้วน ไม่มี note ติดมาด้วยเลย (headings ไม่ต้องตัดเพราะไม่เคยถูก
 // ใส่ลงในคำคมตั้งแต่แรก — ฟังก์ชันนี้อ่านแค่ field .text) ดู grill-me
 // 2026-08-24 "ตัดออกทั้งหมด เหลือแค่เนื้อข้อความข้อล้วน (เหมือน Strong's เดิม)"
-function cleanQuoteText(raw: string): string {
+export function cleanQuoteText(raw: string): string {
   return stripFootnoteMarkers(raw);
 }
 

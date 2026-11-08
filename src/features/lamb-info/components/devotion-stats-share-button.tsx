@@ -51,18 +51,6 @@ function thaiMonthYear(date: Date) {
   return `${format(date, "MMMM", { locale: th })} ${date.getFullYear() + 543}`;
 }
 
-function longestStreak(days: Date[], devotionDays: Set<string>) {
-  let best = 0;
-  let run = 0;
-  for (const d of days) {
-    if (devotionDays.has(format(d, "yyyy-MM-dd"))) {
-      run++;
-      best = Math.max(best, run);
-    } else run = 0;
-  }
-  return best;
-}
-
 // ปุ่ม "แชร์การ์ด" บนหน้า "ประวัติเฝ้าเดี่ยวทั้งหมด" (grill-me 2026-11-08):
 // กดแล้วเปิดหน้าต่างเลือกเดือน + พรีวิวการ์ด + ปุ่มแชร์ใหญ่
 // - รูปถูกสร้างล่วงหน้าทุกครั้งที่เปลี่ยนเดือน (ไม่ใช่ตอนกดแชร์) ให้ตอนกด
@@ -125,8 +113,9 @@ export function DevotionStatsShareButton({ lambId, name, avatarUrl }: Props) {
         ]
       : [
           {
-            label: "ติดกันยาวสุด (วัน)",
-            value: longestStreak(days, devotionDays),
+            // เดิม "ติดกันยาวสุด (วัน)" — เปลี่ยนตามที่ขอ 2026-11-08
+            label: "เฝ้าเดี่ยวของอาทิตย์นี้",
+            value: week,
           },
           { label: `ทั้งปี ${month.getFullYear() + 543}`, value: yearCount },
         ];

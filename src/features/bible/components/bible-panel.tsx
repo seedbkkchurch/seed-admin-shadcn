@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Share2, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +17,10 @@ import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
 import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
 import { AiHelpButton } from "./ai-help-button";
+import { BibleVerseShareDialog } from "./bible-verse-share-dialog";
 import { indexVerses, VerseBlock } from "./verse-block";
+
+const EMPTY_SET: ReadonlySet<number> = new Set();
 
 export type BiblePanelProps = {
   bookNumber: number;
@@ -140,7 +144,41 @@ export function BiblePanel({
     (mode !== "en" && thaiFile.isPending);
   const isChapterError = enFile.isError || thaiFile.isError;
 
-  const selectedCount = selectedVerses?.size ?? 0;
+  // โหมด "แชร์ข้อพระคัมภีร์" ของหน้า /bible (grill-me 2026-11-08) — กดปุ่ม
+  // เข้าโหมดเลือกข้อ (ใช้ระบบติ๊กเดียวกับหน้าเขียนเฝ้าเดี่ยว) แล้วแถบล่าง
+  // "แชร์เป็นการ์ด" เปิดหน้าต่างแชร์ ข้อที่เลือกผูกกับบทปัจจุบัน — เปลี่ยน
+  // บท/เล่มแล้วล้างเอง (เก็บ key ของบทไว้คู่กับชุดข้อ ไม่ต้อง reset ใน effect)
+  const canShareVerses = variant === "page" && !selectable;
+  const chapterKey = `${bookNumber}:${chapter}`;
+  const [shareMode, setShareMode] = useState(false);
+  const [shareSelection, setShareSelection] = useState<{
+    key: string;
+    verses: Set<number>;
+  }>({ key: "", verses: new Set() });
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareSelected =
+    shareSelection.key === chapterKey ? shareSelection.verses : EMPTY_SET;
+  const effectiveSelectable = selectable || shareMode;
+  const effectiveSelected = selectable ? selectedVerses : shareSelected;
+  const toggleVerse = (v: number) => {
+    if (selectable) {
+      onToggleVerse?.(v);
+      return;
+    }
+    setShareSelection((prev) => {
+      const next =
+        prev.key === chapterKey ? new Set(prev.verses) : new Set<number>();
+      if (next.has(v)) next.delete(v);
+      else next.add(v);
+      return { key: chapterKey, verses: next };
+    });
+  };
+  const exitShareMode = () => {
+    setShareMode(false);
+    setShareSelection({ key: "", verses: new Set() });
+  };
+
+  const selectedCount = effectiveSelected?.size ?? 0;
 
   const handleInsert = () => {
     if (!selectable || !onInsertVerses || !selectedVerses || !activeBook)
@@ -246,9 +284,24 @@ export function BiblePanel({
           </h3>
           {/* "อยากใช้ตัวช่วยไหม?" ส่ง prompt ไปให้ ChatGPT/Gemini ช่วยอธิบาย
           บริบททางประวัติศาสตร์ของบทนี้ (ดู grill-me 2026-08-28) */}
-          {activeBook && (
-            <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
-          )}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {canShareVerses && activeBook && (
+              <Button
+                type="button"
+                variant={shareMode ? "secondary" : "outline"}
+                size="sm"
+                onClick={() =>
+                  shareMode ? exitShareMode() : setShareMode(true)
+                }
+              >
+                {shareMode ? <X /> : <Share2 />}
+                {shareMode ? "ยกเลิกการเลือก" : "แชร์ข้อพระคัมภีร์"}
+              </Button>
+            )}
+            {activeBook && (
+              <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+            )}
+          </div>
         </div>
 
         {isChapterError ? (
@@ -265,7 +318,12 @@ export function BiblePanel({
         ) : verseNumbers.length === 0 ? (
           <p className="text-muted-foreground text-sm">ไม่พบข้อมูลบทนี้</p>
         ) : (
-          <div className={selectable ? "pb-16" : undefined}>
+          <div className={effectiveSelectable ? "pb-16" : undefined}>
+            {shareMode && selectedCount === 0 && (
+              <p className="text-muted-foreground mb-3 rounded-md border border-dashed p-3 text-sm">
+                แตะข้อที่อยากแชร์ (เลือกได้หลายข้อ)
+              </p>
+            )}
             {verseNumbers.map((v) => (
               <VerseBlock
                 key={v}
@@ -276,9 +334,9 @@ export function BiblePanel({
                 showStrongs={showStrongs}
                 enParseMode={enParseMode}
                 thParseMode={thParseMode}
-                selectable={selectable}
-                selected={selectedVerses?.has(v)}
-                onToggleSelect={() => onToggleVerse?.(v)}
+                selectable={effectiveSelectable}
+                selected={effectiveSelected?.has(v)}
+                onToggleSelect={() => toggleVerse(v)}
               />
             ))}
 
@@ -327,6 +385,37 @@ export function BiblePanel({
         </div>
       )}
 
+      {shareMode && selectedCount > 0 && (
+        // แถบล่างของโหมดแชร์ — เหมือนแถบ "แทรกข้อที่เลือก" ด้านบน
+        <div className="sticky bottom-[var(--mobile-tab-bar-height,0px)] -mx-3 flex items-center justify-between gap-2 border-t bg-background/95 p-3 backdrop-blur md:bottom-0">
+          <span className="text-sm text-muted-foreground">
+            เลือกไว้ {selectedCount} ข้อ
+          </span>
+          <Button
+            type="button"
+            className="bg-[#05C64F] text-white hover:bg-[#05C64F]/90"
+            onClick={() => setShareOpen(true)}
+          >
+            <Share2 /> แชร์เป็นการ์ด
+          </Button>
+        </div>
+      )}
+
+      {canShareVerses && activeBook && (
+        <BibleVerseShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          bookNameTh={activeBook.nameTh}
+          bookNameEn={activeBook.nameEn}
+          chapter={chapter}
+          verseNumbers={[...shareSelected]}
+          enVerses={enVerses}
+          thVerses={thVerses}
+          mode={mode}
+          versionCode={effectiveVersion.toUpperCase()}
+        />
+      )}
+
       {canOpenReadingMode && !readingMode && (
         <ReadingModeFab
           onClick={() => setReadingMode(true)}
@@ -357,11 +446,12 @@ export function BiblePanel({
           onModeChange={onModeChange}
           onShowStrongsChange={onShowStrongsChange}
           onVersionChange={onVersionChange}
-          selectable={selectable}
-          selectedVerses={selectedVerses}
-          onToggleVerse={onToggleVerse}
+          selectable={effectiveSelectable}
+          selectedVerses={effectiveSelected}
+          onToggleVerse={toggleVerse}
           selectedCount={selectedCount}
-          onInsert={handleInsert}
+          onInsert={selectable ? handleInsert : () => setShareOpen(true)}
+          insertLabel={selectable ? undefined : "แชร์เป็นการ์ด"}
         />
       )}
     </div>
