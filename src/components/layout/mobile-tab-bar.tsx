@@ -77,7 +77,10 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
-          <Link to={devotionFeedPath} className={itemClass(isDevotionFeedActive)}>
+          <Link
+            to={devotionFeedPath}
+            className={itemClass(isDevotionFeedActive)}
+          >
             <Rss className="size-5" />
             <span className="leading-none">Feed</span>
           </Link>

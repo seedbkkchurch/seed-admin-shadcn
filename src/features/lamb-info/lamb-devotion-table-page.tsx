@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DevotionSection } from "./components/devotion-section";
 import { DevotionStatTiles } from "./components/devotion-stat-tiles";
+import { DevotionStatsShareButton } from "./components/devotion-stats-share-button";
 import { LambDevotionTable } from "./components/lamb-devotion-table";
 import { lambDisplayName } from "./data/devotion-schema";
 import { useLambDevotionTable, useLambInfoDetail } from "./data/queries";
@@ -44,14 +45,29 @@ export function LambDevotionTablePage() {
           </Button>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            ประวัติเฝ้าเดี่ยวทั้งหมด
-            {!isLambPending && lamb ? ` — ${lambDisplayName(lamb)}` : ""}
-          </h2>
-          <p className="text-muted-foreground">
-            รายการเฝ้าเดี่ยวทั้งหมดของคนนี้ (รวมที่ตั้งเป็นส่วนตัว)
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              ประวัติเฝ้าเดี่ยวทั้งหมด
+              {!isLambPending && lamb ? ` — ${lambDisplayName(lamb)}` : ""}
+            </h2>
+            <p className="text-muted-foreground">
+              รายการเฝ้าเดี่ยวทั้งหมดของคนนี้ (รวมที่ตั้งเป็นส่วนตัว)
+            </p>
+          </div>
+          {/* ปุ่มแชร์การ์ดสถิติ (grill-me 2026-11-08) — ชื่อบนการ์ดใช้ชื่อเล่น
+          ถ้ามี ไม่งั้นชื่อจริง (สั้นกว่า lambDisplayName ที่มีวงเล็บ) */}
+          {lamb && (
+            <DevotionStatsShareButton
+              key={`share-${lambId}`}
+              lambId={lambId}
+              name={
+                lamb.nick_name ||
+                [lamb.first_name, lamb.last_name].filter(Boolean).join(" ")
+              }
+              avatarUrl={lamb.profile_picture}
+            />
+          )}
         </div>
 
         {/* ตัวเลขสรุป อาทิตย์นี้ / เดือนนี้ / ปีนี้ (2026-11-08) */}
@@ -60,11 +76,7 @@ export function LambDevotionTablePage() {
         {/* การ์ดประวัติเฝ้าเดี่ยวตัวเดียวกับหน้าโปรไฟล์ (สถิติ + กราฟ รายวัน/
         รายเดือน/รายปี + ประวัติล่าสุด) วางเหนือตาราง — ซ่อนลิงก์ "ดูทั้งหมด"
         เพราะชี้มาหน้านี้เอง (grill-me 2026-11-08) */}
-        <DevotionSection
-          key={lambId}
-          lambId={lambId}
-          showViewAllLink={false}
-        />
+        <DevotionSection key={lambId} lambId={lambId} showViewAllLink={false} />
 
         {isError ? (
           <Alert variant="destructive">
