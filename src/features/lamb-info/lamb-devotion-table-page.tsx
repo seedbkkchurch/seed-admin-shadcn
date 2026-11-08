@@ -9,6 +9,8 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DevotionSection } from "./components/devotion-section";
+import { DevotionStatTiles } from "./components/devotion-stat-tiles";
 import { LambDevotionTable } from "./components/lamb-devotion-table";
 import { lambDisplayName } from "./data/devotion-schema";
 import { useLambDevotionTable, useLambInfoDetail } from "./data/queries";
@@ -51,6 +53,18 @@ export function LambDevotionTablePage() {
             รายการเฝ้าเดี่ยวทั้งหมดของคนนี้ (รวมที่ตั้งเป็นส่วนตัว)
           </p>
         </div>
+
+        {/* ตัวเลขสรุป อาทิตย์นี้ / เดือนนี้ / ปีนี้ (2026-11-08) */}
+        <DevotionStatTiles key={`stats-${lambId}`} lambId={lambId} />
+
+        {/* การ์ดประวัติเฝ้าเดี่ยวตัวเดียวกับหน้าโปรไฟล์ (สถิติ + กราฟ รายวัน/
+        รายเดือน/รายปี + ประวัติล่าสุด) วางเหนือตาราง — ซ่อนลิงก์ "ดูทั้งหมด"
+        เพราะชี้มาหน้านี้เอง (grill-me 2026-11-08) */}
+        <DevotionSection
+          key={lambId}
+          lambId={lambId}
+          showViewAllLink={false}
+        />
 
         {isError ? (
           <Alert variant="destructive">

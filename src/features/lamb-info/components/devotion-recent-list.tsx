@@ -20,6 +20,9 @@ type DevotionRecentListProps = {
   lambId: string;
   // Must already be sorted most-recent-first.
   entries: DevotionRecentListEntry[];
+  // ซ่อนลิงก์ "ดูทั้งหมด" เมื่อการ์ดถูกวางอยู่ในหน้าตารางทั้งหมดเอง
+  // (lamb-devotion-table-page.tsx) — กดแล้วจะวนกลับหน้าเดิม (grill-me 2026-11-08)
+  showViewAllLink?: boolean;
 };
 
 const PREVIEW_COUNT = 5;
@@ -75,6 +78,7 @@ function DevotionListItem({ entry }: { entry: DevotionRecentListEntry }) {
 export function DevotionRecentList({
   lambId,
   entries,
+  showViewAllLink = true,
 }: DevotionRecentListProps) {
   if (entries.length === 0) {
     return (
@@ -90,11 +94,13 @@ export function DevotionRecentList({
     <div className="mt-4 border-t pt-4">
       <div className="mb-1 flex items-center justify-between">
         <div className="text-sm font-medium">ประวัติล่าสุด</div>
-        <Button variant="link" size="sm" className="h-auto p-0" asChild>
-          <Link to="/lamb-info/$lambId/devotion" params={{ lambId }}>
-            ดูทั้งหมด ({entries.length})
-          </Link>
-        </Button>
+        {showViewAllLink && (
+          <Button variant="link" size="sm" className="h-auto p-0" asChild>
+            <Link to="/lamb-info/$lambId/devotion" params={{ lambId }}>
+              ดูทั้งหมด ({entries.length})
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="divide-y">
         {preview.map((entry) => (

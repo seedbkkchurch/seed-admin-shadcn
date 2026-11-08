@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BellPlus,
   ClipboardCheck,
-  HandHeart,
+  MessageCircleHeart,
   NotebookPen,
   Rss,
   UserRound,
@@ -84,7 +84,7 @@ export function MobileTabBar() {
         </li>
         <li>
           <Link to={prayerListPath} className={itemClass(isPrayerListActive)}>
-            <HandHeart className="size-5" />
+            <MessageCircleHeart className="size-5" />
             <span className="leading-none">คำอธิษฐาน</span>
           </Link>
         </li>

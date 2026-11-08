@@ -17,6 +17,7 @@ import {
   FlaskConical,
   GitBranch,
   Cake,
+  MessageCircleHeart,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -85,7 +86,9 @@ export const sidebarData: SidebarData = {
         {
           title: "รายการคำอธิษฐาน",
           url: "/prayer-list",
-          icon: HandHeart,
+          // เดิมใช้ HandHeart ซ้ำกับ "พี่เลี้ยงลูกแกะ" — เปลี่ยนให้แยกออกได้
+          // (2026-11-08) ใช้ไอคอนเดียวกับแท็บคำอธิษฐานใน mobile-tab-bar
+          icon: MessageCircleHeart,
         },
         // ต้อง login ถึงเข้าได้ (เปลี่ยนใจจาก public เดิม, ดู grill-me
         // 2026-08-13 + เปลี่ยนใจ 2026-08-13)

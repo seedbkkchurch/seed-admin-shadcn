@@ -27,6 +27,9 @@ const THREE_YEAR_DAYS_BACK = 3 * 365 - 1;
 
 type DevotionSectionProps = {
   lambId: string;
+  // ส่งต่อให้ DevotionRecentList — false ในหน้า "ประวัติเฝ้าเดี่ยวทั้งหมด"
+  // ที่วางการ์ดนี้ไว้เหนือตาราง (grill-me 2026-11-08)
+  showViewAllLink?: boolean;
 };
 
 // เฝ้าเดี่ยว (personal daily devotion) history for a single lamb — reads
@@ -37,7 +40,10 @@ type DevotionSectionProps = {
 // months), รายปี (GitHub-style daily dots, ~3yr). Per grill-me follow-up
 // (2026-08-11) — replaces the earlier mock-data-only version
 // (data/devotions.ts).
-export function DevotionSection({ lambId }: DevotionSectionProps) {
+export function DevotionSection({
+  lambId,
+  showViewAllLink = true,
+}: DevotionSectionProps) {
   // Stable for the component's lifetime so "today" doesn't shift the
   // rolling windows mid-session.
   const [today] = useState(() => new Date());
@@ -117,12 +123,14 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
       .length;
   }, [today, entriesByDate]);
 
-  // อาทิตย์นี้ = สัปดาห์ปฏิทิน อา-ส (weekStartsOn: 0) ที่ครอบ "today" — เดียวกับ
-  // week_start ที่หน้าเช็คชื่อรายสัปดาห์ (attendance) ใช้ ดู grill-me 2026-08-13
+  // อาทิตย์นี้ = สัปดาห์ปฏิทิน จ-อา (weekStartsOn: 1) ที่ครอบ "today" — เดิม
+  // เริ่มวันอาทิตย์ตามหน้าเช็คชื่อ (grill-me 2026-08-13) เปลี่ยนเป็นเริ่มวันจันทร์
+  // 2026-11-08 ให้ตรงกับกล่องตัวเลขใน devotion-stat-tiles.tsx (หน้าเช็คชื่อ
+  // ยังเริ่มวันอาทิตย์เหมือนเดิม)
   const thisWeekCount = useMemo(() => {
     const days = eachDayOfInterval({
-      start: startOfWeek(today, { weekStartsOn: 0 }),
-      end: endOfWeek(today, { weekStartsOn: 0 }),
+      start: startOfWeek(today, { weekStartsOn: 1 }),
+      end: endOfWeek(today, { weekStartsOn: 1 }),
     });
     return days.filter((d) => entriesByDate.has(format(d, "yyyy-MM-dd")))
       .length;
@@ -178,7 +186,11 @@ export function DevotionSection({ lambId }: DevotionSectionProps) {
               />
             )}
 
-            <DevotionRecentList lambId={lambId} entries={recentEntries} />
+            <DevotionRecentList
+              lambId={lambId}
+              entries={recentEntries}
+              showViewAllLink={showViewAllLink}
+            />
           </>
         )}
       </CardContent>
