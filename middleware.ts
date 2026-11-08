@@ -89,7 +89,7 @@ export default async function middleware(request: Request) {
     const apiUrl =
       `${supabaseUrl}/rest/v1/public_devotion_feed` +
       `?id=eq.${encodeURIComponent(devotionId)}` +
-      `&select=title,content_html,image_urls`;
+      `&select=title,content_html,image_urls,use_card_og,og_card_url`;
 
     const res = await fetch(apiUrl, {
       headers: {
@@ -103,6 +103,8 @@ export default async function middleware(request: Request) {
       title: string;
       content_html: string;
       image_urls: string[] | null;
+      use_card_og: boolean | null;
+      og_card_url: string | null;
     }>;
     const entry = rows[0];
     // ไม่เจอ (ลบไปแล้ว/id ผิด) หรือไม่ public — ปล่อยผ่านให้ SPA แสดงหน้า
@@ -113,11 +115,19 @@ export default async function middleware(request: Request) {
     const title = entry.title || "เฝ้าเดี่ยว";
     const description = stripHtml(entry.content_html || "").slice(0, 150);
     const hasOwnImage = !!(entry.image_urls && entry.image_urls[0]);
-    const image = hasOwnImage
-      ? entry.image_urls![0]
-      : // เฝ้าเดี่ยวที่ไม่มีรูป — ใช้รูปแมวส้มเป็น og:image default
-        // (1200x1200, grill-me 2026-10-23)
-        `${url.origin}/images/devotion-default-og.jpg`;
+    // การ์ดเฝ้าเดี่ยว 1200x1200 (grill-me 2026-11-08) — ใช้เมื่อเจ้าของเลือก
+    // (use_card_og=true) หรือค่าเริ่มต้นตอนไม่มีรูป (use_card_og=null) และมี
+    // รูปการ์ดที่สร้างไว้แล้ว ไม่งั้นตกไปใช้รูปเดิม/รูปแมวเหมือนก่อน
+    const wantsCard = entry.use_card_og ?? !hasOwnImage;
+    const useCard = wantsCard && !!entry.og_card_url;
+    const image = useCard
+      ? entry.og_card_url!
+      : hasOwnImage
+        ? entry.image_urls![0]
+        : // เฝ้าเดี่ยวที่ไม่มีรูป — ใช้รูปแมวส้มเป็น og:image default
+          // (1200x1200, grill-me 2026-10-23)
+          `${url.origin}/images/devotion-default-og.jpg`;
+    const knownSquare = useCard || !hasOwnImage;
 
     const html = `<!doctype html>
 <html lang="th">
@@ -130,9 +140,9 @@ export default async function middleware(request: Request) {
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:url" content="${escapeHtml(url.href)}" />
     <meta name="twitter:card" content="summary_large_image" />
-    ${hasOwnImage ? "" : `<meta property="og:image:width" content="1200" />
+    ${knownSquare ? `<meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="1200" />
-    <meta property="og:image:type" content="image/jpeg" />`}
+    <meta property="og:image:type" content="${useCard ? "image/png" : "image/jpeg"}" />` : ""}
     <!-- ไม่ใส่ meta refresh: ถ้า UA ของคนจริงหลุดเข้ามาเป็น "บอท" มันจะ
     refresh กลับ URL เดิมวนไม่จบ (grill-me 2026-10-23) ใส่ลิงก์ธรรมดาไว้แทน -->
   </head>

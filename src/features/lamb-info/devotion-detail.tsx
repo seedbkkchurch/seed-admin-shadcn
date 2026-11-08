@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButton } from "@/features/devotion-public/components/share-button";
 import { cn } from "@/lib/utils";
+import { DevotionOgCardOption } from "./components/devotion-og-card-option";
 import {
   DEVOTION_CONTENT_TYPE_LABELS,
   lambDisplayName,
@@ -72,6 +73,7 @@ export function DevotionDetail() {
                 devotionDate={entry.devotion_date}
               />
             )}
+            {entry && <DevotionOgCardOption entry={entry} />}
             {entry && (
               <Button variant="outline" size="sm" asChild>
                 <Link

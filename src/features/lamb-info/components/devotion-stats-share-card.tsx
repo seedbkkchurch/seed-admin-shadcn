@@ -15,16 +15,16 @@ import seedChurchLogo from "@/assets/seed-church-logo.png";
 // สีเขียวตามโลโก้ Seed Church (เขียว #05C64F) — ล็อกเป็นค่าคงที่ ไม่ใช้สีธีม
 // ของแอป เพื่อให้การ์ดเป็นแบรนด์โบสถ์เสมอไม่ว่าผู้ใช้จะตั้งธีมอะไร
 // (grill-me 2026-11-08)
-const GREEN = "#05C64F";
-const GREEN_DARK = "#0B3D1F";
-const GREEN_MID = "#1E7A43";
+export const GREEN = "#05C64F";
+export const GREEN_DARK = "#0B3D1F";
+export const GREEN_MID = "#1E7A43";
 // พื้นการ์ดขาว (ขอเปลี่ยนจากเขียวอ่อน 2026-11-08)
-const CARD_BG = "#FFFFFF";
-const GREEN_OFF = "#C6ECD4";
+export const CARD_BG = "#FFFFFF";
+export const GREEN_OFF = "#C6ECD4";
 
-const WEEKDAY_LABELS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
+export const WEEKDAY_LABELS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
 
-function thaiMonthYear(date: Date) {
+export function thaiMonthYear(date: Date) {
   return `${format(date, "MMMM", { locale: th })} ${date.getFullYear() + 543}`;
 }
 

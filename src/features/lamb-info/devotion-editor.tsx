@@ -26,6 +26,7 @@ import { BibleQuickReferenceSheet } from "@/features/bible/components/bible-quic
 import { useMyLamb } from "@/hooks/use-my-lamb";
 import { cn } from "@/lib/utils";
 import { DevotionDatePicker } from "./components/devotion-date-picker";
+import { ensureDevotionOgCard } from "./lib/og-card";
 // เดิมมี Select ให้เลือกลูกแกะเอง (ดู commit ก่อนหน้า grill-me 2026-08-14
 // รอบเจ็ด, `rbac_design`/`auth_lamb_link_design`) — imports ที่เคยใช้:
 //   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -163,9 +164,16 @@ export function DevotionEditor() {
         content_type: contentType,
       },
       {
-        onSuccess: () => {
+        onSuccess: (created) => {
           clearDevotionEditorDraft();
           toast.success(devotionSavedMessage(contentType));
+          // สร้างการ์ด og สำหรับพรีวิวลิงก์ไว้เลยตอนบันทึก (grill-me
+          // 2026-11-08) — ทำเบื้องหลัง ไม่รอ/ไม่บล็อกการเปลี่ยนหน้า ข้ามเองถ้า
+          // ไม่ใช่ public หรือไม่ได้ใช้การ์ด ล้มก็ไม่เป็นไร (เจ้าของเปิดหน้า
+          // รายละเอียดเมื่อไหร่จะสร้างใหม่ให้)
+          void ensureDevotionOgCard(created.id, { force: true }).catch(
+            () => undefined,
+          );
           navigate({ to: "/lamb-info/devotion" });
         },
         onError: (error: unknown) => {
@@ -329,7 +337,8 @@ export function DevotionEditor() {
               aria-live="polite"
             >
               <CloudCheck className="size-3.5" />
-              บันทึกร่างแล้ว {format(draftSavedAt, "HH:mm")} — ปิดหน้าแล้วกลับมาเขียนต่อได้วันนี้
+              บันทึกร่างแล้ว {format(draftSavedAt, "HH:mm")} —
+              ปิดหน้าแล้วกลับมาเขียนต่อได้วันนี้
             </p>
           )}
         </div>
@@ -479,6 +488,11 @@ function DevotionEditFormLoaded({ entry }: DevotionEditFormLoadedProps) {
         onSuccess: () => {
           savedRef.current = true;
           toast.success("บันทึกการแก้ไขแล้ว");
+          // แก้ไขแล้วตัวเลข/รูปอาจเปลี่ยน — สร้างการ์ด og ใหม่ทับ (grill-me
+          // 2026-11-08) ทำเบื้องหลังเหมือนตอนสร้าง
+          void ensureDevotionOgCard(entry.id, { force: true }).catch(
+            () => undefined,
+          );
           navigate({
             to: "/lamb-info/devotion/$devotionId",
             params: { devotionId: entry.id },

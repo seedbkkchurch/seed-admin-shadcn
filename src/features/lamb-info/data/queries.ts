@@ -522,7 +522,12 @@ export function useLambDevotionActivity(lambId: string | undefined) {
   });
 }
 
-type LambDevotionInput = Omit<LambDevotion, "id" | "created_at" | "updated_at">;
+// use_card_og/og_card_url (รูปพรีวิวลิงก์, grill-me 2026-11-08) ไม่บังคับตอนสร้าง
+type LambDevotionInput = Omit<
+  LambDevotion,
+  "id" | "created_at" | "updated_at" | "use_card_og" | "og_card_url"
+> &
+  Partial<Pick<LambDevotion, "use_card_og" | "og_card_url">>;
 
 // เดิมมี unique constraint (lamb_id, devotion_date) จำกัด 1 ครั้ง/วัน — เอา
 // ออกแล้วตาม grill-me 2026-08-14 (`devotion_multi_submit_design` ใน project
@@ -560,6 +565,7 @@ type LambDevotionUpdateInput = Partial<
     | "is_public"
     | "content_type"
     | "devotion_date"
+    | "use_card_og"
   >
 >;
 

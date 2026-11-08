@@ -293,6 +293,8 @@ export type Database = {
           id: string
           image_urls: string[]
           is_public: boolean | null
+          og_card_url: string | null
+          use_card_og: boolean | null
           lamb_id: string
           title: string
           updated_at: string
@@ -305,6 +307,8 @@ export type Database = {
           id?: string
           image_urls?: string[]
           is_public?: boolean | null
+          og_card_url?: string | null
+          use_card_og?: boolean | null
           lamb_id: string
           title: string
           updated_at?: string
@@ -317,6 +321,8 @@ export type Database = {
           id?: string
           image_urls?: string[]
           is_public?: boolean | null
+          og_card_url?: string | null
+          use_card_og?: boolean | null
           lamb_id?: string
           title?: string
           updated_at?: string
@@ -1058,6 +1064,8 @@ export type Database = {
           lamb_nick_name: string | null
           lamb_profile_picture: string | null
           title: string | null
+          og_card_url: string | null
+          use_card_og: boolean | null
         }
         Relationships: []
       }
