@@ -28,6 +28,8 @@ import { Button } from "@/components/ui/button";
 import { type PexelsPhoto } from "../data/pexels";
 import { LinkMark } from "../lib/tiptap-link-mark";
 import { PexelsPickerDialog } from "./pexels-picker-dialog";
+import { type GiphyGif } from "../data/giphy";
+import { GiphyPickerDialog } from "./giphy-picker-dialog";
 import {
   Popover,
   PopoverContent,
@@ -191,6 +193,7 @@ export const ArticleEditor = forwardRef<
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [pexelsOpen, setPexelsOpen] = useState(false);
+  const [giphyOpen, setGiphyOpen] = useState(false);
   // บังคับ re-render toolbar ตอน selection/mark เปลี่ยน — editor.isActive()
   // กับ editor.getAttributes() อ่านจาก state ปัจจุบันของ editor โดยตรง
   // (ไม่ใช่ React state) จึงต้อง subscribe เองผ่าน onSelectionUpdate/
@@ -306,6 +309,25 @@ export const ArticleEditor = forwardRef<
               text: "Pexels",
             },
           ],
+        },
+        { type: "paragraph" },
+      ])
+      .run();
+  };
+
+  // แทรก GIF จาก GIPHY ที่ตำแหน่ง cursor (grill-me 2026-11-08) — ลิงก์ไฟล์
+  // ของ GIPHY ตรงๆ ไม่อัปโหลดซ้ำ GIF นับเป็นรูปปกได้ตามปกติ (extractImageUrls
+  // อ่านทุก <img>) ตามที่ตกลง — ไม่ใส่บรรทัดเครดิตต่อรูป (GIPHY ต้องการแค่
+  // "Powered by GIPHY" ในหน้าค้นหา)
+  const handleGiphySelect = (gif: GiphyGif) => {
+    setGiphyOpen(false);
+    editor
+      ?.chain()
+      .focus()
+      .insertContent([
+        {
+          type: "image",
+          attrs: { src: gif.gifUrl, alt: gif.title || "GIF" },
         },
         { type: "paragraph" },
       ])
@@ -469,6 +491,18 @@ export const ArticleEditor = forwardRef<
             <Search className="bg-background absolute -end-1.5 -bottom-1.5 size-3 rounded-full" />
           </span>
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setGiphyOpen(true)}
+          aria-label="แทรก GIF จาก GIPHY"
+          title="แทรก GIF"
+        >
+          <span className="rounded border border-current px-1 text-[10px] leading-4 font-bold">
+            GIF
+          </span>
+        </Button>
         <input
           ref={fileInputRef}
           type="file"
@@ -486,6 +520,11 @@ export const ArticleEditor = forwardRef<
         open={pexelsOpen}
         onOpenChange={setPexelsOpen}
         onSelect={handlePexelsSelect}
+      />
+      <GiphyPickerDialog
+        open={giphyOpen}
+        onOpenChange={setGiphyOpen}
+        onSelect={handleGiphySelect}
       />
     </div>
   );
