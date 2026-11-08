@@ -50,7 +50,7 @@ export function DevotionOgCard({
     end: endOfMonth(month),
   });
   const leadingBlanks = getISODay(monthDays[0]) - 1;
-  const dot = 56;
+  const dot = 66;
 
   return (
     <div
@@ -58,7 +58,7 @@ export function DevotionOgCard({
         width: 1200,
         height: 1200,
         boxSizing: "border-box",
-        padding: "84px 96px 72px",
+        padding: "72px 88px 64px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -66,21 +66,21 @@ export function DevotionOgCard({
         color: GREEN_DARK,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 44 }}>
         <div
           style={{
-            width: 168,
-            height: 168,
+            width: 220,
+            height: 220,
             flexShrink: 0,
             borderRadius: 9999,
             overflow: "hidden",
-            border: `6px solid ${GREEN}`,
+            border: `8px solid ${GREEN}`,
             background: GREEN,
             color: "#ffffff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 60,
+            fontSize: 80,
             fontWeight: 700,
           }}
         >
@@ -98,9 +98,9 @@ export function DevotionOgCard({
         <div style={{ minWidth: 0 }}>
           <div
             style={{
-              fontSize: 68,
+              fontSize: 88,
               fontWeight: 700,
-              lineHeight: 1.25,
+              lineHeight: 1.2,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -108,7 +108,7 @@ export function DevotionOgCard({
           >
             {name}
           </div>
-          <div style={{ fontSize: 38, color: GREEN_MID, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 48, color: GREEN_MID, lineHeight: 1.4 }}>
             {thaiMonthYear(month)}
           </div>
         </div>
@@ -119,23 +119,23 @@ export function DevotionOgCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 60,
+          gap: 36,
         }}
       >
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: 40, color: GREEN_MID, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 46, color: GREEN_MID, lineHeight: 1.3 }}>
             เฝ้าเดี่ยวเดือน{format(month, "MMMM", { locale: th })}
           </div>
-          <div style={{ fontSize: 240, fontWeight: 800, lineHeight: 1 }}>
+          <div style={{ fontSize: 330, fontWeight: 800, lineHeight: 1 }}>
             {monthCount}
           </div>
-          <div style={{ fontSize: 48, color: GREEN_MID, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 60, color: GREEN_MID, lineHeight: 1.3 }}>
             ครั้ง
           </div>
           <div
             style={{
               marginTop: 20,
-              fontSize: 34,
+              fontSize: 42,
               color: GREEN_MID,
             }}
           >
@@ -151,8 +151,9 @@ export function DevotionOgCard({
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(7, ${dot}px)`,
-            columnGap: 16,
+            columnGap: 14,
             rowGap: 14,
+            flexShrink: 0,
           }}
         >
           {WEEKDAY_LABELS.map((label) => (
@@ -160,7 +161,7 @@ export function DevotionOgCard({
               key={label}
               style={{
                 textAlign: "center",
-                fontSize: 24,
+                fontSize: 30,
                 color: GREEN_MID,
                 lineHeight: 1.2,
               }}
@@ -201,9 +202,9 @@ export function DevotionOgCard({
         <img
           src={seedChurchLogo}
           alt=""
-          style={{ width: 88, height: 88, objectFit: "contain" }}
+          style={{ width: 124, height: 124, objectFit: "contain" }}
         />
-        <span style={{ fontSize: 34, fontWeight: 700, color: GREEN_MID }}>
+        <span style={{ fontSize: 48, fontWeight: 700, color: GREEN_MID }}>
           Seed Church
         </span>
       </div>
