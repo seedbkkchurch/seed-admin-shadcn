@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BellPlus,
-  ClipboardCheck,
   MessageCircleHeart,
   NotebookPen,
   Rss,
@@ -25,7 +24,8 @@ import { cn } from "@/lib/utils";
 // hardcode — ถ้ายังไม่ resolve/ไม่มีลูกแกะผูกอยู่ (เช่น staff account) แท็บนี้
 // จะกดไม่ได้แทนที่จะพาไปหน้าคนอื่นแบบผิดๆ
 
-const attendancePath = "/attendance" as const;
+// แท็บ "เช็คชื่อ" ถูกเอาออกจาก tab bar ตามคำขอ (2026-11-15) — หน้า /attendance
+// ยังเข้าได้จาก sidebar เหมือนเดิม เหลือ 5 แท็บ
 const devotionNewPath = "/lamb-info/devotion/new" as const;
 const devotionFeedPath = "/lamb-info/devotion" as const;
 const prayerListPath = "/prayer-list" as const;
@@ -41,7 +41,6 @@ function useIsPathActive(path: string) {
 
 export function MobileTabBar() {
   const { data: myLamb } = useMyLamb();
-  const isAttendanceActive = useIsPathActive(attendancePath);
   const isDevotionNewActive = useIsPathActive(devotionNewPath);
   const isDevotionFeedActive = useIsPathActive(devotionFeedPath);
   const isPrayerListActive = useIsPathActive(prayerListPath);
@@ -63,13 +62,7 @@ export function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label="เมนูหลัก"
     >
-      <ul className="grid grid-cols-6">
-        <li>
-          <Link to={attendancePath} className={itemClass(isAttendanceActive)}>
-            <ClipboardCheck className="size-5" />
-            <span className="leading-none">เช็คชื่อ</span>
-          </Link>
-        </li>
+      <ul className="grid grid-cols-5">
         <li>
           <Link to={devotionNewPath} className={itemClass(isDevotionNewActive)}>
             <NotebookPen className="size-5" />

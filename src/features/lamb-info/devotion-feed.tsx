@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
-import { AlertCircle, CalendarIcon, PenLine, X } from "lucide-react";
+import {
+  AlertCircle,
+  CalendarIcon,
+  NotebookText,
+  PenLine,
+  X,
+} from "lucide-react";
 import { ConfigDrawer } from "@/components/config-drawer";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
@@ -83,7 +89,10 @@ export function DevotionFeed() {
   const countsByDate = useMemo(() => {
     const counts = new Map<string, number>();
     entries?.forEach((entry) => {
-      counts.set(entry.devotion_date, (counts.get(entry.devotion_date) ?? 0) + 1);
+      counts.set(
+        entry.devotion_date,
+        (counts.get(entry.devotion_date) ?? 0) + 1,
+      );
     });
     return counts;
   }, [entries]);
@@ -187,6 +196,17 @@ export function DevotionFeed() {
                 <X />
               </Button>
             )}
+            {/* ปุ่มไอคอนสมุด → หน้าการ์ดพัด "เฝ้าเดี่ยวของฉัน" (/roadmap,
+                features/roadmap) — เพิ่มตามคำขอ 2026-11-15 */}
+            <Button asChild variant="outline" size="icon">
+              <Link
+                to="/roadmap"
+                aria-label="สมุดเฝ้าเดี่ยวของฉัน"
+                title="สมุดเฝ้าเดี่ยวของฉัน"
+              >
+                <NotebookText />
+              </Link>
+            </Button>
             <Button asChild size="lg">
               <Link to="/lamb-info/devotion/new">
                 <PenLine /> เขียนเฝ้าเดี่ยว

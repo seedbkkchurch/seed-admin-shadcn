@@ -1,0 +1,381 @@
+/*
+ * Roadmap "fan" — การ์ดซ้อนกันแบบพัด (ถอดแบบจาก UI capture ของ getanyui,
+ * 2026-11-14) ค่าทุกตัวในไฟล์นี้วัดมาจาก spec.md/code.css ของ capture
+ *
+ * Design tokens ของ capture ถูก scope ไว้ใต้ .roadmap-fan และเติม prefix
+ * `--fan-` เพราะชื่อเดิม (--color-accent ฯลฯ) ชนกับ token ของ Tailwind theme
+ * ในโปรเจกต์นี้ซึ่งมีค่าคนละค่า (ดู src/styles/theme.css)
+ *
+ * ขนาดของการ์ดแต่ละชั้น (depth 0 = ใบหน้าสุด … 5 = ใบหลังสุด) ใน capture
+ * เป็นสเกลเดียวกันหมด: s = 1 - 0.05 × depth เลยคำนวณจาก --depth ตัวเดียว
+ * แทนการเขียน .depth-0 … .depth-5 แยกทีละค่า
+ */
+.roadmap-fan {
+  --fan-direction: 1;
+  --fan-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* capture ใช้ 0.56s — ยืดเป็น 0.8s ให้การ์ด "ค่อยๆ เลื่อน" ตอน hover */
+  --fan-duration: 0.8s;
+  --fan-color-background-surface: #fff;
+  --fan-color-accent: #262626;
+  --fan-color-on-light: #171717;
+  --fan-color-on-dark: #fff;
+  --fan-color-on-dark-muted: rgb(255 255 255 / 0.8);
+  --fan-color-text-secondary: #737373;
+  --fan-color-neutral: rgb(84 84 84 / 0.1);
+  --fan-radius-chat: 24px;
+  --fan-radius-container: 16px;
+  --fan-shadow-low: 0 2px 4px rgb(0 0 0 / 0.05), 0 4px 8px rgb(0 0 0 / 0.1);
+
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--fan-width);
+  max-width: 100%;
+  height: 400px;
+  outline: none;
+}
+
+/* Dark mode: capture มีแค่ light — ฝั่ง dark ใช้ token ของโปรเจกต์แทน */
+.dark .roadmap-fan {
+  --fan-color-background-surface: var(--muted);
+  --fan-color-accent: var(--primary);
+  --fan-color-on-light: var(--foreground);
+  --fan-color-on-dark: var(--primary-foreground);
+  --fan-color-on-dark-muted: color-mix(
+    in oklab,
+    var(--primary-foreground) 70%,
+    transparent
+  );
+  --fan-color-text-secondary: var(--muted-foreground);
+  --fan-color-neutral: rgb(255 255 255 / 0.1);
+  --fan-shadow-low:
+    0 2px 4px rgb(0 0 0 / 0.25), 0 4px 8px rgb(0 0 0 / 0.4),
+    inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.roadmap-fan-container {
+  container: roadmap-fan / inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.roadmap-fan__dots {
+  display: none;
+}
+
+.roadmap-fan__slot {
+  --s: calc(1 - 0.05 * var(--depth));
+
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  z-index: var(--z);
+  width: 320px;
+  height: 400px;
+  pointer-events: none;
+}
+
+.roadmap-fan__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: calc(320px * var(--s));
+  height: calc(400px * var(--s));
+  margin: 0;
+  padding: calc(24px * var(--s));
+  border: 0;
+  border-radius: calc(var(--fan-radius-chat) * var(--s));
+  background: var(--fan-color-background-surface);
+  box-shadow: var(--fan-shadow-low);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(
+      calc(var(--pose-x) * var(--fan-direction)),
+      var(--pose-y)
+    )
+    rotate(calc(var(--pose-rotate) * var(--fan-direction)));
+  transform-origin: 50% center;
+  transition:
+    transform var(--fan-duration) var(--fan-ease),
+    box-shadow var(--fan-duration) var(--fan-ease),
+    width var(--fan-duration) var(--fan-ease),
+    height var(--fan-duration) var(--fan-ease),
+    padding var(--fan-duration) var(--fan-ease),
+    border-radius var(--fan-duration) var(--fan-ease),
+    inset-inline-start var(--fan-duration) var(--fan-ease),
+    top var(--fan-duration) var(--fan-ease),
+    opacity var(--fan-duration) var(--fan-ease);
+}
+
+.roadmap-fan__card:focus {
+  outline: none;
+}
+
+.roadmap-fan__card:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--fan-color-background-surface),
+    0 0 0 4px var(--fan-color-accent),
+    0 6px 16px rgb(0 0 0 / 0.1);
+}
+
+/* ---------- ภาพประกอบ ---------- */
+
+.roadmap-fan__visual {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  height: calc(240px * var(--s));
+}
+
+.roadmap-fan__art {
+  position: absolute;
+  top: calc(50% + 25.81px * var(--s));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(224px * var(--s));
+  height: calc(224px * var(--s));
+  color: var(--fan-color-on-light);
+  opacity: 0.1;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--fan-duration) var(--fan-ease);
+}
+
+.roadmap-fan__art svg {
+  width: 70%;
+  height: 70%;
+}
+
+/* รูปจริงของรายการ (แทนไอคอน) — กรอบสี่เหลี่ยมมุมมนขนาดเท่าพื้นที่ภาพเดิม */
+.roadmap-fan__art img {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--fan-radius-container) * var(--s));
+  object-fit: cover;
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__art {
+  top: calc(50% + 17.2px);
+  opacity: 1;
+}
+
+/* เส้นสั่นแบบวาดมือ 3 เฟรม วนทุก 0.6s (capture ใช้รูป 3 เฟรมสลับกัน) —
+ * เฉพาะไอคอน รูปถ่ายไม่สั่น */
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__art[data-kind="icon"] {
+  animation: roadmap-fan-boil 0.6s step-end infinite;
+}
+
+@keyframes roadmap-fan-boil {
+  0%,
+  33.32% {
+    filter: url("#roadmap-fan-boil-0");
+  }
+  33.33%,
+  66.65% {
+    filter: url("#roadmap-fan-boil-1");
+  }
+  66.66%,
+  100% {
+    filter: url("#roadmap-fan-boil-2");
+  }
+}
+
+/* ---------- ข้อความ ---------- */
+
+.roadmap-fan__copy {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 272px;
+  opacity: 0;
+  transition: opacity var(--fan-duration) var(--fan-ease);
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__copy {
+  opacity: 1;
+}
+
+.roadmap-fan__eyebrow {
+  color: var(--fan-color-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.roadmap-fan__title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--fan-color-on-light);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* ข้อความย่อ 2 บรรทัดใต้หัวข้อ — พื้นที่ใต้ภาพมีจำกัด (112px) การ์ดที่มี
+ * ข้อความย่อเลยตัดหัวข้อเหลือ 1 บรรทัด และขยับภาพขึ้นเล็กน้อย */
+.roadmap-fan__description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--fan-color-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.roadmap-fan__slot[data-has-description] .roadmap-fan__title {
+  -webkit-line-clamp: 1;
+  white-space: normal;
+}
+
+.roadmap-fan__slot[data-has-description][data-depth="0"] .roadmap-fan__art {
+  top: calc(50% + 4px);
+}
+
+/* ---------- ป้ายวันที่ ---------- */
+
+.roadmap-fan__badge {
+  position: absolute;
+  top: calc(12px * var(--s));
+  inset-inline-end: calc(12px * var(--s));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: calc(52px * var(--s));
+  height: calc(52px * var(--s));
+  padding: calc(4px * var(--s)) calc(8px * var(--s));
+  border-radius: calc(var(--fan-radius-container) * var(--s));
+  background: var(--fan-color-neutral);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.roadmap-fan__slot[data-side="start"] .roadmap-fan__badge {
+  inset-inline: calc(12px * var(--s)) auto;
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__badge {
+  padding: 8px;
+  background: var(--fan-color-accent);
+}
+
+.roadmap-fan__month {
+  color: var(--fan-color-on-light);
+  font-size: calc(14px * var(--s));
+  font-weight: 700;
+  line-height: calc(20px * var(--s));
+  text-transform: uppercase;
+}
+
+.roadmap-fan__day {
+  color: var(--fan-color-text-secondary);
+  font-size: calc(12px * var(--s));
+  font-weight: 400;
+  line-height: calc(16px * var(--s));
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__month {
+  color: var(--fan-color-on-dark);
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__day {
+  color: var(--fan-color-on-dark-muted);
+}
+
+/* ---------- มือถือ: ใบหน้าสุดอยู่กลาง ใบข้างเคียงโผล่จางๆ ซ้าย/ขวา ---------- */
+
+/* ใช้ container query (ไม่ใช่ viewport) เพราะหน้านี้อยู่ข้าง sidebar — พื้นที่
+ * จริงแคบกว่าจอ พัดเต็มกว้าง 651px เลยสลับเป็นโหมดนี้เมื่อพื้นที่ไม่พอ */
+@container roadmap-fan (width < 668px) {
+  .roadmap-fan {
+    width: 100%;
+    height: 401px;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+
+  .roadmap-fan__slot {
+    --s: 0.875;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  .roadmap-fan__slot[data-depth="0"] {
+    --s: 1;
+  }
+
+  .roadmap-fan__card {
+    position: absolute;
+    top: 25.5px;
+    inset-inline-start: -4.42px;
+    opacity: 0;
+    pointer-events: none;
+    transform: none;
+  }
+
+  .roadmap-fan__slot[data-side="end"] .roadmap-fan__card {
+    inset-inline-start: calc(100% - 280px + 4.42px);
+  }
+
+  .roadmap-fan__slot[data-depth="1"] .roadmap-fan__card {
+    opacity: 0.5;
+    pointer-events: auto;
+  }
+
+  .roadmap-fan__slot[data-depth="0"] .roadmap-fan__card {
+    top: 0.5px;
+    inset-inline-start: 50%;
+    width: 304px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(calc(-50% * var(--fan-direction)));
+  }
+
+  .roadmap-fan__art,
+  .roadmap-fan__slot[data-depth="0"] .roadmap-fan__art {
+    top: calc(50% + 17.2px * var(--s));
+  }
+
+  .roadmap-fan__copy {
+    width: 100%;
+  }
+
+  .roadmap-fan__dots {
+    display: flex;
+  }
+
+  .roadmap-fan__slot[data-depth="0"] .roadmap-fan__badge {
+    inset-inline-end: 11px;
+    padding: 4px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roadmap-fan__card,
+  .roadmap-fan__art,
+  .roadmap-fan__copy {
+    transition: none;
+  }
+
+  .roadmap-fan__slot[data-depth="0"] .roadmap-fan__art[data-kind="icon"] {
+    animation: none;
+  }
+}

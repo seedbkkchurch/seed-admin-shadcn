@@ -18,6 +18,7 @@ import {
   GitBranch,
   Cake,
   MessageCircleHeart,
+  GalleryHorizontalEnd,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -241,6 +242,14 @@ export const sidebarData: SidebarData = {
           title: "พระคัมภีร์ (Live)",
           url: "/bible-live/1/1",
           icon: BookOpen,
+        },
+        // การ์ดพัดเฝ้าเดี่ยวของตัวเอง (features/roadmap) — เดิมเป็นหน้า "เร็วๆ
+        // นี้" ข้อมูลตัวอย่าง เปลี่ยนเป็นข้อมูลจริงแล้ว (grill-me 2026-11-14)
+        // URL กับตำแหน่งเมนูยังคงไว้ในกลุ่ม Admin ก่อน ค่อยย้ายทีหลัง
+        {
+          title: "การ์ดเฝ้าเดี่ยว",
+          url: "/roadmap",
+          icon: GalleryHorizontalEnd,
         },
       ],
     },

@@ -39,6 +39,7 @@ import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
 import { Route as AuthenticatedSpiritualGiftsSurveyIndexRouteImport } from './routes/_authenticated/spiritual-gifts-survey/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedRoadmapIndexRouteImport } from './routes/_authenticated/roadmap/index'
 import { Route as AuthenticatedPrayerListIndexRouteImport } from './routes/_authenticated/prayer-list/index'
 import { Route as AuthenticatedPersonalityTypeIndexRouteImport } from './routes/_authenticated/personality-type/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
@@ -227,6 +228,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedRoadmapIndexRoute =
+  AuthenticatedRoadmapIndexRouteImport.update({
+    id: '/roadmap/',
+    path: '/roadmap/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPrayerListIndexRoute =
   AuthenticatedPrayerListIndexRouteImport.update({
@@ -477,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
+  '/roadmap/': typeof AuthenticatedRoadmapIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/spiritual-gifts-survey/': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
   '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
@@ -540,6 +548,7 @@ export interface FileRoutesByTo {
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/personality-type': typeof AuthenticatedPersonalityTypeIndexRoute
   '/prayer-list': typeof AuthenticatedPrayerListIndexRoute
+  '/roadmap': typeof AuthenticatedRoadmapIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/spiritual-gifts-survey': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
   '/subscribe': typeof AuthenticatedSubscribeIndexRoute
@@ -608,6 +617,7 @@ export interface FileRoutesById {
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/personality-type/': typeof AuthenticatedPersonalityTypeIndexRoute
   '/_authenticated/prayer-list/': typeof AuthenticatedPrayerListIndexRoute
+  '/_authenticated/roadmap/': typeof AuthenticatedRoadmapIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/spiritual-gifts-survey/': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
   '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
@@ -674,6 +684,7 @@ export interface FileRouteTypes {
     | '/permissions/'
     | '/personality-type/'
     | '/prayer-list/'
+    | '/roadmap/'
     | '/settings/'
     | '/spiritual-gifts-survey/'
     | '/subscribe/'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/permissions'
     | '/personality-type'
     | '/prayer-list'
+    | '/roadmap'
     | '/settings'
     | '/spiritual-gifts-survey'
     | '/subscribe'
@@ -804,6 +816,7 @@ export interface FileRouteTypes {
     | '/_authenticated/permissions/'
     | '/_authenticated/personality-type/'
     | '/_authenticated/prayer-list/'
+    | '/_authenticated/roadmap/'
     | '/_authenticated/settings/'
     | '/_authenticated/spiritual-gifts-survey/'
     | '/_authenticated/subscribe/'
@@ -1057,6 +1070,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/roadmap/': {
+      id: '/_authenticated/roadmap/'
+      path: '/roadmap'
+      fullPath: '/roadmap/'
+      preLoaderRoute: typeof AuthenticatedRoadmapIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/prayer-list/': {
       id: '/_authenticated/prayer-list/'
@@ -1351,6 +1371,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPersonalityTypeIndexRoute: typeof AuthenticatedPersonalityTypeIndexRoute
   AuthenticatedPrayerListIndexRoute: typeof AuthenticatedPrayerListIndexRoute
+  AuthenticatedRoadmapIndexRoute: typeof AuthenticatedRoadmapIndexRoute
   AuthenticatedSpiritualGiftsSurveyIndexRoute: typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
   AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
@@ -1392,6 +1413,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPersonalityTypeIndexRoute:
     AuthenticatedPersonalityTypeIndexRoute,
   AuthenticatedPrayerListIndexRoute: AuthenticatedPrayerListIndexRoute,
+  AuthenticatedRoadmapIndexRoute: AuthenticatedRoadmapIndexRoute,
   AuthenticatedSpiritualGiftsSurveyIndexRoute:
     AuthenticatedSpiritualGiftsSurveyIndexRoute,
   AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
