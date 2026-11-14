@@ -94,7 +94,7 @@ export function DevotionFeed() {
   const { data: entries, isPending, isError, error } = useLambDevotionFeed();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   // สลับ layout: รายการแบบเดิม / รูปเต็มการ์ด (masonry เต็มพื้นที่) — เริ่มที่
-  // รายการเดิม จำค่าที่เลือกต่อเครื่อง (grill-me 2026-11-15, ดู
+  // รูปเต็มการ์ด จำค่าที่เลือกต่อเครื่อง (grill-me 2026-11-15, ดู
   // components/devotion-feed-gallery.tsx) ตัวกรองวันที่ใช้ร่วมกันทั้งสองแบบ
   const [layout, setLayout] = useState<DevotionFeedLayout>(
     loadDevotionFeedLayout,

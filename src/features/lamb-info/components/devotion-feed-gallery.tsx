@@ -1,4 +1,5 @@
 import {
+  type MouseEvent,
   type PointerEvent,
   type RefObject,
   useEffect,
@@ -33,7 +34,7 @@ import {
 // Hover effect 8bit (grill-me 2026-11-15 รอบสอง): เอาเมาส์ชี้การ์ด รูปจะแตก
 // เป็นบล็อกพิกเซลหยาบขึ้นทีละขั้นแบบเกมยุคเก่า แล้วเนื้อหาเต็มของรายการโผล่
 // ทับ เลื่อนอ่านในการ์ดได้ (ฟอนต์ปกติ อ่านง่าย) กดการ์ดยังเปิดหน้าอ่านเต็ม
-// เหมือนเดิม เฉพาะเมาส์ + โฟกัสคีย์บอร์ด — จอสัมผัสไม่มี hover การ์ดคงเดิม
+// เหมือนเดิม เฉพาะเมาส์ + โฟกัสคีย์บอร์ด — จอสัมผัสไม่มี hover ใช้แตะครั้งแรก = เปิด effect, แตะซ้ำ = เปิดอ่าน
 
 // ขนาดบล็อกพิกเซล (px) ของแต่ละขั้น ไล่จากละเอียด → หยาบ
 const PIXEL_STEPS = [6, 12, 20, 32];
@@ -109,10 +110,17 @@ function usePixelate(
   }, [active, imgRef, canvasRef]);
 }
 
-// active = เมาส์ค้างบนการ์ด (หลังหน่วง HOVER_INTENT_MS) หรือโฟกัสด้วยคีย์บอร์ด
-function useReveal() {
-  const [active, setActive] = useState(false);
+// active = เมาส์ค้างบนการ์ด (หลังหน่วง HOVER_INTENT_MS), โฟกัสด้วยคีย์บอร์ด
+// หรือ — บนจอสัมผัสที่ไม่มี hover — แตะการ์ดครั้งแรก (touchOpen) แตะซ้ำใบ
+// เดิมจึงเปิดหน้าอ่าน (ตกลง 2026-11-15) การ์ดที่เปิดด้วยการแตะมีได้ทีละใบ
+// DevotionFeedGallery เป็นคนถือว่าใบไหนเปิดอยู่
+type TouchReveal = { open: boolean; onOpen: () => void };
+
+function useReveal(touch: TouchReveal) {
+  const [hoverActive, setActive] = useState(false);
+  const active = hoverActive || touch.open;
   const timer = useRef<number | null>(null);
+  const lastPointerType = useRef("mouse");
 
   const cancel = () => {
     if (timer.current !== null) window.clearTimeout(timer.current);
@@ -123,6 +131,15 @@ function useReveal() {
   return {
     active,
     handlers: {
+      onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
+        lastPointerType.current = event.pointerType;
+      },
+      onClick: (event: MouseEvent<HTMLAnchorElement>) => {
+        // แตะครั้งแรกบนจอสัมผัส: ยังไม่เปิดลิงก์ แค่เล่น effect + โชว์เนื้อหา
+        if (lastPointerType.current === "mouse" || touch.open) return;
+        event.preventDefault();
+        touch.onOpen();
+      },
       onPointerEnter: (event: PointerEvent<HTMLAnchorElement>) => {
         if (event.pointerType !== "mouse") return;
         cancel();
@@ -193,10 +210,13 @@ function OpenArrow({ className }: { className?: string }) {
 function RevealOverlay({
   entry,
   active,
+  touchOpen,
   className,
 }: {
   entry: LambDevotionRow;
   active: boolean;
+  // เปิดด้วยการแตะ — โชว์คำใบ้ว่าแตะอีกครั้งเพื่อเปิดอ่าน
+  touchOpen: boolean;
   className?: string;
 }) {
   const [opened, setOpened] = useState(false);
@@ -230,7 +250,14 @@ function RevealOverlay({
           ))}
         </div>
       </div>
-      <OpenArrow className="absolute right-4 bottom-4 bg-black/60" />
+      <div className="absolute right-4 bottom-4 flex items-center gap-2">
+        {touchOpen && (
+          <span className="rounded-full bg-black/70 px-3 py-1.5 text-xs text-white">
+            แตะอีกครั้งเพื่อเปิดอ่าน
+          </span>
+        )}
+        <OpenArrow className="bg-black/60" />
+      </div>
     </div>
   );
 }
@@ -241,13 +268,15 @@ const cardClass =
 function ImageCard({
   entry,
   coverImage,
+  touch,
 }: {
   entry: LambDevotionRow;
   coverImage: string;
+  touch: TouchReveal;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { active, handlers } = useReveal();
+  const { active, handlers } = useReveal(touch);
   usePixelate(imgRef, canvasRef, active);
 
   return (
@@ -255,6 +284,7 @@ function ImageCard({
       to="/lamb-info/devotion/$devotionId"
       params={{ devotionId: entry.id }}
       className={cn(cardClass, "bg-muted")}
+      data-gallery-card={entry.id}
       {...handlers}
     >
       {/* สูงตามสัดส่วนรูปจริง — กันรูปเตี้ย/สูงเกินด้วย min/max แล้วครอปส่วนเกิน */}
@@ -290,15 +320,26 @@ function ImageCard({
           <OpenArrow />
         </div>
       </div>
-      <RevealOverlay entry={entry} active={active} className="bg-black/60" />
+      <RevealOverlay
+        entry={entry}
+        active={active}
+        touchOpen={touch.open}
+        className="bg-black/60"
+      />
     </Link>
   );
 }
 
 // การ์ดไม่มีรูป: ไม่มีอะไรให้แตกเป็นพิกเซล — hover แล้วเนื้อหาเต็มโผล่ทับด้วย
 // จังหวะเป็นขั้นๆ แบบเดียวกัน
-function TextCard({ entry }: { entry: LambDevotionRow }) {
-  const { active, handlers } = useReveal();
+function TextCard({
+  entry,
+  touch,
+}: {
+  entry: LambDevotionRow;
+  touch: TouchReveal;
+}) {
+  const { active, handlers } = useReveal(touch);
 
   return (
     <Link
@@ -308,6 +349,7 @@ function TextCard({ entry }: { entry: LambDevotionRow }) {
         cardClass,
         "flex flex-col gap-4 bg-linear-to-br from-slate-800 to-slate-950 p-5 ring-1 ring-white/10 ring-inset",
       )}
+      data-gallery-card={entry.id}
       {...handlers}
     >
       <div>
@@ -325,7 +367,12 @@ function TextCard({ entry }: { entry: LambDevotionRow }) {
         <AuthorRow entry={entry} />
         <OpenArrow />
       </div>
-      <RevealOverlay entry={entry} active={active} className="bg-slate-950" />
+      <RevealOverlay
+        entry={entry}
+        active={active}
+        touchOpen={touch.open}
+        className="bg-slate-950"
+      />
     </Link>
   );
 }
@@ -335,14 +382,41 @@ export function DevotionFeedGallery({
 }: {
   entries: LambDevotionRow[];
 }) {
+  // การ์ดที่เปิด effect ด้วยการแตะ (จอสัมผัส) — ทีละใบ แตะที่อื่นนอกการ์ดใบ
+  // นั้นคือปิด (ถ้าแตะโดนการ์ดอีกใบ ใบนั้นจะเปิดแทนจาก onClick ของมันเอง)
+  const [touchOpenId, setTouchOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (touchOpenId === null) return;
+    const handlePointerDown = (event: globalThis.PointerEvent) => {
+      const card = (event.target as Element | null)?.closest?.(
+        "[data-gallery-card]",
+      );
+      if (card?.getAttribute("data-gallery-card") !== touchOpenId) {
+        setTouchOpenId(null);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [touchOpenId]);
+
   return (
     <div className="columns-1 gap-4 @xl/content:columns-2 @4xl/content:columns-3">
       {entries.map((entry) => {
         const coverImage = entry.image_urls[0];
+        const touch: TouchReveal = {
+          open: touchOpenId === entry.id,
+          onOpen: () => setTouchOpenId(entry.id),
+        };
         return coverImage ? (
-          <ImageCard key={entry.id} entry={entry} coverImage={coverImage} />
+          <ImageCard
+            key={entry.id}
+            entry={entry}
+            coverImage={coverImage}
+            touch={touch}
+          />
         ) : (
-          <TextCard key={entry.id} entry={entry} />
+          <TextCard key={entry.id} entry={entry} touch={touch} />
         );
       })}
     </div>
