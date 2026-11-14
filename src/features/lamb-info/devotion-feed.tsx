@@ -4,6 +4,8 @@ import { format, parseISO } from "date-fns";
 import {
   AlertCircle,
   CalendarIcon,
+  LayoutGrid,
+  List,
   NotebookText,
   PenLine,
   X,
@@ -27,8 +29,14 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DevotionFeedGallery } from "./components/devotion-feed-gallery";
 import { DEVOTION_CONTENT_TYPE_LABELS } from "./data/devotion-schema";
 import { useLambDevotionFeed } from "./data/queries";
+import {
+  type DevotionFeedLayout,
+  loadDevotionFeedLayout,
+  saveDevotionFeedLayout,
+} from "./lib/devotion-feed-layout-storage";
 
 function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
@@ -85,6 +93,16 @@ function intensityLevel(count: number, maxCount: number): 1 | 2 | 3 | 4 {
 export function DevotionFeed() {
   const { data: entries, isPending, isError, error } = useLambDevotionFeed();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  // สลับ layout: รายการแบบเดิม / รูปเต็มการ์ด (masonry เต็มพื้นที่) — เริ่มที่
+  // รายการเดิม จำค่าที่เลือกต่อเครื่อง (grill-me 2026-11-15, ดู
+  // components/devotion-feed-gallery.tsx) ตัวกรองวันที่ใช้ร่วมกันทั้งสองแบบ
+  const [layout, setLayout] = useState<DevotionFeedLayout>(
+    loadDevotionFeedLayout,
+  );
+  const changeLayout = (next: DevotionFeedLayout) => {
+    setLayout(next);
+    saveDevotionFeedLayout(next);
+  };
 
   const countsByDate = useMemo(() => {
     const counts = new Map<string, number>();
@@ -147,7 +165,35 @@ export function DevotionFeed() {
               ประวัติเฝ้าเดี่ยวของสมาชิกทุกคน
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              role="group"
+              aria-label="รูปแบบการแสดงผล"
+              className="flex items-center rounded-md border p-0.5"
+            >
+              <Button
+                variant={layout === "list" ? "secondary" : "ghost"}
+                size="icon"
+                className="size-8"
+                aria-label="แสดงแบบรายการ"
+                title="แสดงแบบรายการ"
+                aria-pressed={layout === "list"}
+                onClick={() => changeLayout("list")}
+              >
+                <List />
+              </Button>
+              <Button
+                variant={layout === "gallery" ? "secondary" : "ghost"}
+                size="icon"
+                className="size-8"
+                aria-label="แสดงแบบรูปเต็มการ์ด"
+                title="แสดงแบบรูปเต็มการ์ด"
+                aria-pressed={layout === "gallery"}
+                onClick={() => changeLayout("gallery")}
+              >
+                <LayoutGrid />
+              </Button>
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -215,7 +261,13 @@ export function DevotionFeed() {
           </div>
         </div>
 
-        <div className="mx-auto grid w-full max-w-3xl gap-4">
+        <div
+          className={cn(
+            "w-full",
+            // แบบรูปเต็มการ์ดใช้เต็มความกว้างของหน้า แบบรายการคงคอลัมน์แคบเดิม
+            layout === "list" && "mx-auto grid max-w-3xl gap-4",
+          )}
+        >
           {isError ? (
             <Alert variant="destructive">
               <AlertCircle />
@@ -238,6 +290,8 @@ export function DevotionFeed() {
                 ? `ยังไม่มีใครส่งเฝ้าเดี่ยวในวันที่ ${format(selectedDate, "d MMM yyyy")}`
                 : "ยังไม่มีใครส่งเฝ้าเดี่ยว — เป็นคนแรกได้เลย"}
             </p>
+          ) : layout === "gallery" ? (
+            <DevotionFeedGallery entries={filteredEntries} />
           ) : (
             filteredEntries.map((entry) => {
               // Card shows nickname only (falls back to first name) — no
