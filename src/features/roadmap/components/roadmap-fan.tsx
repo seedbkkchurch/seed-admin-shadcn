@@ -11,7 +11,7 @@ import { type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./roadmap-fan.css";
 
-export type RoadmapTone = "indigo" | "amber" | "emerald";
+export type RoadmapTone = "indigo" | "amber" | "emerald" | "rose";
 
 export type RoadmapItem = {
   id: string;
@@ -31,6 +31,14 @@ export type RoadmapItem = {
   eyebrow?: string;
   /** ข้อความย่อใต้หัวข้อ — ตัดที่ 2 บรรทัด */
   description?: string;
+  /** ข้อความตัวใหญ่กลางบนการ์ด เช่น "HAPPY\nBIRTHDAY" — ขึ้นบรรทัดใหม่ด้วย
+   * "\n" เห็นเฉพาะใบหน้าสุด (การ์ดวันเกิด 2026-11-16) */
+  headline?: string;
+  /** บรรทัดรายละเอียดใต้หัวข้อ บรรทัดละ 1 รายการ ตัดที่ 1 บรรทัดต่อรายการ
+   * (การ์ดวันเกิด 2026-11-16) — ใช้คู่หรือแทน description ก็ได้ */
+  details?: string[];
+  /** เครดิตรูปตัวเล็กท้ายข้อความ เช่น "ภาพ: Pexels" */
+  credit?: string;
   /** ข้อความวันที่เต็มสำหรับ screen reader — ไม่ใส่จะใช้ day + month */
   dateLabel?: string;
 };
@@ -229,6 +237,11 @@ export function RoadmapFan({
                 <span className="roadmap-fan__visual">
                   <FanArt item={item} />
                 </span>
+                {item.headline && (
+                  <span className="roadmap-fan__headline" aria-hidden="true">
+                    {item.headline}
+                  </span>
+                )}
                 <span className="roadmap-fan__copy" aria-hidden="true">
                   {item.eyebrow && (
                     <span className="roadmap-fan__eyebrow">{item.eyebrow}</span>
@@ -238,6 +251,17 @@ export function RoadmapFan({
                     <span className="roadmap-fan__description">
                       {item.description}
                     </span>
+                  )}
+                  {item.details?.map((line, lineIndex) => (
+                    <span
+                      key={`${lineIndex}-${line}`}
+                      className="roadmap-fan__detail"
+                    >
+                      {line}
+                    </span>
+                  ))}
+                  {item.credit && (
+                    <span className="roadmap-fan__credit">{item.credit}</span>
                   )}
                 </span>
                 <span className="roadmap-fan__badge" aria-hidden="true">

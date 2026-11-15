@@ -214,6 +214,12 @@
   --tone-to: #0f766e;
 }
 
+/* การ์ดวันเกิดที่ไม่มีรูป (2026-11-16) */
+.roadmap-fan__art[data-tone="rose"] {
+  --tone-from: #fb7185;
+  --tone-to: #be185d;
+}
+
 /* เส้นสั่นแบบวาดมือ 3 เฟรม วนทุก 0.6s — เฉพาะไอคอนของใบหน้าสุด (ใส่ที่ svg
  * ไม่ใช่ทั้งพื้น ไม่งั้นขอบพื้นไล่สีจะสั่นตาม) */
 .roadmap-fan__slot[data-depth="0"] .roadmap-fan__art[data-kind="icon"] svg {
@@ -286,6 +292,59 @@
   line-height: 21px;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+/* ข้อความตัวใหญ่กลางบนการ์ด (HAPPY BIRTHDAY) — ชิดขอบบน ระดับเดียวกับป้าย
+ * วันที่ (ข้อความอยู่กลาง ป้ายอยู่มุม ไม่ทับกัน) เห็น
+ * เฉพาะใบหน้าสุด กว้างคงที่เท่าการ์ดใบหน้าเพื่อไม่ให้ตัดบรรทัดใหม่ตอนการ์ด
+ * กำลังขยาย/หด */
+.roadmap-fan__headline {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  z-index: 2;
+  width: var(--fan-card-w);
+  max-width: 100cqi;
+  color: #fff;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-shadow:
+    0 2px 4px rgb(0 0 0 / 0.55),
+    0 0 24px rgb(0 0 0 / 0.45);
+  white-space: pre-line;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity var(--fan-duration) var(--fan-ease);
+}
+
+.roadmap-fan__slot[data-depth="0"] .roadmap-fan__headline {
+  opacity: 1;
+}
+
+/* บรรทัดรายละเอียด (การ์ดวันเกิด) — บรรทัดละรายการ ยาวเกินตัดด้วย … */
+.roadmap-fan__detail {
+  overflow: hidden;
+  color: rgb(255 255 255 / 0.86);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roadmap-fan__title + .roadmap-fan__detail {
+  margin-top: 4px;
+}
+
+.roadmap-fan__credit {
+  margin-top: 4px;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 11px;
+  line-height: 16px;
 }
 
 /* ---------- ป้ายวันที่ (กระจกฝ้า) ---------- */

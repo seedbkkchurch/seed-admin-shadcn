@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { Cake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BirthdayFan } from "@/features/birthdays/components/birthday-fan";
 import type { DashboardLamb } from "../data/schema";
-import { BirthdayList } from "./birthday-list";
 
 type BirthdayThisMonthCardProps = {
   lambs: DashboardLamb[];
@@ -17,7 +17,14 @@ type BirthdayThisMonthCardProps = {
 // BirthdayList ที่ใช้ร่วมกับหน้า "เดือนเกิด" แบบเลือกเดือนได้เต็มหน้า
 // (features/birthdays/) — การ์ดนี้ยังคงอยู่ที่เดิม แสดงแค่เดือนปัจจุบัน
 // เหมือนเดิมทุกอย่าง (ไม่ใช่ของซ้ำที่ต้องลบ)
-export function BirthdayThisMonthCard({ lambs, today }: BirthdayThisMonthCardProps) {
+//
+// อัปเดต 2026-11-16 (grill-me 2026-11-15): เปลี่ยนจากรายชื่อเป็นพัดการ์ด
+// วันเกิด (BirthdayFan) ตัวเดียวกับหน้า "เดือนเกิด" — ไม่ลิงก์ไปโปรไฟล์แล้ว
+// BirthdayList (birthday-list.tsx) ไม่มีที่ใช้แล้ว ปล่อยไฟล์ไว้ไม่ลบ
+export function BirthdayThisMonthCard({
+  lambs,
+  today,
+}: BirthdayThisMonthCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -27,7 +34,7 @@ export function BirthdayThisMonthCard({ lambs, today }: BirthdayThisMonthCardPro
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <BirthdayList lambs={lambs} />
+        <BirthdayFan lambs={lambs} month={today.getMonth()} today={today} />
       </CardContent>
     </Card>
   );

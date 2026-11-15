@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BirthdayList } from "@/features/dashboard/components/birthday-list";
 import { useDashboardLambs } from "@/features/dashboard/data/queries";
 import { computeBirthdaysInMonth } from "@/features/dashboard/lib/aggregate";
+import { BirthdayFan } from "./components/birthday-fan";
 
 const route = getRouteApi("/_authenticated/birthdays/");
 
@@ -51,12 +51,17 @@ const THAI_MONTHS = [
 // เดือนที่เลือกเก็บใน URL search param `month` (0-11) ผ่าน
 // routes/_authenticated/birthdays/index.tsx — refresh/แชร์ลิงก์แล้วยังอยู่
 // เดือนเดิม ไม่มี `month` ใน URL = ใช้เดือนปัจจุบัน
+//
+// อัปเดต 2026-11-16 (grill-me 2026-11-15): รายชื่อ BirthdayList เปลี่ยนเป็น
+// พัดการ์ดวันเกิด (components/birthday-fan.tsx) แบบเดียวกับการ์ดเฝ้าเดี่ยว
+// การ์ดบน Dashboard ก็เปลี่ยนเป็นพัดเดียวกันด้วย
 export function Birthdays() {
   const { month } = route.useSearch();
   const navigate = route.useNavigate();
   const { data: lambs, isPending, isError, error } = useDashboardLambs();
 
-  const selectedMonth = month ?? new Date().getMonth();
+  const today = useMemo(() => new Date(), []);
+  const selectedMonth = month ?? today.getMonth();
 
   const birthdayLambs = useMemo(
     () => computeBirthdaysInMonth(lambs ?? [], selectedMonth),
@@ -76,7 +81,8 @@ export function Birthdays() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">เดือนเกิด</h2>
           <p className="text-muted-foreground">
-            รายชื่อสมาชิกที่เกิดในเดือนที่เลือก (เฉพาะสมาชิกที่ยังอยู่)
+            สมาชิกที่เกิดในเดือนที่เลือก (เฉพาะสมาชิกที่ยังอยู่) —
+            ชี้หรือแตะการ์ดเพื่อดูแต่ละคน
           </p>
         </div>
 
@@ -120,9 +126,13 @@ export function Birthdays() {
             </CardHeader>
             <CardContent>
               {isPending ? (
-                <Skeleton className="h-40 w-full" />
+                <Skeleton className="mx-auto aspect-[4/5] w-[400px] max-w-[85%] rounded-[28px]" />
               ) : (
-                <BirthdayList lambs={birthdayLambs} />
+                <BirthdayFan
+                  lambs={birthdayLambs}
+                  month={selectedMonth}
+                  today={today}
+                />
               )}
             </CardContent>
           </Card>
