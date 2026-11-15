@@ -26,6 +26,7 @@ import { GiftsCard } from "./components/gifts-card";
 import { GrowthProgressCard } from "./components/growth-progress-card";
 import { LambInfoDialogs } from "./components/lamb-info-dialogs";
 import { MentorCard } from "./components/mentor-card";
+import { SocialLinks } from "./components/social-links";
 import { LambInfoProvider, useLambInfo } from "./components/lamb-info-provider";
 
 const route = getRouteApi("/_authenticated/lamb-info/$lambId/");
@@ -83,6 +84,9 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
         address: row.address,
         email: row.email,
         phone: row.phone,
+        facebook_url: row.facebook_url,
+        instagram_url: row.instagram_url,
+        x_url: row.x_url,
         birthday: row.birthday,
         job: row.job,
         interesting: row.interesting,
@@ -174,6 +178,10 @@ function ProfileHeader({ row }: { row: LambInfoRow }) {
             )}
           </div>
           <p className="text-muted-foreground text-sm sm:text-lg">{fullName}</p>
+          <SocialLinks
+            row={row}
+            className="mt-1 justify-center sm:-ms-2 sm:justify-start"
+          />
         </div>
       </div>
       <Button

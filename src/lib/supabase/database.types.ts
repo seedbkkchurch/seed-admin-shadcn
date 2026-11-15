@@ -367,6 +367,9 @@ export type Database = {
           nick_name: string | null
           personality_code: string | null
           phone: string | null
+          facebook_url: string | null
+          instagram_url: string | null
+          x_url: string | null
           previous_church: string | null
           profile_picture: string | null
           remark: string | null
@@ -398,6 +401,9 @@ export type Database = {
           nick_name?: string | null
           personality_code?: string | null
           phone?: string | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          x_url?: string | null
           previous_church?: string | null
           profile_picture?: string | null
           remark?: string | null
@@ -429,6 +435,9 @@ export type Database = {
           nick_name?: string | null
           personality_code?: string | null
           phone?: string | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          x_url?: string | null
           previous_church?: string | null
           profile_picture?: string | null
           remark?: string | null

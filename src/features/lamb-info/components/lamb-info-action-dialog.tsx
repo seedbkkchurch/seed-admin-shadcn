@@ -37,6 +37,7 @@ import {
   useUpdateLambInfo,
 } from "../data/queries";
 import { type LambInfoRow } from "../data/schema";
+import { normalizeSocialLink, type SocialPlatform } from "../lib/social-links";
 
 // This form used to have a "Group Leader" switch writing straight to
 // lamb_info.is_leader_group_care. That column is gone (grill-me
@@ -45,6 +46,15 @@ import { type LambInfoRow } from "../data/schema";
 // non-super_admin editing a lamb's other fields here would hit a
 // permission-denied error on this field specifically. Deliberately
 // dropped from this form; manage role on the /user-roles page instead.
+// Social fields accept a username or a pasted link; normalizeSocialLink
+// rejects anything that isn't on the platform's own domain (grill-me
+// 2026-11-15). The canonical URL is built in onSubmit.
+const socialField = (platform: SocialPlatform, message: string) =>
+  z
+    .string()
+    .optional()
+    .refine((v) => normalizeSocialLink(platform, v).ok, { error: message });
+
 const formSchema = z.object({
   profile_picture: z
     .union([z.url({ error: "Enter a valid URL." }), z.literal("")])
@@ -58,6 +68,15 @@ const formSchema = z.object({
     .union([z.email({ error: "Enter a valid email." }), z.literal("")])
     .optional(),
   phone: z.string().optional(),
+  facebook_url: socialField(
+    "facebook",
+    "Enter a Facebook username or a facebook.com link.",
+  ),
+  instagram_url: socialField(
+    "instagram",
+    "Enter an Instagram username or an instagram.com link.",
+  ),
+  x_url: socialField("x", "Enter an X username or an x.com link."),
   birthday: z.date().optional(),
   job: z.string().optional(),
   interesting: z.string().optional(),
@@ -92,6 +111,9 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
       address: "",
       email: "",
       phone: "",
+      facebook_url: "",
+      instagram_url: "",
+      x_url: "",
       birthday: undefined,
       job: "",
       interesting: "",
@@ -117,6 +139,9 @@ function toDefaultValues(currentRow?: LambInfoRow): LambInfoForm {
     address: currentRow.address ?? "",
     email: currentRow.email ?? "",
     phone: currentRow.phone ?? "",
+    facebook_url: currentRow.facebook_url ?? "",
+    instagram_url: currentRow.instagram_url ?? "",
+    x_url: currentRow.x_url ?? "",
     birthday: currentRow.birthday ? new Date(currentRow.birthday) : undefined,
     job: currentRow.job ?? "",
     interesting: currentRow.interesting ?? "",
@@ -168,6 +193,12 @@ export function LambInfoActionDialog({
     createLambInfo.isPending || updateLambInfo.isPending || isUploadingAvatar;
 
   const onSubmit = async (values: LambInfoForm) => {
+    // Schema already guaranteed these normalise; fall back to null so a
+    // bad value can never reach the DB CHECK constraint.
+    const social = (platform: SocialPlatform, v?: string) => {
+      const result = normalizeSocialLink(platform, v);
+      return result.ok ? result.value : null;
+    };
     const payload = {
       profile_picture: values.profile_picture || null,
       nick_name: values.nick_name || null,
@@ -177,6 +208,9 @@ export function LambInfoActionDialog({
       address: values.address || null,
       email: values.email || null,
       phone: values.phone || null,
+      facebook_url: social("facebook", values.facebook_url),
+      instagram_url: social("instagram", values.instagram_url),
+      x_url: social("x", values.x_url),
       birthday: values.birthday ? format(values.birthday, "yyyy-MM-dd") : null,
       job: values.job || null,
       interesting: values.interesting || null,
@@ -429,6 +463,67 @@ export function LambInfoActionDialog({
                       <Input
                         className="col-span-4"
                         autoComplete="off"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="col-span-4 col-start-3" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="facebook_url"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
+                    <FormLabel className="col-span-2 text-end">
+                      Facebook
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="col-span-4"
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        placeholder="username หรือวางลิงก์"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="col-span-4 col-start-3" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="instagram_url"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
+                    <FormLabel className="col-span-2 text-end">
+                      Instagram
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="col-span-4"
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        placeholder="username หรือวางลิงก์"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="col-span-4 col-start-3" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="x_url"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1">
+                    <FormLabel className="col-span-2 text-end">X</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="col-span-4"
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        placeholder="username หรือวางลิงก์"
                         {...field}
                       />
                     </FormControl>
