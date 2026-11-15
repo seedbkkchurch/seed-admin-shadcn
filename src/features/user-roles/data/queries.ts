@@ -258,6 +258,17 @@ async function getMyLambRoleInfo(): Promise<MyLambRoleInfo> {
   return { lambId: lamb.id, role: lamb.role };
 }
 
+// true เฉพาะ member/visitor ที่ผูกกับลูกแกะจริง — ใช้เลือกหน้าแรกหลัง login
+// (routes/_authenticated/index.tsx พา member/visitor ไป /spiritual, grill-me
+// 2026-11-15) ต่างจาก checkIsLambAccessRestricted ด้านล่างตรงที่ role หาไม่
+// เจอ (null) ไม่นับ — ตรงนี้ไม่ใช่การกันสิทธิ์ แค่เลือกหน้า
+export async function checkIsMemberOrVisitor(): Promise<boolean> {
+  const { lambId, role } = await getMyLambRoleInfo();
+  return (
+    lambId !== null && role !== null && LAMB_ACCESS_RESTRICTED_ROLES.has(role)
+  );
+}
+
 // ใช้กันหน้ารายการ/เมนูคุมงานกลุ่ม (Lamb Info list, เช็คชื่อรายสัปดาห์) —
 // true = จำกัดสิทธิ์ (member/visitor หรือหา role ไม่เจอเลย)
 export async function checkIsLambAccessRestricted(): Promise<boolean> {

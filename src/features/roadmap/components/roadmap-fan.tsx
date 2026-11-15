@@ -11,6 +11,8 @@ import { type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./roadmap-fan.css";
 
+export type RoadmapTone = "indigo" | "amber" | "emerald";
+
 export type RoadmapItem = {
   id: string;
   /** ขึ้นบรรทัดใหม่ได้ด้วย "\n" (white-space: pre-line) */
@@ -19,13 +21,15 @@ export type RoadmapItem = {
   month: string;
   /** บรรทัดล่างของป้ายวันที่ — ไม่ใส่ก็ได้ (เช่นป้าย "เร็วๆ นี้") */
   day?: string;
-  /** ไอคอนกลางการ์ด — ใช้เมื่อไม่มี imageUrl หรือรูปโหลดไม่ขึ้น */
+  /** ไอคอนบนการ์ดสี — ใช้เมื่อไม่มี imageUrl หรือรูปโหลดไม่ขึ้น */
   icon: LucideIcon;
-  /** รูปกลางการ์ด (แทนไอคอน) */
+  /** รูปคลุมเต็มการ์ด (แทนพื้นสี + ไอคอน) */
   imageUrl?: string;
+  /** สีพื้นไล่เฉดของการ์ดที่ไม่มีรูป — ไม่ใส่จะเป็นเทาเข้ม */
+  tone?: RoadmapTone;
   /** ป้ายเล็กเหนือหัวข้อ เช่น ประเภทของรายการ */
   eyebrow?: string;
-  /** ข้อความย่อใต้หัวข้อ — ตัดที่ 2 บรรทัด (มีแล้วหัวข้อจะเหลือ 1 บรรทัด) */
+  /** ข้อความย่อใต้หัวข้อ — ตัดที่ 2 บรรทัด */
   description?: string;
   /** ข้อความวันที่เต็มสำหรับ screen reader — ไม่ใส่จะใช้ day + month */
   dateLabel?: string;
@@ -40,14 +44,15 @@ type RoadmapFanProps = {
   className?: string;
 };
 
-// ค่าทั้งหมดด้านล่างวัดจาก capture (ดู roadmap-fan.css)
-const CARD_WIDTH = 320;
+// ค่าทั้งหมดด้านล่างคือค่าจาก capture คูณ 1.25 — การ์ดขยายจาก 320×400 เป็น
+// 400×500 (2026-11-15, ดู roadmap-fan.css)
+const CARD_WIDTH = 400;
 const MAX_DEPTH = 5;
 // ระยะเลื่อนแนวนอนสะสมของการ์ดชั้นที่ d เทียบกับใบหน้าสุด
-const SPREAD = [0, 69, 135, 198, 258, 314];
+const SPREAD = [0, 86, 169, 248, 323, 393];
 const Z_INDEX = [20, 16, 14, 12, 11, 10];
-// ช่องว่างท้ายพัด: capture กว้าง 651px = 314 (spread) + 320 (การ์ด) + 17
-const END_GUTTER = 17;
+// ช่องว่างท้ายพัด: ทั้งพัดกว้าง 814px = 393 (spread) + 400 (การ์ด) + 21
+const END_GUTTER = 21;
 const SWIPE_THRESHOLD = 40;
 // เมาส์ต้องค้างบนการ์ดนานเท่านี้ก่อนการ์ดจะเลื่อนขึ้นมา — กันการ์ดกระพริบ
 // ตอนลากเมาส์ผ่านเร็วๆ
@@ -57,7 +62,7 @@ const HOVER_INTENT_MS = 90;
 const HOVER_LOCK_MS = 450;
 
 function spread(depth: number) {
-  return SPREAD[depth] ?? Math.round(72 * depth - 1.5 * depth * (depth + 1));
+  return SPREAD[depth] ?? Math.round(90 * depth - 1.875 * depth * (depth + 1));
 }
 
 // ตำแหน่ง/มุมของการ์ดแต่ละใบ: ใบที่มาก่อนใบหน้าสุดแผ่ไปทางซ้าย (เอียงซ้าย)
@@ -70,20 +75,20 @@ function getPose(index: number, activeIndex: number, count: number) {
 
   const before = activeIndex;
   const after = count - 1 - activeIndex;
-  // จัดให้ทั้งพัดอยู่กลางพื้นที่ — ถ้าไม่มีใบทางขวาเลยจะได้ 314px ตรงกับ capture
+  // จัดให้ทั้งพัดอยู่กลางพื้นที่ — ถ้าไม่มีใบทางขวาเลยจะได้ 393px
   const activeX =
     spread(before) + (spread(count - 1) - spread(before) - spread(after)) / 2;
 
   let x = activeX;
   if (side === "start") x = activeX - spread(distance);
-  // การ์ดชั้นลึกแคบลงใบละ 16px เลยต้องชดเชยให้ขอบขวาเป็นตัวที่แผ่ออก
-  if (side === "end") x = activeX + spread(distance) + 16 * depth;
+  // การ์ดชั้นลึกแคบลงใบละ 20px เลยต้องชดเชยให้ขอบขวาเป็นตัวที่แผ่ออก
+  if (side === "end") x = activeX + spread(distance) + 20 * depth;
 
   return {
     depth,
     side,
     x,
-    y: 1 + 11 * distance,
+    y: 1 + 14 * distance,
     rotate: (side === "end" ? 0.5 : -0.5) * distance,
   };
 }
@@ -190,7 +195,6 @@ export function RoadmapFan({
             <div
               key={item.id}
               className="roadmap-fan__slot"
-              data-has-description={item.description ? "" : undefined}
               data-depth={pose.depth}
               data-side={pose.side}
               style={
@@ -270,7 +274,8 @@ export function RoadmapFan({
   );
 }
 
-// ภาพกลางการ์ด: รูปของรายการถ้ามี ไม่มี (หรือโหลดไม่ขึ้น) ใช้ไอคอนเส้น
+// พื้นการ์ด: รูปของรายการคลุมเต็มใบถ้ามี ไม่มี (หรือโหลดไม่ขึ้น) ใช้พื้นไล่สี
+// ตาม tone + ไอคอนเส้น
 function FanArt({ item }: { item: RoadmapItem }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const Icon = item.icon;
@@ -280,6 +285,7 @@ function FanArt({ item }: { item: RoadmapItem }) {
     <span
       className="roadmap-fan__art"
       data-kind={showImage ? "image" : "icon"}
+      data-tone={item.tone}
       aria-hidden="true"
     >
       {showImage ? (
@@ -291,13 +297,13 @@ function FanArt({ item }: { item: RoadmapItem }) {
           onError={() => setFailedUrl(item.imageUrl ?? null)}
         />
       ) : (
-        <Icon strokeWidth={0.75} />
+        <Icon strokeWidth={1} />
       )}
     </span>
   );
 }
 
-// SVG filter 3 ตัว (noise คนละ seed) ให้ภาพประกอบของใบหน้าสุดสั่นแบบเส้น
+// SVG filter 3 ตัว (noise คนละ seed) ให้ไอคอนของใบหน้าสุดสั่นแบบเส้น
 // วาดมือ — สลับกันด้วย keyframes roadmap-fan-boil ใน roadmap-fan.css
 function BoilFilters() {
   return (

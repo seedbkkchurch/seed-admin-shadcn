@@ -24,7 +24,8 @@ type PexelsSearchPage = {
   photos: PexelsPhoto[];
 };
 
-async function searchPexels(
+// export ให้ features/spiritual/data/daily-background.ts ใช้ด้วย (2026-11-15)
+export async function searchPexels(
   query: string,
   page: number,
 ): Promise<PexelsSearchPage> {

@@ -37,6 +37,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedUserRolesIndexRouteImport } from './routes/_authenticated/user-roles/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSubscribeIndexRouteImport } from './routes/_authenticated/subscribe/index'
+import { Route as AuthenticatedSpiritualIndexRouteImport } from './routes/_authenticated/spiritual/index'
 import { Route as AuthenticatedSpiritualGiftsSurveyIndexRouteImport } from './routes/_authenticated/spiritual-gifts-survey/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoadmapIndexRouteImport } from './routes/_authenticated/roadmap/index'
@@ -48,6 +49,7 @@ import { Route as AuthenticatedLambInfoIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGroupCareIndexRouteImport } from './routes/_authenticated/group-care/index'
 import { Route as AuthenticatedDevotionRemindersIndexRouteImport } from './routes/_authenticated/devotion-reminders/index'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedChangePasswordIndexRouteImport } from './routes/_authenticated/change-password/index'
 import { Route as AuthenticatedBirthdaysIndexRouteImport } from './routes/_authenticated/birthdays/index'
@@ -217,6 +219,12 @@ const AuthenticatedSubscribeIndexRoute =
     path: '/subscribe/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSpiritualIndexRoute =
+  AuthenticatedSpiritualIndexRouteImport.update({
+    id: '/spiritual/',
+    path: '/spiritual/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSpiritualGiftsSurveyIndexRoute =
   AuthenticatedSpiritualGiftsSurveyIndexRouteImport.update({
     id: '/spiritual-gifts-survey/',
@@ -281,6 +289,12 @@ const AuthenticatedDevotionRemindersIndexRoute =
   AuthenticatedDevotionRemindersIndexRouteImport.update({
     id: '/devotion-reminders/',
     path: '/devotion-reminders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
@@ -476,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
   '/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -487,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/roadmap/': typeof AuthenticatedRoadmapIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/spiritual-gifts-survey/': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
+  '/spiritual/': typeof AuthenticatedSpiritualIndexRoute
   '/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/user-roles/': typeof AuthenticatedUserRolesIndexRoute
@@ -540,6 +556,7 @@ export interface FileRoutesByTo {
   '/birthdays': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password': typeof AuthenticatedChangePasswordIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/devotion-reminders': typeof AuthenticatedDevotionRemindersIndexRoute
   '/group-care': typeof AuthenticatedGroupCareIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -551,6 +568,7 @@ export interface FileRoutesByTo {
   '/roadmap': typeof AuthenticatedRoadmapIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/spiritual-gifts-survey': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
+  '/spiritual': typeof AuthenticatedSpiritualIndexRoute
   '/subscribe': typeof AuthenticatedSubscribeIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/user-roles': typeof AuthenticatedUserRolesIndexRoute
@@ -609,6 +627,7 @@ export interface FileRoutesById {
   '/_authenticated/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/_authenticated/change-password/': typeof AuthenticatedChangePasswordIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/devotion-reminders/': typeof AuthenticatedDevotionRemindersIndexRoute
   '/_authenticated/group-care/': typeof AuthenticatedGroupCareIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -620,6 +639,7 @@ export interface FileRoutesById {
   '/_authenticated/roadmap/': typeof AuthenticatedRoadmapIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/spiritual-gifts-survey/': typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
+  '/_authenticated/spiritual/': typeof AuthenticatedSpiritualIndexRoute
   '/_authenticated/subscribe/': typeof AuthenticatedSubscribeIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/user-roles/': typeof AuthenticatedUserRolesIndexRoute
@@ -676,6 +696,7 @@ export interface FileRouteTypes {
     | '/birthdays/'
     | '/change-password/'
     | '/chats/'
+    | '/dashboard/'
     | '/devotion-reminders/'
     | '/group-care/'
     | '/help-center/'
@@ -687,6 +708,7 @@ export interface FileRouteTypes {
     | '/roadmap/'
     | '/settings/'
     | '/spiritual-gifts-survey/'
+    | '/spiritual/'
     | '/subscribe/'
     | '/tasks/'
     | '/user-roles/'
@@ -740,6 +762,7 @@ export interface FileRouteTypes {
     | '/birthdays'
     | '/change-password'
     | '/chats'
+    | '/dashboard'
     | '/devotion-reminders'
     | '/group-care'
     | '/help-center'
@@ -751,6 +774,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/settings'
     | '/spiritual-gifts-survey'
+    | '/spiritual'
     | '/subscribe'
     | '/tasks'
     | '/user-roles'
@@ -808,6 +832,7 @@ export interface FileRouteTypes {
     | '/_authenticated/birthdays/'
     | '/_authenticated/change-password/'
     | '/_authenticated/chats/'
+    | '/_authenticated/dashboard/'
     | '/_authenticated/devotion-reminders/'
     | '/_authenticated/group-care/'
     | '/_authenticated/help-center/'
@@ -819,6 +844,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roadmap/'
     | '/_authenticated/settings/'
     | '/_authenticated/spiritual-gifts-survey/'
+    | '/_authenticated/spiritual/'
     | '/_authenticated/subscribe/'
     | '/_authenticated/tasks/'
     | '/_authenticated/user-roles/'
@@ -1057,6 +1083,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSubscribeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/spiritual/': {
+      id: '/_authenticated/spiritual/'
+      path: '/spiritual'
+      fullPath: '/spiritual/'
+      preLoaderRoute: typeof AuthenticatedSpiritualIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/spiritual-gifts-survey/': {
       id: '/_authenticated/spiritual-gifts-survey/'
       path: '/spiritual-gifts-survey'
@@ -1132,6 +1165,13 @@ declare module '@tanstack/react-router' {
       path: '/devotion-reminders'
       fullPath: '/devotion-reminders/'
       preLoaderRoute: typeof AuthenticatedDevotionRemindersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chats/': {
@@ -1363,6 +1403,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBirthdaysIndexRoute: typeof AuthenticatedBirthdaysIndexRoute
   AuthenticatedChangePasswordIndexRoute: typeof AuthenticatedChangePasswordIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedDevotionRemindersIndexRoute: typeof AuthenticatedDevotionRemindersIndexRoute
   AuthenticatedGroupCareIndexRoute: typeof AuthenticatedGroupCareIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
@@ -1373,6 +1414,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrayerListIndexRoute: typeof AuthenticatedPrayerListIndexRoute
   AuthenticatedRoadmapIndexRoute: typeof AuthenticatedRoadmapIndexRoute
   AuthenticatedSpiritualGiftsSurveyIndexRoute: typeof AuthenticatedSpiritualGiftsSurveyIndexRoute
+  AuthenticatedSpiritualIndexRoute: typeof AuthenticatedSpiritualIndexRoute
   AuthenticatedSubscribeIndexRoute: typeof AuthenticatedSubscribeIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUserRolesIndexRoute: typeof AuthenticatedUserRolesIndexRoute
@@ -1403,6 +1445,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBirthdaysIndexRoute: AuthenticatedBirthdaysIndexRoute,
   AuthenticatedChangePasswordIndexRoute: AuthenticatedChangePasswordIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedDevotionRemindersIndexRoute:
     AuthenticatedDevotionRemindersIndexRoute,
   AuthenticatedGroupCareIndexRoute: AuthenticatedGroupCareIndexRoute,
@@ -1416,6 +1459,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRoadmapIndexRoute: AuthenticatedRoadmapIndexRoute,
   AuthenticatedSpiritualGiftsSurveyIndexRoute:
     AuthenticatedSpiritualGiftsSurveyIndexRoute,
+  AuthenticatedSpiritualIndexRoute: AuthenticatedSpiritualIndexRoute,
   AuthenticatedSubscribeIndexRoute: AuthenticatedSubscribeIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUserRolesIndexRoute: AuthenticatedUserRolesIndexRoute,

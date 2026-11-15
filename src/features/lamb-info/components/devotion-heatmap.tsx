@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   eachDayOfInterval,
@@ -24,9 +24,17 @@ import {
 // appears above the first column of each new month, and there's no
 // navigation: always "today back N days", full stop, same as github.com's
 // own graph.
+//
+// ไม่มี scrollbar แนวนอน (2026-11-15, เดิม overflow-x-auto): ถ้าพื้นที่กว้างพอ
+// ทั้งช่วงอยู่แถวเดียวเหมือนเดิม ถ้าไม่พอ (มือถือ) จุดเล็กลงและตัดขึ้นหลาย
+// แถวซ้อนกัน แถวล่าสุดอยู่บนสุด แต่ละแถวยังไล่ซ้าย → ขวาตามเวลา ข้อมูลครบ
+// ทั้งช่วงเหมือนเดิม
 const WEEKDAY_LABELS_TH: Record<number, string> = { 1: "จ", 3: "พ", 5: "ศ" };
 const CELL_PX = 14;
 const GAP_PX = 4;
+// ขนาดจุดตอนต้องตัดหลายแถว — เล็กลงแต่ยังแตะเปิด popover ได้
+const WRAPPED_CELL_PX = 11;
+const WRAPPED_GAP_PX = 3;
 const LABEL_COL_PX = 20;
 const MONTH_ROW_PX = 18;
 
@@ -58,153 +66,199 @@ export function DevotionHeatmap({
   const gridEnd = endOfWeek(today, { weekStartsOn: 0 });
   const allDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
-  const weeks: Date[][] = [];
+  const allWeeks: Date[][] = [];
   for (let i = 0; i < allDays.length; i += 7) {
-    weeks.push(allDays.slice(i, i + 7));
+    allWeeks.push(allDays.slice(i, i + 7));
   }
 
-  const monthLabelForWeek = (weekIndex: number): string | null => {
-    const month = format(weeks[weekIndex][0], "MM-yyyy");
-    const prevMonth =
-      weekIndex > 0 ? format(weeks[weekIndex - 1][0], "MM-yyyy") : null;
-    if (month === prevMonth) return null;
-    return format(weeks[weekIndex][0], "MMM");
-  };
+  // วัดความกว้างที่มีจริงก่อนวาด (useLayoutEffect) แล้วตามการย่อ/ขยายจอ
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    setAvailableWidth(element.clientWidth);
+    const observer = new ResizeObserver(() =>
+      setAvailableWidth(element.clientWidth),
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const widthFor = (weekCount: number, cellPx: number, gapPx: number) =>
+    LABEL_COL_PX + weekCount * (cellPx + gapPx);
+  const fitsOneRow =
+    availableWidth === null ||
+    widthFor(allWeeks.length, CELL_PX, GAP_PX) <= availableWidth;
+  const cellPx = fitsOneRow ? CELL_PX : WRAPPED_CELL_PX;
+  const gapPx = fitsOneRow ? GAP_PX : WRAPPED_GAP_PX;
+
+  // แบ่งสัปดาห์เป็นแถว: นับจากสัปดาห์ล่าสุดย้อนกลับ แถวแรก (บนสุด) จึงเต็ม
+  // เสมอและเป็นช่วงล่าสุด แถวเก่าสุดอาจสั้นกว่า
+  const rows: Date[][][] = [];
+  if (fitsOneRow) {
+    rows.push(allWeeks);
+  } else {
+    const maxPerRow = Math.max(
+      1,
+      Math.floor(((availableWidth ?? 0) - LABEL_COL_PX) / (cellPx + gapPx)),
+    );
+    // เกลี่ยให้ทุกแถวยาวใกล้กัน แทนที่จะเต็มทุกแถวแล้วเหลือเศษแถวสุดท้าย
+    const perRow = Math.ceil(
+      allWeeks.length / Math.ceil(allWeeks.length / maxPerRow),
+    );
+    for (let end = allWeeks.length; end > 0; end -= perRow) {
+      rows.push(allWeeks.slice(Math.max(0, end - perRow), end));
+    }
+  }
 
   return (
-    <div className="overflow-x-auto">
-      {/* Centers the graph within the card when it fits the available
-          width; on narrow screens it still scrolls (see overflow-x-auto
-          above) rather than clipping or squeezing. */}
-      <div className="flex flex-col items-center">
-        <div
-          className="grid"
-          style={{
-            gridTemplateColumns: `${LABEL_COL_PX}px repeat(${weeks.length}, ${CELL_PX}px)`,
-            gridTemplateRows: `${MONTH_ROW_PX}px repeat(7, ${CELL_PX}px)`,
-            gap: `${GAP_PX}px`,
-          }}
-        >
-          {Object.entries(WEEKDAY_LABELS_TH).map(([dayIndex, label]) => (
+    <div ref={containerRef}>
+      {/* Centers the graph within the card. */}
+      <div className="flex flex-col items-center gap-3">
+        {rows.map((weeks, rowIndex) => {
+          const monthLabelForWeek = (weekIndex: number): string | null => {
+            const month = format(weeks[weekIndex][0], "MM-yyyy");
+            const prevMonth =
+              weekIndex > 0 ? format(weeks[weekIndex - 1][0], "MM-yyyy") : null;
+            if (month === prevMonth) return null;
+            return format(weeks[weekIndex][0], "MMM");
+          };
+
+          return (
             <div
-              key={dayIndex}
-              style={{ gridColumn: 1, gridRow: Number(dayIndex) + 2 }}
-              className="flex items-center text-[10px] text-muted-foreground"
+              key={rowIndex}
+              className="grid"
+              style={{
+                gridTemplateColumns: `${LABEL_COL_PX}px repeat(${weeks.length}, ${cellPx}px)`,
+                gridTemplateRows: `${MONTH_ROW_PX}px repeat(7, ${cellPx}px)`,
+                gap: `${gapPx}px`,
+              }}
             >
-              {label}
-            </div>
-          ))}
+              {Object.entries(WEEKDAY_LABELS_TH).map(([dayIndex, label]) => (
+                <div
+                  key={dayIndex}
+                  style={{ gridColumn: 1, gridRow: Number(dayIndex) + 2 }}
+                  className="flex items-center text-[10px] text-muted-foreground"
+                >
+                  {label}
+                </div>
+              ))}
 
-          {weeks.map((week, wi) => {
-            const monthLabel = monthLabelForWeek(wi);
-            return (
-              <Fragment key={wi}>
-                {monthLabel && (
-                  <div
-                    style={{ gridColumn: wi + 2, gridRow: 1 }}
-                    className="text-[10px] text-muted-foreground"
-                  >
-                    {monthLabel}
-                  </div>
-                )}
-                {week.map((day, di) => {
-                  const inRange = day >= rangeStart && day <= today;
-                  const dayEntries = inRange ? getEntries(day) : [];
-                  const hasEntries = dayEntries.length > 0;
-                  const style = { gridColumn: wi + 2, gridRow: di + 2 };
+              {weeks.map((week, wi) => {
+                const monthLabel = monthLabelForWeek(wi);
+                return (
+                  <Fragment key={wi}>
+                    {monthLabel && (
+                      <div
+                        style={{ gridColumn: wi + 2, gridRow: 1 }}
+                        className="text-[10px] whitespace-nowrap text-muted-foreground"
+                      >
+                        {monthLabel}
+                      </div>
+                    )}
+                    {week.map((day, di) => {
+                      const inRange = day >= rangeStart && day <= today;
+                      const dayEntries = inRange ? getEntries(day) : [];
+                      const hasEntries = dayEntries.length > 0;
+                      const style = { gridColumn: wi + 2, gridRow: di + 2 };
 
-                  const cell = (
-                    <div
-                      style={style}
-                      title={inRange ? format(day, "d MMMM yyyy") : undefined}
-                      className={cn(
-                        "rounded-xs",
-                        !inRange && "invisible",
-                        inRange && !hasEntries && "bg-muted",
-                        inRange &&
-                          hasEntries &&
-                          "cursor-pointer bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500",
-                        inRange &&
-                          isSameDay(day, today) &&
-                          "ring-1 ring-green-700 dark:ring-green-300",
-                      )}
-                    />
-                  );
+                      const cell = (
+                        <div
+                          style={style}
+                          title={
+                            inRange ? format(day, "d MMMM yyyy") : undefined
+                          }
+                          className={cn(
+                            "rounded-xs",
+                            !inRange && "invisible",
+                            inRange && !hasEntries && "bg-muted",
+                            inRange &&
+                              hasEntries &&
+                              "cursor-pointer bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500",
+                            inRange &&
+                              isSameDay(day, today) &&
+                              "ring-1 ring-green-700 dark:ring-green-300",
+                          )}
+                        />
+                      );
 
-                  if (!hasEntries) {
-                    return <Fragment key={di}>{cell}</Fragment>;
-                  }
+                      if (!hasEntries) {
+                        return <Fragment key={di}>{cell}</Fragment>;
+                      }
 
-                  return (
-                    <Popover key={di}>
-                      <PopoverTrigger asChild>{cell}</PopoverTrigger>
-                      <PopoverContent className="w-64">
-                        <div className="mb-2 flex items-center justify-between gap-2">
-                          <div className="text-sm font-medium">
-                            {format(day, "d MMMM yyyy")}
-                          </div>
-                          {/* วันที่ส่งหลายครั้ง (คอนสตรเทนต์ 1 ครั้ง/วันเอา
+                      return (
+                        <Popover key={di}>
+                          <PopoverTrigger asChild>{cell}</PopoverTrigger>
+                          <PopoverContent className="w-64">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="text-sm font-medium">
+                                {format(day, "d MMMM yyyy")}
+                              </div>
+                              {/* วันที่ส่งหลายครั้ง (คอนสตรเทนต์ 1 ครั้ง/วันเอา
                           ออกแล้ว) — บอกจำนวนไว้กันงงว่าทำไม popover มีหลาย
                           บล็อก ดู grill-me 2026-08-14,
                           `devotion_multi_submit_design` */}
-                          {dayEntries.length > 1 && (
-                            <span className="text-xs text-muted-foreground">
-                              {dayEntries.length} รายการ
-                            </span>
-                          )}
-                        </div>
-                        <div className="max-h-72 space-y-3 overflow-y-auto">
-                          {dayEntries.map((entry) => (
-                            <div
-                              key={entry.id}
-                              className="border-b pb-3 last:border-b-0 last:pb-0"
-                            >
-                              {entry.locked ? (
-                                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                  <Lock className="size-3.5" />
-                                  เฝ้าเดี่ยวส่วนตัว
-                                </p>
-                              ) : (
-                                <>
-                                  <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
-                                    {entry.title}
-                                  </p>
-                                  {entry.image_urls[0] && (
-                                    <img
-                                      src={entry.image_urls[0]}
-                                      alt={entry.title}
-                                      className="mb-2 max-h-40 w-full rounded-md border object-cover"
-                                    />
-                                  )}
-                                  <Button
-                                    asChild
-                                    variant="link"
-                                    size="sm"
-                                    className="h-auto p-0"
-                                  >
-                                    <Link
-                                      to="/lamb-info/devotion/$devotionId"
-                                      params={{ devotionId: entry.id }}
-                                    >
-                                      อ่านเต็ม{" "}
-                                      <ArrowRight className="size-3.5" />
-                                    </Link>
-                                  </Button>
-                                </>
+                              {dayEntries.length > 1 && (
+                                <span className="text-xs text-muted-foreground">
+                                  {dayEntries.length} รายการ
+                                </span>
                               )}
                             </div>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  );
-                })}
-              </Fragment>
-            );
-          })}
-        </div>
+                            <div className="max-h-72 space-y-3 overflow-y-auto">
+                              {dayEntries.map((entry) => (
+                                <div
+                                  key={entry.id}
+                                  className="border-b pb-3 last:border-b-0 last:pb-0"
+                                >
+                                  {entry.locked ? (
+                                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                      <Lock className="size-3.5" />
+                                      เฝ้าเดี่ยวส่วนตัว
+                                    </p>
+                                  ) : (
+                                    <>
+                                      <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
+                                        {entry.title}
+                                      </p>
+                                      {entry.image_urls[0] && (
+                                        <img
+                                          src={entry.image_urls[0]}
+                                          alt={entry.title}
+                                          className="mb-2 max-h-40 w-full rounded-md border object-cover"
+                                        />
+                                      )}
+                                      <Button
+                                        asChild
+                                        variant="link"
+                                        size="sm"
+                                        className="h-auto p-0"
+                                      >
+                                        <Link
+                                          to="/lamb-info/devotion/$devotionId"
+                                          params={{ devotionId: entry.id }}
+                                        >
+                                          อ่านเต็ม{" "}
+                                          <ArrowRight className="size-3.5" />
+                                        </Link>
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      );
+                    })}
+                  </Fragment>
+                );
+              })}
+            </div>
+          );
+        })}
 
-        <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="inline-block size-2.5 rounded-xs bg-green-500 dark:bg-green-600" />
             ส่งแล้ว

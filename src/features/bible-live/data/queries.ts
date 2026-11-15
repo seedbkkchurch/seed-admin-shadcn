@@ -76,10 +76,30 @@ export function useLiveBiblePassage(
     queryKey: ["bible-live", "passage", bibleId, usfmRef],
     enabled: Boolean(bibleId && usfmRef),
     queryFn: () =>
-      invokeProxy<YouVersionPassageBody>(`bibles/${bibleId}/passages/${usfmRef}`, {
-        format: "text",
-      }),
+      invokeProxy<YouVersionPassageBody>(
+        `bibles/${bibleId}/passages/${usfmRef}`,
+        {
+          format: "text",
+        },
+      ),
     staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+  });
+}
+
+// ข้อพระคัมภีร์ประจำวันของ YouVersion — endpoint คืนแค่ "วันนี้คือข้อไหน"
+// ({ day, passage_id: "ISA.12.2" }) ไม่มีเนื้อความ ใช้กับการ์ดข้อประจำวันบน
+// หน้าจิตวิญญาณของฉัน (features/spiritual, grill-me 2026-11-15) ซึ่งเอา
+// passage_id ไปอ่านเนื้อความจากไฟล์พระคัมภีร์ในแอปเอง — day = วันที่ของปี
+// (1-366) ข้อของแต่ละวันไม่เปลี่ยน cache ยาวได้
+export type YouVersionVerseOfTheDay = { day?: number; passage_id?: string };
+
+export function useYouVersionVerseOfTheDay(day: number) {
+  return useQuery({
+    queryKey: ["bible-live", "verse-of-the-day", day],
+    queryFn: () =>
+      invokeProxy<YouVersionVerseOfTheDay>(`verse_of_the_days/${day}`, {}),
+    staleTime: 24 * 60 * 60 * 1000,
+    retry: 1,
   });
 }

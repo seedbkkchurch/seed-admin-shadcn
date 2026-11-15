@@ -19,6 +19,7 @@ import {
   Cake,
   MessageCircleHeart,
   GalleryHorizontalEnd,
+  Sprout,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -51,7 +52,9 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Dashboard",
-          url: "/",
+          // ย้ายจาก "/" มา /dashboard (grill-me 2026-11-15) — "/" เป็นตัวเลือก
+          // หน้าแรกตาม role (member/visitor → /spiritual) ทุก role ยังเห็นเมนูนี้
+          url: "/dashboard",
           icon: LayoutDashboard,
         },
         // แยกออกมาจากการ์ด "เกิดเดือนนี้" บน Dashboard (ที่ยังคงอยู่เหมือน
@@ -70,6 +73,13 @@ export const sidebarData: SidebarData = {
     {
       title: "เฝ้าเดี่ยวและอธิษฐาน",
       items: [
+        // Dashboard จิตวิญญาณและเฝ้าเดี่ยวของตัวเอง (features/spiritual) — ทุก
+        // role เห็น และเป็นหน้าแรกของ member/visitor (grill-me 2026-11-15)
+        {
+          title: "จิตวิญญาณของฉัน",
+          url: "/spiritual",
+          icon: Sprout,
+        },
         {
           title: "เฝ้าเดี่ยว",
           url: "/lamb-info/devotion",
