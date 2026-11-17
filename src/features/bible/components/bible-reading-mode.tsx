@@ -30,6 +30,7 @@ import {
   type BibleTextParseMode,
 } from "./bible-text";
 import { ChapterInput } from "./chapter-input";
+import { ChapterReadMarker } from "./chapter-read-marker";
 import {
   type BibleBookMeta,
   type BibleLanguageMode,
@@ -388,6 +389,13 @@ export function BibleReadingMode({
                   })}
                 </div>
               )}
+              {/* ตัวนับการอ่านท้ายบท (grill-me 2026-11-16) */}
+              <ChapterReadMarker
+                className="mt-8 mb-10"
+                bookNumber={bookNumber}
+                chapter={chapter}
+                verseCount={verseNumbers.length}
+              />
             </>
           )}
         </div>

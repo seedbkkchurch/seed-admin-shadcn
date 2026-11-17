@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toBlob, toCanvas } from "html-to-image";
-import { Check, Loader2, Search, Share2 } from "lucide-react";
+import { Check, ImagePlus, Loader2, Search, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,8 +64,12 @@ type Thumb = { id: string; thumbUrl: string; fullUrl: string; label: string };
 // - พื้นหลัง: แท็บ "รูปภาพ" (Pexels) หรือ "GIF" (GIPHY) — แถวแนะนำ + ค้นหา
 // - ถ้าเป็น GIF เลือกผลลัพธ์ได้: ภาพนิ่ง (PNG 1080x1350 เฟรมเดียว) หรือ
 //   GIF เคลื่อนไหว (540x675 สร้างใน lib/animated-gif.ts)
-// รูปผลลัพธ์สร้างล่วงหน้าทุกครั้งที่เปลี่ยนตัวเลือก ปุ่มแชร์เรียกได้ทันที
-// (กัน iOS ตัดสิทธิ์ user gesture) เหมือนการ์ดสถิติเฝ้าเดี่ยว
+// เดิมสร้างรูปผลลัพธ์ล่วงหน้าทุกครั้งที่เปลี่ยนตัวเลือก — เลือกไปมาแล้วค้าง
+// เพราะสร้างไฟล์ใหม่ตลอด (โดยเฉพาะ GIF เคลื่อนไหว) เปลี่ยนเป็นกดยืนยันก่อน
+// (grill-me 2026-11-16): พรีวิวเปลี่ยนตามตัวเลือกทันทีแต่ยังไม่สร้างไฟล์ →
+// กด "สร้างการ์ด" → เสร็จแล้วปุ่มเดิมเปลี่ยนเป็น "แชร์" (แตะแยกอีกครั้ง กัน
+// iOS ตัดสิทธิ์ user gesture) เปลี่ยนตัวเลือกระหว่างสร้าง/หลังสร้าง = ยกเลิก
+// งานเดิม ปุ่มกลับเป็น "สร้างการ์ด"
 export function BibleVerseShareDialog({
   open,
   onOpenChange,
@@ -166,7 +170,9 @@ export function BibleVerseShareDialog({
 
   const cardRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const renderKey = `${sorted.join(",")}|${lang}|${imageUrl ?? "none"}|${animated ? "anim" : "still"}`;
+  const buildRenderKey = (url: string | null) =>
+    `${sorted.join(",")}|${lang}|${url ?? "none"}|${animated ? "anim" : "still"}`;
+  const renderKey = buildRenderKey(imageUrl);
   const [rendered, setRendered] = useState<{ key: string; blob: Blob } | null>(
     null,
   );
@@ -174,13 +180,17 @@ export function BibleVerseShareDialog({
     key: string;
     ratio: number;
   } | null>(null);
+  // ชุดตัวเลือกที่ผู้ใช้กด "สร้างการ์ด" ไว้ — สร้างไฟล์เฉพาะเมื่อยังตรงกับ
+  // ตัวเลือกปัจจุบัน เปลี่ยนตัวเลือกแล้วไม่ตรง = หยุดสร้าง รอให้กดใหม่
+  const [requestedKey, setRequestedKey] = useState<string | null>(null);
   const blob = rendered?.key === renderKey ? rendered.blob : null;
+  const building = requestedKey === renderKey && !blob;
   const progressRatio = progress?.key === renderKey ? progress.ratio : 0;
   // รอผลค้นหาชุดแรกก่อนค่อยสร้าง (ไม่งั้นได้การ์ดพื้นเรียบแวบนึง)
   const waitingThumbs = activeSearch.isPending && !activeSearch.isError;
 
   useEffect(() => {
-    if (!open || tooLong || waitingThumbs) return;
+    if (!open || tooLong || waitingThumbs || !building) return;
     const signal = { cancelled: false };
     const run = async () => {
       await new Promise((r) => setTimeout(r, 60));
@@ -214,6 +224,7 @@ export function BibleVerseShareDialog({
         } catch {
           if (!signal.cancelled) {
             toast.error("สร้าง GIF เคลื่อนไหวไม่สำเร็จ ลองเลือก GIF อื่น");
+            setRequestedKey(null);
           }
           return;
         }
@@ -234,10 +245,16 @@ export function BibleVerseShareDialog({
         );
         result = await toBlob(node, { pixelRatio: 1, cacheBust: true });
       } catch {
-        // รูปพื้นหลังโหลดข้ามโดเมนไม่ได้ — ใช้พื้นเรียบแทน (effect จะรันใหม่)
-        if (!signal.cancelled && imageUrl) {
+        if (signal.cancelled) return;
+        if (imageUrl) {
+          // รูปพื้นหลังโหลดข้ามโดเมนไม่ได้ — สร้างต่อด้วยพื้นเรียบเลย ไม่ต้อง
+          // ให้กดใหม่ (ย้ายคำขอไปที่ key ของพื้นเรียบ แล้ว effect จะรันใหม่)
           toast.info("โหลดพื้นหลังไม่สำเร็จ ใช้พื้นเรียบแทน");
           setFailedUrl(imageUrl);
+          setRequestedKey(buildRenderKey(null));
+        } else {
+          toast.error("สร้างการ์ดไม่สำเร็จ");
+          setRequestedKey(null);
         }
         return;
       }
@@ -246,12 +263,16 @@ export function BibleVerseShareDialog({
       }
     };
     run().catch(() => {
-      if (!signal.cancelled) toast.error("สร้างการ์ดไม่สำเร็จ");
+      if (signal.cancelled) return;
+      toast.error("สร้างการ์ดไม่สำเร็จ");
+      setRequestedKey(null);
     });
     return () => {
       signal.cancelled = true;
     };
-  }, [open, renderKey, tooLong, waitingThumbs, animated, imageUrl]);
+    // buildRenderKey ผูกกับค่าชุดเดียวกับ renderKey อยู่แล้ว
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, renderKey, tooLong, waitingThumbs, building, animated, imageUrl]);
 
   const fileName = `${safeFileNamePart(`${bookNameTh}-${chapter}-${range}`)}.${animated ? "gif" : "png"}`;
 
@@ -275,7 +296,14 @@ export function BibleVerseShareDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          // ปิดหน้าต่างระหว่างสร้าง = ยกเลิก เปิดใหม่ต้องกดสร้างเอง
+          if (!next) setRequestedKey(null);
+          onOpenChange(next);
+        }}
+      >
         <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-lg [&>*]:min-w-0">
           <DialogHeader>
             <DialogTitle>แชร์ข้อพระคัมภีร์</DialogTitle>
@@ -440,23 +468,41 @@ export function BibleVerseShareDialog({
             type="button"
             size="lg"
             className="h-12 w-full bg-[#05C64F] text-base font-semibold text-white hover:bg-[#05C64F]/90"
-            disabled={!blob || tooLong}
-            onClick={() =>
-              blob &&
-              shareOrDownloadImage(
-                blob,
-                fileName,
-                `${bookNameTh} ${chapter}:${range}`,
-              )
-            }
+            disabled={tooLong || building || (!blob && waitingThumbs)}
+            onClick={() => {
+              if (blob) {
+                shareOrDownloadImage(
+                  blob,
+                  fileName,
+                  `${bookNameTh} ${chapter}:${range}`,
+                );
+              } else {
+                setRequestedKey(renderKey);
+              }
+            }}
           >
-            {!blob && !tooLong ? (
+            {blob ? (
+              <Share2 className="size-5" />
+            ) : building ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (
-              <Share2 className="size-5" />
+              <ImagePlus className="size-5" />
             )}
-            {!blob && !tooLong ? busyLabel : animated ? "แชร์ GIF" : "แชร์"}
+            {blob
+              ? animated
+                ? "แชร์ GIF"
+                : "แชร์"
+              : building
+                ? busyLabel
+                : animated
+                  ? "สร้าง GIF"
+                  : "สร้างการ์ด"}
           </Button>
+          {!blob && !building && !tooLong && (
+            <p className="text-muted-foreground -mt-2 text-center text-xs">
+              เลือกภาษาและพื้นหลังให้เรียบร้อย แล้วกดสร้างเพื่อแชร์
+            </p>
+          )}
         </DialogContent>
       </Dialog>
 

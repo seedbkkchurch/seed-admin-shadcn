@@ -284,6 +284,41 @@ export type Database = {
           },
         ]
       }
+      lamb_bible_reading: {
+        Row: {
+          book: number
+          chapter: number
+          created_at: string
+          id: string
+          lamb_id: string
+          read_date: string
+        }
+        Insert: {
+          book: number
+          chapter: number
+          created_at?: string
+          id?: string
+          lamb_id: string
+          read_date?: string
+        }
+        Update: {
+          book?: number
+          chapter?: number
+          created_at?: string
+          id?: string
+          lamb_id?: string
+          read_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lamb_bible_reading_lamb_id_fkey"
+            columns: ["lamb_id"]
+            isOneToOne: false
+            referencedRelation: "lamb_info"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lamb_devotion: {
         Row: {
           content_html: string
@@ -1015,6 +1050,17 @@ export type Database = {
       }
     }
     Views: {
+      lamb_bible_reading_summary: {
+        Row: {
+          book: number | null
+          chapter: number | null
+          first_read_date: string | null
+          lamb_id: string | null
+          last_read_date: string | null
+          times_read: number | null
+        }
+        Relationships: []
+      }
       lamb_directory: {
         Row: {
           first_name: string | null

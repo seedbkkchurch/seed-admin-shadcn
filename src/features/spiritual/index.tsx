@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DevotionSection } from "@/features/lamb-info/components/devotion-section";
 import { DevotionStatTiles } from "@/features/lamb-info/components/devotion-stat-tiles";
 import { MyDevotionFan } from "@/features/roadmap/components/my-devotion-fan";
+import { BibleProgressCard } from "./components/bible-progress-card";
 import { MyGiftRadarCard } from "./components/my-gift-radar-card";
 import { OnThisDayCard } from "./components/on-this-day-card";
 import { PrayerSummary } from "./components/prayer-summary";
@@ -84,6 +85,9 @@ export function Spiritual() {
           <>
             {/* การ์ดพัดเฝ้าเดี่ยวของตัวเอง — ตัวเดียวกับหน้า /roadmap */}
             <MyDevotionFan embedded />
+
+            {/* ความคืบหน้าการอ่านพระคัมภีร์ (grill-me 2026-11-16) */}
+            <BibleProgressCard />
 
             <section className="space-y-4">
               <h3 className="text-lg font-semibold">สถิติเฝ้าเดี่ยว</h3>

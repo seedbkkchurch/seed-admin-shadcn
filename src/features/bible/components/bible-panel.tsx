@@ -18,6 +18,7 @@ import { BibleNav } from "./bible-nav";
 import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
 import { AiHelpButton } from "./ai-help-button";
 import { BibleVerseShareDialog } from "./bible-verse-share-dialog";
+import { ChapterReadMarker } from "./chapter-read-marker";
 import { indexVerses, VerseBlock } from "./verse-block";
 
 const EMPTY_SET: ReadonlySet<number> = new Set();
@@ -340,11 +341,21 @@ export function BiblePanel({
               />
             ))}
 
+            {/* ตัวนับการอ่านท้ายบท (grill-me 2026-11-16) — หยุดนับตอนโหมดอ่าน
+            เต็มจอเปิดทับอยู่ (โหมดนั้นมีตัวนับของตัวเอง) */}
+            <ChapterReadMarker
+              className="mt-6"
+              bookNumber={bookNumber}
+              chapter={chapter}
+              verseCount={verseNumbers.length}
+              disabled={readingMode}
+            />
+
             {/* ปุ่มเปลี่ยนบทแบบธรรมดา — วางไว้ล่างสุดใต้ข้อสุดท้าย (ไม่ใช่
             เหนือหัวข้อ) เพราะอ่านพระคัมภีร์ไล่บนลงล่าง อ่านจบพอดีก็เจอปุ่ม
             เลื่อนบทต่อได้เลย ปุ่มไอคอนกลมแบบเดียวกับลูกศรลอยใน full-screen
             reading mode (ดู grill-me 2026-08-23) */}
-            <div className="mt-6 flex items-center justify-between border-t pt-4">
+            <div className="mt-4 flex items-center justify-between border-t pt-4">
               <Button
                 type="button"
                 variant="secondary"

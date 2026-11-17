@@ -67,6 +67,7 @@ import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_auth
 import { Route as AuthenticatedNewsTableRouteImport } from './routes/_authenticated/news/table'
 import { Route as AuthenticatedNewsNewRouteImport } from './routes/_authenticated/news/new'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedBibleProgressRouteImport } from './routes/_authenticated/bible/progress'
 import { Route as AuthenticatedLambInfoDevotionIndexRouteImport } from './routes/_authenticated/lamb-info/devotion/index'
 import { Route as AuthenticatedLambInfoLambIdIndexRouteImport } from './routes/_authenticated/lamb-info/$lambId/index'
 import { Route as AuthenticatedNewsNewsIdEditRouteImport } from './routes/_authenticated/news/$newsId/edit'
@@ -392,6 +393,12 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBibleProgressRoute =
+  AuthenticatedBibleProgressRouteImport.update({
+    id: '/bible/progress',
+    path: '/bible/progress',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLambInfoDevotionIndexRoute =
   AuthenticatedLambInfoDevotionIndexRouteImport.update({
     id: '/lamb-info/devotion/',
@@ -473,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/auth/popup-callback': typeof AuthPopupCallbackRoute
   '/devotion/': typeof DevotionIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/bible/progress': typeof AuthenticatedBibleProgressRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/news/new': typeof AuthenticatedNewsNewRoute
   '/news/table': typeof AuthenticatedNewsTableRoute
@@ -539,6 +547,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/devotion': typeof DevotionIndexRoute
   '/news': typeof NewsIndexRoute
+  '/bible/progress': typeof AuthenticatedBibleProgressRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/news/new': typeof AuthenticatedNewsNewRoute
   '/news/table': typeof AuthenticatedNewsTableRoute
@@ -610,6 +619,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/devotion/': typeof DevotionIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/_authenticated/bible/progress': typeof AuthenticatedBibleProgressRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/news/new': typeof AuthenticatedNewsNewRoute
   '/_authenticated/news/table': typeof AuthenticatedNewsTableRoute
@@ -679,6 +689,7 @@ export interface FileRouteTypes {
     | '/auth/popup-callback'
     | '/devotion/'
     | '/news/'
+    | '/bible/progress'
     | '/errors/$error'
     | '/news/new'
     | '/news/table'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/'
     | '/devotion'
     | '/news'
+    | '/bible/progress'
     | '/errors/$error'
     | '/news/new'
     | '/news/table'
@@ -815,6 +827,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/devotion/'
     | '/news/'
+    | '/_authenticated/bible/progress'
     | '/_authenticated/errors/$error'
     | '/_authenticated/news/new'
     | '/_authenticated/news/table'
@@ -1293,6 +1306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bible/progress': {
+      id: '/_authenticated/bible/progress'
+      path: '/bible/progress'
+      fullPath: '/bible/progress'
+      preLoaderRoute: typeof AuthenticatedBibleProgressRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lamb-info/devotion/': {
       id: '/_authenticated/lamb-info/devotion/'
       path: '/lamb-info/devotion'
@@ -1393,6 +1413,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedMentorshipChartRoute: typeof AuthenticatedMentorshipChartRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedBibleProgressRoute: typeof AuthenticatedBibleProgressRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedNewsNewRoute: typeof AuthenticatedNewsNewRoute
   AuthenticatedNewsTableRoute: typeof AuthenticatedNewsTableRoute
@@ -1435,6 +1456,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedMentorshipChartRoute: AuthenticatedMentorshipChartRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedBibleProgressRoute: AuthenticatedBibleProgressRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedNewsNewRoute: AuthenticatedNewsNewRoute,
   AuthenticatedNewsTableRoute: AuthenticatedNewsTableRoute,

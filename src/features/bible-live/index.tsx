@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useBibleBooks } from "@/features/bible/data/queries";
 import { BookCombobox } from "@/features/bible/components/book-combobox";
 import { ChapterInput } from "@/features/bible/components/chapter-input";
+import { ChapterReadMarker } from "@/features/bible/components/chapter-read-marker";
 import { BibleSelect } from "./components/bible-select";
 import { PassageView } from "./components/passage-view";
 import { useLiveBiblePassage, useYouVersionBibles } from "./data/queries";
@@ -133,6 +134,15 @@ export function BibleLive() {
                 error={passageQuery.error}
                 data={passageQuery.data}
               />
+              {/* ตัวนับการอ่านท้ายบท (grill-me 2026-11-16) — นับรวมกับหน้า
+              /bible เฉพาะเมื่อโหลดเนื้อความได้จริง */}
+              {passageQuery.data?.data?.content ? (
+                <ChapterReadMarker
+                  className="mt-6"
+                  bookNumber={bookNumber}
+                  chapter={chapterNumber}
+                />
+              ) : null}
             </CardContent>
           </Card>
         )}
