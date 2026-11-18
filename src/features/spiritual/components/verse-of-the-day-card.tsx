@@ -1,40 +1,24 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { BookOpenText } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDailyBackground } from "../data/daily-background";
 import { useVerseOfTheDay } from "../data/verse-of-the-day";
+import { BackgroundPhoto } from "./background-photo";
+import { VerseShareButton } from "./verse-share-button";
 
 // การ์ดข้อพระคัมภีร์ประจำวัน — พื้นเข้มตายตัวทั้ง light/dark ให้เป็นจุดเด่น
 // บนสุดของหน้า (ดู data/verse-of-the-day.ts ว่าข้อมาจากไหน) พื้นหลังเป็นรูป
 // ธรรมชาติสุ่มวันละรูปจาก Pexels (data/daily-background.ts) ทับด้วยชั้นมืดให้
 // ตัวอักษรขาวอ่านออกทุกรูป โหลดรูปไม่ได้ก็เหลือพื้นไล่เฉดเข้มเดิม
 export function VerseOfTheDayCard({ today }: { today: Date }) {
-  const { ref, reference, text, isPending, isError } = useVerseOfTheDay(today);
+  const verse = useVerseOfTheDay(today);
+  const { ref, reference, text, isPending, isError } = verse;
   const { data: background } = useDailyBackground(today);
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
 
   return (
-    <section className="relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-xl bg-linear-to-br from-slate-800 to-slate-950 p-6 text-white min-h-64 ring-1 ring-white/10 ring-inset sm:p-8">
-      {background && (
-        <>
-          <img
-            src={background.imageUrl}
-            alt=""
-            onLoad={() => setLoadedUrl(background.imageUrl)}
-            className={cn(
-              "absolute inset-0 size-full object-cover transition-opacity duration-700",
-              loadedUrl === background.imageUrl ? "opacity-100" : "opacity-0",
-            )}
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-linear-to-t from-black/75 via-black/50 to-black/40"
-          />
-        </>
-      )}
+    <section className="relative flex flex-col justify-between gap-4 overflow-hidden rounded-xl bg-linear-to-br from-slate-800 to-slate-950 p-5 text-white ring-1 ring-white/10 ring-inset">
+      {background && <BackgroundPhoto photo={background} />}
 
       <div className="relative flex items-center gap-2 text-sm font-medium text-white/80">
         <BookOpenText className="size-4" />
@@ -52,8 +36,8 @@ export function VerseOfTheDayCard({ today }: { today: Date }) {
           โหลดข้อพระคัมภีร์ประจำวันไม่สำเร็จ
         </p>
       ) : (
-        <blockquote className="relative space-y-4">
-          <p className="text-xl leading-relaxed font-medium text-balance sm:text-2xl sm:leading-relaxed">
+        <blockquote className="relative space-y-3">
+          <p className="text-lg leading-relaxed font-medium text-balance sm:text-xl sm:leading-relaxed">
             {text}
           </p>
           <footer className="text-sm text-white/80">
@@ -64,22 +48,25 @@ export function VerseOfTheDayCard({ today }: { today: Date }) {
 
       {ref && (
         <div className="relative flex flex-wrap items-center justify-between gap-3">
-          <Button
-            asChild
-            size="sm"
-            variant="secondary"
-            className="bg-white/15 text-white hover:bg-white/25"
-          >
-            <Link
-              to="/bible/$book/$chapter"
-              params={{
-                book: String(ref.bookNumber),
-                chapter: String(ref.chapter),
-              }}
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="bg-white/15 text-white hover:bg-white/25"
             >
-              อ่านทั้งบท
-            </Link>
-          </Button>
+              <Link
+                to="/bible/$book/$chapter"
+                params={{
+                  book: String(ref.bookNumber),
+                  chapter: String(ref.chapter),
+                }}
+              >
+                อ่านทั้งบท
+              </Link>
+            </Button>
+            <VerseShareButton verse={verse} />
+          </div>
           {background && (
             <a
               href={background.pexelsUrl}

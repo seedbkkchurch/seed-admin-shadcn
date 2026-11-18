@@ -10,24 +10,42 @@ import {
 // เดี่ยว "สุ่ม" โดยเลือกจากวันที่ของปี — ทั้งวันทุกคนได้รูปเดียวกัน คู่กับข้อ
 // ของวันนั้น พรุ่งนี้เปลี่ยนรูป เก็บรูปของวันนี้ไว้ใน localStorage ด้วย เปิดหน้า
 // ซ้ำในวันเดียวกันจึงไม่เรียก Pexels อีก (โควตารวม 200 ครั้ง/ชม.)
-const QUERIES = [
-  "mountain sunrise",
-  "forest sunlight",
-  "calm lake",
-  "sky clouds",
-  "ocean horizon",
-  "meadow morning",
-  "starry night sky",
-  "misty hills",
-];
-const STORAGE_KEY = "spiritual-daily-background-v1";
+// "verse" = การ์ดข้อพระคัมภีร์ประจำวัน, "memory" = การ์ดวันนี้ในอดีต (grill-me
+// 2026-11-18) — คนละชุดคำค้น/คนละ key ใน localStorage จะได้ไม่ได้รูปเดียวกัน
+export type BackgroundVariant = "verse" | "memory";
+const QUERIES: Record<BackgroundVariant, string[]> = {
+  verse: [
+    "mountain sunrise",
+    "forest sunlight",
+    "calm lake",
+    "sky clouds",
+    "ocean horizon",
+    "meadow morning",
+    "starry night sky",
+    "misty hills",
+  ],
+  memory: [
+    "golden hour field",
+    "autumn leaves path",
+    "window morning light",
+    "old bridge fog",
+    "wildflower field",
+    "lantern night",
+    "vintage journal",
+    "rain window",
+  ],
+};
+const STORAGE_KEYS: Record<BackgroundVariant, string> = {
+  verse: "spiritual-daily-background-v1",
+  memory: "spiritual-memory-background-v1",
+};
 
 type Cached = { date: string; photo: PexelsPhoto };
 
-function readCache(date: string): PexelsPhoto | null {
+function readCache(date: string, key: string): PexelsPhoto | null {
   try {
     const cached = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) ?? "null",
+      localStorage.getItem(key) ?? "null",
     ) as Cached | null;
     return cached?.date === date && cached.photo?.imageUrl
       ? cached.photo
@@ -37,17 +55,23 @@ function readCache(date: string): PexelsPhoto | null {
   }
 }
 
-export function useDailyBackground(today: Date) {
+export function useDailyBackground(
+  today: Date,
+  variant: BackgroundVariant = "verse",
+) {
   const date = format(today, "yyyy-MM-dd");
   const day = getDayOfYear(today);
 
   return useQuery({
-    queryKey: ["spiritual", "daily-background", date, day],
+    queryKey: ["spiritual", "daily-background", variant, date, day],
     queryFn: async (): Promise<PexelsPhoto | null> => {
-      const cached = readCache(date);
+      const cached = readCache(date, STORAGE_KEYS[variant]);
       if (cached) return cached;
 
-      const { photos } = await searchPexels(QUERIES[day % QUERIES.length], 1);
+      const { photos } = await searchPexels(
+        QUERIES[variant][day % QUERIES[variant].length],
+        1,
+      );
       // การ์ดเป็นแนวนอน — เลือกจากรูปแนวนอนก่อน ถ้าไม่มีค่อยใช้ทั้งหมด
       const landscape = photos.filter((photo) => photo.width > photo.height);
       const pool = landscape.length > 0 ? landscape : photos;
@@ -56,7 +80,7 @@ export function useDailyBackground(today: Date) {
 
       try {
         localStorage.setItem(
-          STORAGE_KEY,
+          STORAGE_KEYS[variant],
           JSON.stringify({ date, photo } satisfies Cached),
         );
       } catch {

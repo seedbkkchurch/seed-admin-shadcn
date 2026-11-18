@@ -1,5 +1,6 @@
 import { getDayOfYear } from "date-fns";
 import { useBibleBookFile, useBibleBooks } from "@/features/bible/data/queries";
+import type { BibleVerse } from "@/features/bible/data/types";
 import { useYouVersionVerseOfTheDay } from "@/features/bible-live/data/queries";
 import { USFM_CODES } from "@/features/bible-live/data/usfm-codes";
 
@@ -79,28 +80,27 @@ function fallbackVerse(day: number): VerseRef {
   return { bookNumber, chapter, verseStart, verseEnd };
 }
 
-export function useVerseOfTheDay(today: Date) {
-  const day = getDayOfYear(today);
-  const votd = useYouVersionVerseOfTheDay(day);
-  const parsed = parsePassageId(votd.data?.passage_id);
-  // รอ YouVersion ตอบก่อน — ตอบไม่ได้/อ่านไม่ออกค่อยใช้รายการสำรอง
-  const ref = votd.isPending ? null : (parsed ?? fallbackVerse(day));
-  const isFallback = !votd.isPending && !parsed;
-
+// อ่านเนื้อความ (Thai KJV ในแอป) + ชื่อเล่ม/อ้างอิงของข้อที่ได้ ใช้ร่วมกันทั้ง
+// ข้อประจำวันและข้อประจำสัปดาห์ — `verses` ส่งต่อให้หน้าต่างแชร์การ์ด
+function useResolvedVerse(
+  ref: VerseRef | null,
+  waiting: boolean,
+  isFallback: boolean,
+) {
   const books = useBibleBooks();
   const bookFile = useBibleBookFile("thai", ref?.bookNumber);
 
-  const verses = ref
+  const verses: BibleVerse[] = ref
     ? (bookFile.data?.chapters[String(ref.chapter)] ?? []).filter(
         (verse) => verse.verse >= ref.verseStart && verse.verse <= ref.verseEnd,
       )
     : [];
-  const bookName = ref
-    ? books.data?.find((book) => book.number === ref.bookNumber)?.nameTh
+  const book = ref
+    ? books.data?.find((b) => b.number === ref.bookNumber)
     : undefined;
   const reference =
-    ref && bookName
-      ? `${bookName} ${ref.chapter}:${ref.verseStart}${
+    ref && book
+      ? `${book.nameTh} ${ref.chapter}:${ref.verseStart}${
           ref.verseEnd > ref.verseStart ? `-${ref.verseEnd}` : ""
         }`
       : undefined;
@@ -108,10 +108,22 @@ export function useVerseOfTheDay(today: Date) {
   return {
     ref,
     reference,
+    bookNameTh: book?.nameTh,
+    bookNameEn: book?.nameEn,
+    verses,
     text: verses.map((verse) => verse.text.trim()).join(" "),
     isFallback,
-    isPending: votd.isPending || bookFile.isPending || books.isPending,
+    isPending: waiting || bookFile.isPending || books.isPending,
     isError:
       bookFile.isError || (!!ref && !bookFile.isPending && verses.length === 0),
   };
+}
+
+export function useVerseOfTheDay(today: Date) {
+  const day = getDayOfYear(today);
+  const votd = useYouVersionVerseOfTheDay(day);
+  const parsed = parsePassageId(votd.data?.passage_id);
+  // รอ YouVersion ตอบก่อน — ตอบไม่ได้/อ่านไม่ออกค่อยใช้รายการสำรอง
+  const ref = votd.isPending ? null : (parsed ?? fallbackVerse(day));
+  return useResolvedVerse(ref, votd.isPending, !votd.isPending && !parsed);
 }

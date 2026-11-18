@@ -13,7 +13,9 @@ import { DevotionSection } from "@/features/lamb-info/components/devotion-sectio
 import { DevotionStatTiles } from "@/features/lamb-info/components/devotion-stat-tiles";
 import { MyDevotionFan } from "@/features/roadmap/components/my-devotion-fan";
 import { BibleProgressCard } from "./components/bible-progress-card";
+import { DevotionCalendarCard } from "./components/devotion-calendar-card";
 import { MyGiftRadarCard } from "./components/my-gift-radar-card";
+import { MyProfileAvatar } from "./components/my-profile-avatar";
 import { OnThisDayCard } from "./components/on-this-day-card";
 import { PrayerSummary } from "./components/prayer-summary";
 import { TodayStreakCard } from "./components/today-streak-card";
@@ -46,26 +48,49 @@ export function Spiritual() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-6 sm:gap-8">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            จิตวิญญาณของฉัน
-            {myLamb.data
-              ? ` — ${myLamb.data.nick_name ?? myLamb.data.first_name}`
-              : ""}
-          </h2>
-          <p className="text-muted-foreground">
-            ภาพรวมเฝ้าเดี่ยว คำอธิษฐาน และการเติบโตของคุณ
-          </p>
+        {/* หัวหน้าแบบโปรไฟล์: รูปสี่เหลี่ยมมน 96/128px + ชื่อ (grill-me 2026-11-18;
+            ลองย้ายไปแถวข้อพระคัมภีร์แล้วไม่เวิร์ค เลยกลับมาที่นี่) */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          {isLoading ? (
+            <Skeleton className="size-24 shrink-0 rounded-xl sm:size-32" />
+          ) : myLamb.data ? (
+            <MyProfileAvatar
+              lamb={myLamb.data}
+              className="size-24 sm:size-32"
+            />
+          ) : null}
+          <div className="min-w-0">
+            <h2 className="text-2xl font-bold tracking-tight">
+              จิตวิญญาณของฉัน
+              {myLamb.data
+                ? ` — ${myLamb.data.nick_name ?? myLamb.data.first_name}`
+                : ""}
+            </h2>
+            <p className="text-muted-foreground">
+              ภาพรวมเฝ้าเดี่ยว คำอธิษฐาน และการเติบโตของคุณ
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          {/* ข้อประจำวัน + วันนี้ในอดีต (พื้นหลังรูปจาก Pexels) ซ้อนกันในคอลัมน์ซ้าย
+              (grill-me 2026-11-18) */}
+          <div className="flex flex-col gap-4 lg:col-span-2">
             <VerseOfTheDayCard today={today} />
+            {isLoading ? (
+              <Skeleton className="h-48" />
+            ) : lambId ? (
+              <OnThisDayCard lambId={lambId} today={today} />
+            ) : null}
           </div>
           {isLoading ? (
             <Skeleton className="h-64" />
           ) : lambId ? (
-            <TodayStreakCard lambId={lambId} />
+            // สถิติต่อเนื่อง + ปฏิทินเฝ้าเดี่ยวซ้อนกันในคอลัมน์ขวา (grill-me 2026-11-18)
+            <div className="flex flex-col gap-4">
+              <TodayStreakCard lambId={lambId} />
+              <DevotionCalendarCard lambId={lambId} today={today} />
+            </div>
           ) : null}
         </div>
 
@@ -97,12 +122,7 @@ export function Spiritual() {
 
             <PrayerSummary lambId={lambId} />
 
-            <div className="grid gap-4 lg:grid-cols-3">
-              <OnThisDayCard lambId={lambId} today={today} />
-              <div className="lg:col-span-2">
-                <MyGiftRadarCard lambId={lambId} />
-              </div>
-            </div>
+            <MyGiftRadarCard lambId={lambId} />
           </>
         )}
       </Main>
