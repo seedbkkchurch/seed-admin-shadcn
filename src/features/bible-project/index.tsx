@@ -13,6 +13,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { BibleProjectCredit, BibleProjectHero } from "./components/hero";
 import { VideoPlayerDialog } from "./components/video-player-dialog";
 import { VideoRow } from "./components/video-row";
 import {
@@ -77,31 +78,27 @@ export function BibleProject() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Bible Project</h2>
-          <p className="text-muted-foreground">
-            วิดีโอแอนิเมชันจาก BibleProject ภาษาไทย {TOTAL_VIDEOS} วิดีโอ
-            ช่วยให้เห็นพระคัมภีร์เป็นเรื่องราวเดียวที่นำไปสู่พระเยซู
-          </p>
-        </div>
+        <BibleProjectHero
+          subtitle={`วิดีโอแอนิเมชันจาก BibleProject ภาษาไทย ${TOTAL_VIDEOS} วิดีโอ`}
+        />
 
-        <div className="relative max-w-md">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+        <div className="relative mx-auto w-full max-w-2xl">
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute start-4 top-1/2 size-5 -translate-y-1/2" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="ค้นหาวิดีโอ เช่น โรม หรือ Romans"
-            className="ps-9 pe-9"
+            className="h-12 rounded-full ps-12 pe-12 text-base md:text-lg"
             aria-label="ค้นหาวิดีโอ"
           />
           {isSearching && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="text-muted-foreground hover:text-foreground absolute end-2 top-1/2 -translate-y-1/2 rounded p-1"
+              className="text-muted-foreground hover:text-foreground absolute end-3 top-1/2 -translate-y-1/2 rounded-full p-1.5"
               aria-label="ล้างคำค้นหา"
             >
-              <X className="size-4" />
+              <X className="size-5" />
             </button>
           )}
         </div>
@@ -126,10 +123,10 @@ export function BibleProject() {
                     disabled={isSearching}
                     className="hover:bg-muted/40 flex w-full items-center gap-4 rounded-xl p-2 text-start transition-colors disabled:cursor-default"
                   >
-                    <div className="bg-muted size-16 shrink-0 overflow-hidden rounded-2xl sm:size-24">
+                    <div className="bg-muted aspect-[3/2] w-24 shrink-0 overflow-hidden rounded-2xl sm:w-40">
                       {cover && (
                         <img
-                          src={youtubeThumbnailUrl(cover)}
+                          src={youtubeThumbnailUrl(cover, "mq")}
                           alt=""
                           loading="lazy"
                           className="size-full object-cover"
@@ -175,6 +172,7 @@ export function BibleProject() {
             })}
           </div>
         )}
+        <BibleProjectCredit />
       </Main>
 
       <VideoPlayerDialog

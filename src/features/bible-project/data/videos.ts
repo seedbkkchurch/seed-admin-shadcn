@@ -25,8 +25,13 @@ export type BibleProjectSection = {
   videos: BibleProjectVideo[];
 };
 
-export function youtubeThumbnailUrl(youtubeId: string) {
-  return `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+// hq = 480×360 (4:3 มีแถบดำบน-ล่าง ใช้กับกรอบ 16:9 ได้เพราะครอปแถบออกพอดี)
+// mq = 320×180 (16:9 ไม่มีแถบดำ ใช้กับกรอบสี่เหลี่ยมจัตุรัส/3:2)
+export function youtubeThumbnailUrl(
+  youtubeId: string,
+  size: "hq" | "mq" = "hq",
+) {
+  return `https://i.ytimg.com/vi/${youtubeId}/${size}default.jpg`;
 }
 
 export function youtubeWatchUrl(youtubeId: string) {

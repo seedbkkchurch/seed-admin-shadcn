@@ -1,0 +1,126 @@
+/*
+ * Hero ของหน้า /bible-project — จำลองจาก getanyui capture ของ
+ * bibleproject.com/th/#videos (2026-11-19): วงแหวนรูปการ์ดหมุนช้ามาก 2 วง
+ * (วงในหมุนกลับทาง) + หัวข้อใหญ่ตรงกลาง ค่าทั้งหมดตาม spec.md ของ capture
+ * รูปในวงแหวนใช้รูปปก YouTube ของวิดีโอในหน้านี้ ไม่ได้คัดลอกภาพของเว็บต้นทาง
+ */
+
+.bp-hero {
+  /* tokens จาก capture */
+  --size-3: 24px;
+  --size-5: 40px;
+  --border-radius-none: 0px;
+  --home-carousel-diameter: clamp(4000px, 600vw, 6000px);
+  --home-carousel-item-height: calc(var(--home-carousel-diameter) * 0.03);
+  --home-carousel-duration: 4000s;
+  --home-hub-heading-font-size: clamp(
+    2.5rem,
+    2.5rem + (4.5 - 2.5) * ((100vi - 40rem) / 31.5),
+    4.5rem
+  );
+  --home-hub-heading-line-height: 1.0625;
+  --home-hub-heading-max-inline-size: 20ch;
+  --letter-spacing-tight: -0.025em;
+  --font-weight-semibold: 600;
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow-x: clip;
+}
+
+.bp-carousel {
+  block-size: clamp(270px, 40.5vw, 405px);
+  inline-size: 100%;
+  position: relative;
+}
+
+.bp-carousel-clip {
+  z-index: -1;
+  block-size: clamp(300px, 75vw, 1500px);
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+
+.bp-carousel-ring {
+  --home-carousel-radius: calc(
+    var(--home-carousel-diameter) / 2 - var(--home-carousel-item-height) * 0.55
+  );
+  inset-block-start: var(--size-3);
+  inline-size: var(--home-carousel-diameter);
+  aspect-ratio: 1 / 1;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+}
+
+.bp-carousel-ring:last-child {
+  --home-carousel-radius: calc(
+    var(--home-carousel-diameter) / 2 - var(--home-carousel-item-height) *
+      1.6875
+  );
+}
+
+.bp-carousel-item {
+  inset-block-start: 50%;
+  inline-size: calc(var(--home-carousel-item-height) * 1.5);
+  block-size: var(--home-carousel-item-height);
+  border-radius: calc(var(--home-carousel-item-height) * 0.13);
+  transform: translate(-50%, -50%)
+    rotate(
+      calc(var(--home-carousel-slot) * 1turn / var(--home-carousel-slot-count))
+    )
+    translateY(calc(var(--home-carousel-radius) * -1));
+  position: absolute;
+  left: 50%;
+  overflow: clip;
+  background-color: var(--muted);
+}
+
+.bp-carousel-item > img {
+  border-radius: var(--border-radius-none);
+  border-style: none;
+  display: block;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bp-carousel-ring {
+    animation: bp-carousel-spin var(--home-carousel-duration) linear infinite;
+  }
+  .bp-carousel-ring:last-child {
+    animation-direction: reverse;
+  }
+}
+
+@keyframes bp-carousel-spin {
+  100% {
+    rotate: 1turn;
+  }
+}
+
+.bp-hero-heading {
+  align-self: center;
+  max-inline-size: var(--home-hub-heading-max-inline-size);
+  /* เว้นจากวงแหวนด้านในให้หัวข้อไม่ทับรูป — พื้นที่เนื้อหาในแอปแคบกว่าหน้า
+     ต้นทาง (มี sidebar) วงในเลยยื่นลงมาเกินกล่อง carousel 405px */
+  margin: var(--size-5) var(--size-5) 0;
+  font-family: "Sarabun", sans-serif;
+  font-size: var(--home-hub-heading-font-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--home-hub-heading-line-height);
+  letter-spacing: var(--letter-spacing-tight);
+  text-align: center;
+  color: rgb(27, 27, 27);
+  text-wrap: balance;
+}
+
+.dark .bp-hero-heading {
+  color: var(--foreground);
+}
