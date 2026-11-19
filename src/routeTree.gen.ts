@@ -54,6 +54,7 @@ import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedChangePasswordIndexRouteImport } from './routes/_authenticated/change-password/index'
 import { Route as AuthenticatedBirthdaysIndexRouteImport } from './routes/_authenticated/birthdays/index'
 import { Route as AuthenticatedBibleIndexRouteImport } from './routes/_authenticated/bible/index'
+import { Route as AuthenticatedBibleProjectIndexRouteImport } from './routes/_authenticated/bible-project/index'
 import { Route as AuthenticatedBibleApiTesterIndexRouteImport } from './routes/_authenticated/bible-api-tester/index'
 import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
@@ -320,6 +321,12 @@ const AuthenticatedBibleIndexRoute = AuthenticatedBibleIndexRouteImport.update({
   path: '/bible/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBibleProjectIndexRoute =
+  AuthenticatedBibleProjectIndexRouteImport.update({
+    id: '/bible-project/',
+    path: '/bible-project/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBibleApiTesterIndexRoute =
   AuthenticatedBibleApiTesterIndexRouteImport.update({
     id: '/bible-api-tester/',
@@ -494,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/apps/': typeof AuthenticatedAppsIndexRoute
   '/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/bible-api-tester/': typeof AuthenticatedBibleApiTesterIndexRoute
+  '/bible-project/': typeof AuthenticatedBibleProjectIndexRoute
   '/bible/': typeof AuthenticatedBibleIndexRoute
   '/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password/': typeof AuthenticatedChangePasswordIndexRoute
@@ -561,6 +569,7 @@ export interface FileRoutesByTo {
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/attendance': typeof AuthenticatedAttendanceIndexRoute
   '/bible-api-tester': typeof AuthenticatedBibleApiTesterIndexRoute
+  '/bible-project': typeof AuthenticatedBibleProjectIndexRoute
   '/bible': typeof AuthenticatedBibleIndexRoute
   '/birthdays': typeof AuthenticatedBirthdaysIndexRoute
   '/change-password': typeof AuthenticatedChangePasswordIndexRoute
@@ -633,6 +642,7 @@ export interface FileRoutesById {
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
   '/_authenticated/bible-api-tester/': typeof AuthenticatedBibleApiTesterIndexRoute
+  '/_authenticated/bible-project/': typeof AuthenticatedBibleProjectIndexRoute
   '/_authenticated/bible/': typeof AuthenticatedBibleIndexRoute
   '/_authenticated/birthdays/': typeof AuthenticatedBirthdaysIndexRoute
   '/_authenticated/change-password/': typeof AuthenticatedChangePasswordIndexRoute
@@ -703,6 +713,7 @@ export interface FileRouteTypes {
     | '/apps/'
     | '/attendance/'
     | '/bible-api-tester/'
+    | '/bible-project/'
     | '/bible/'
     | '/birthdays/'
     | '/change-password/'
@@ -770,6 +781,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/attendance'
     | '/bible-api-tester'
+    | '/bible-project'
     | '/bible'
     | '/birthdays'
     | '/change-password'
@@ -841,6 +853,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apps/'
     | '/_authenticated/attendance/'
     | '/_authenticated/bible-api-tester/'
+    | '/_authenticated/bible-project/'
     | '/_authenticated/bible/'
     | '/_authenticated/birthdays/'
     | '/_authenticated/change-password/'
@@ -1215,6 +1228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBibleIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bible-project/': {
+      id: '/_authenticated/bible-project/'
+      path: '/bible-project'
+      fullPath: '/bible-project/'
+      preLoaderRoute: typeof AuthenticatedBibleProjectIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bible-api-tester/': {
       id: '/_authenticated/bible-api-tester/'
       path: '/bible-api-tester'
@@ -1420,6 +1440,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
   AuthenticatedBibleApiTesterIndexRoute: typeof AuthenticatedBibleApiTesterIndexRoute
+  AuthenticatedBibleProjectIndexRoute: typeof AuthenticatedBibleProjectIndexRoute
   AuthenticatedBibleIndexRoute: typeof AuthenticatedBibleIndexRoute
   AuthenticatedBirthdaysIndexRoute: typeof AuthenticatedBirthdaysIndexRoute
   AuthenticatedChangePasswordIndexRoute: typeof AuthenticatedChangePasswordIndexRoute
@@ -1463,6 +1484,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
   AuthenticatedBibleApiTesterIndexRoute: AuthenticatedBibleApiTesterIndexRoute,
+  AuthenticatedBibleProjectIndexRoute: AuthenticatedBibleProjectIndexRoute,
   AuthenticatedBibleIndexRoute: AuthenticatedBibleIndexRoute,
   AuthenticatedBirthdaysIndexRoute: AuthenticatedBirthdaysIndexRoute,
   AuthenticatedChangePasswordIndexRoute: AuthenticatedChangePasswordIndexRoute,

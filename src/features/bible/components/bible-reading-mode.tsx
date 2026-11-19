@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AiHelpButton } from "./ai-help-button";
+import { BookVideoButton } from "./book-video-button";
 import {
   Sheet,
   SheetContent,
@@ -279,7 +280,13 @@ export function BibleReadingMode({
         {/* เหมือนกับ heading ใน BiblePanel ปกติ — ดู grill-me 2026-08-28
         "ใส่ด้วย" (โหมดอ่านเต็มจอ) */}
         {activeBook && (
-          <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+          <>
+            <BookVideoButton
+              bookNumber={activeBook.number}
+              bookNameTh={activeBook.nameTh}
+            />
+            <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+          </>
         )}
         <Button
           type="button"

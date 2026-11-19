@@ -17,6 +17,7 @@ import { buildVerseQuoteHtml } from "../lib/build-verse-quote-html";
 import { BibleNav } from "./bible-nav";
 import { BibleReadingMode, ReadingModeFab } from "./bible-reading-mode";
 import { AiHelpButton } from "./ai-help-button";
+import { BookVideoButton } from "./book-video-button";
 import { BibleVerseShareDialog } from "./bible-verse-share-dialog";
 import { ChapterReadMarker } from "./chapter-read-marker";
 import { indexVerses, VerseBlock } from "./verse-block";
@@ -300,7 +301,16 @@ export function BiblePanel({
               </Button>
             )}
             {activeBook && (
-              <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
+              <>
+                <BookVideoButton
+                  bookNumber={activeBook.number}
+                  bookNameTh={activeBook.nameTh}
+                />
+                <AiHelpButton
+                  bookNameTh={activeBook.nameTh}
+                  chapter={chapter}
+                />
+              </>
             )}
           </div>
         </div>

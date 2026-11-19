@@ -20,6 +20,7 @@ import {
   MessageCircleHeart,
   GalleryHorizontalEnd,
   Sprout,
+  Clapperboard,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -110,6 +111,13 @@ export const sidebarData: SidebarData = {
           title: "พระคัมภีร์",
           url: "/bible/1/1",
           icon: BookOpen,
+        },
+        // วิดีโอ BibleProject ภาษาไทย (features/bible-project) — ทุก role ที่
+        // login เห็นเหมือนเมนูพระคัมภีร์ (grill-me 2026-11-19)
+        {
+          title: "Bible Project",
+          url: "/bible-project",
+          icon: Clapperboard,
         },
       ],
     },
