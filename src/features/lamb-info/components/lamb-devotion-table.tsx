@@ -13,6 +13,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { format, parseISO } from "date-fns";
+import { th } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -35,6 +37,9 @@ import { lambDevotionTableColumns as columns } from "./lamb-devotion-table-colum
 
 type ContentTypeTab = "all" | DevotionContentType;
 
+// "2026-11" → Date วันที่ 1 ของเดือนนั้น สำหรับ format ชื่อเดือนภาษาไทย (ปี ค.ศ.)
+const monthKeyToDate = (key: string) => parseISO(`${key}-01`);
+
 type LambDevotionTableProps = {
   data: LambDevotionRow[];
 };
@@ -49,7 +54,9 @@ type LambDevotionTableProps = {
 export function LambDevotionTable({ data }: LambDevotionTableProps) {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    month: false,
+  });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -66,16 +73,33 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
     contentTypeFilter?.length === 1
       ? (contentTypeFilter[0] as DevotionContentType)
       : "all";
-  const counts = useMemo(
-    () => ({
-      all: data.length,
-      devotion: data.filter((d) => d.content_type === "devotion").length,
-      sermon: data.filter((d) => d.content_type === "sermon").length,
-      thanksgiving: data.filter((d) => d.content_type === "thanksgiving")
+  // ตัวกรองเดือน (grill-me 2026-11-19): dropdown "+ เดือน" หลายเดือนได้
+  // อิง devotion_date ไม่ใช่ created_at ตัวเลขบนแท็บประเภทเปลี่ยนตามเดือนที่
+  // เลือก (แต่ไม่ตามสถานะ/คำค้น) เปิดหน้ามาไม่เลือกเดือน = ทุกเดือน
+  const monthFilter = columnFilters.find((f) => f.id === "month")?.value as
+    | string[]
+    | undefined;
+  const monthOptions = useMemo(() => {
+    const keys = Array.from(
+      new Set(data.map((d) => d.devotion_date.slice(0, 7))),
+    ).sort((a, b) => b.localeCompare(a));
+    return keys.map((key) => ({
+      value: key,
+      label: format(monthKeyToDate(key), "MMM yyyy", { locale: th }),
+    }));
+  }, [data]);
+  const counts = useMemo(() => {
+    const rows = monthFilter?.length
+      ? data.filter((d) => monthFilter.includes(d.devotion_date.slice(0, 7)))
+      : data;
+    return {
+      all: rows.length,
+      devotion: rows.filter((d) => d.content_type === "devotion").length,
+      sermon: rows.filter((d) => d.content_type === "sermon").length,
+      thanksgiving: rows.filter((d) => d.content_type === "thanksgiving")
         .length,
-    }),
-    [data],
-  );
+    };
+  }, [data, monthFilter]);
   const handleTabChange = (value: string) => {
     const tab = value as ContentTypeTab;
     setColumnFilters((prev) => [
@@ -149,12 +173,29 @@ export function LambDevotionTable({ data }: LambDevotionTableProps) {
         searchPlaceholder="ค้นหาหัวข้อ..."
         filters={[
           {
+            columnId: "month",
+            title: "เดือน",
+            options: monthOptions,
+          },
+          {
             columnId: "is_public",
             title: "สถานะ",
             options: devotionVisibilityOptions,
           },
         ]}
       />
+      {/* บรรทัดสรุปจำนวนหลังกรองทุกอย่าง (แท็บ+เดือน+สถานะ+ค้นหา) */}
+      <p className="text-muted-foreground text-sm">
+        {monthFilter?.length === 1
+          ? `${format(monthKeyToDate(monthFilter[0]), "MMMM yyyy", { locale: th })} · `
+          : monthFilter && monthFilter.length > 1
+            ? `${monthFilter.length} เดือน · `
+            : ""}
+        <span className="text-foreground font-medium">
+          {table.getFilteredRowModel().rows.length}
+        </span>{" "}
+        รายการ
+      </p>
       {/* overflow-x-auto (was overflow-hidden) so the 7-column table can be
       swiped horizontally on narrow screens instead of clipping cell text —
       grill-me 2026-08-30 ("ข้อความมันล้นตาราง") */}

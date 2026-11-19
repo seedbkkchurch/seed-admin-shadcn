@@ -45,6 +45,20 @@ export const lambDevotionTableColumns: ColumnDef<LambDevotionRow>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+  // คอลัมน์ซ่อน "month" (yyyy-MM จาก devotion_date) — ไม่แสดงในตาราง
+  // (columnVisibility month:false ใน lamb-devotion-table.tsx และ
+  // enableHiding:false จึงไม่โผล่ในเมนู View) มีไว้ให้ตัวกรอง "+ เดือน"
+  // กรองหลายเดือนได้ + นับจำนวนต่อเดือนผ่าน faceted values
+  // (grill-me 2026-11-19)
+  {
+    id: "month",
+    accessorFn: (row) => row.devotion_date.slice(0, 7),
+    header: () => null,
+    cell: () => null,
+    filterFn: (row, id, value: string[]) => value.includes(row.getValue(id)),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "devotion_date",
     header: ({ column }) => (
