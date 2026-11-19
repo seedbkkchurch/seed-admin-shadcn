@@ -108,7 +108,7 @@ export function Friends() {
             </AlertDescription>
           </Alert>
         ) : isPending ? (
-          <Skeleton className="mx-auto aspect-[4/5] w-[min(340px,82vw)] rounded-[28px]" />
+          <Skeleton className="mx-auto aspect-[4/5] w-[min(480px,92vw,calc((100dvh_-_260px)_*_0.8))] rounded-[28px]" />
         ) : friends.length === 0 ? (
           <p className="text-muted-foreground py-10 text-center text-sm">
             ยังไม่มีสมาชิกให้แสดง

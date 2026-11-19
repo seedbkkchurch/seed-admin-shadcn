@@ -258,15 +258,13 @@ async function getMyLambRoleInfo(): Promise<MyLambRoleInfo> {
   return { lambId: lamb.id, role: lamb.role };
 }
 
-// true เฉพาะ member/visitor ที่ผูกกับลูกแกะจริง — ใช้เลือกหน้าแรกหลัง login
-// (routes/_authenticated/index.tsx พา member/visitor ไป /spiritual, grill-me
-// 2026-11-15) ต่างจาก checkIsLambAccessRestricted ด้านล่างตรงที่ role หาไม่
-// เจอ (null) ไม่นับ — ตรงนี้ไม่ใช่การกันสิทธิ์ แค่เลือกหน้า
-export async function checkIsMemberOrVisitor(): Promise<boolean> {
-  const { lambId, role } = await getMyLambRoleInfo();
-  return (
-    lambId !== null && role !== null && LAMB_ACCESS_RESTRICTED_ROLES.has(role)
-  );
+// true ถ้าบัญชีที่ล็อกอินผูกกับลูกแกะ (ทุก role) — ใช้เลือกหน้าแรกหลัง login
+// (routes/_authenticated/index.tsx พาทุกคนที่มีข้อมูลลูกแกะไป /spiritual,
+// grill-me 2026-11-19) บัญชีที่ไม่ผูก (เช่น staff account) ไม่มีข้อมูลส่วนตัวให้
+// หน้า /spiritual แสดง จึงยังไป /dashboard — ไม่ใช่การกันสิทธิ์ แค่เลือกหน้า
+export async function checkHasLinkedLamb(): Promise<boolean> {
+  const { lambId } = await getMyLambRoleInfo();
+  return lambId !== null;
 }
 
 // ใช้กันหน้ารายการ/เมนูคุมงานกลุ่ม (Lamb Info list, เช็คชื่อรายสัปดาห์) —

@@ -143,8 +143,10 @@ export function FriendSwipeDeck({
 
   return (
     <div className="flex flex-col items-center gap-5">
+      {/* ขนาดการ์ด: กว้างสุด 480px / 92% ของจอ / และไม่สูงเกินจอ (เผื่อ
+          header + ปุ่มด้านล่าง ~260px) — ขยายจาก 340px ตามคำขอ 2026-11-19 */}
       <div
-        className="relative w-[min(340px,82vw)] touch-pan-y select-none"
+        className="relative w-[min(480px,92vw,calc((100dvh_-_260px)_*_0.8))] touch-pan-y select-none"
         style={{ aspectRatio: "4 / 5", marginBottom: 28 }}
       >
         {visible.map(({ key, rel, friend }) => (
