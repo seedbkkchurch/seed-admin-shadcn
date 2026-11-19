@@ -21,6 +21,7 @@ import {
   GalleryHorizontalEnd,
   Sprout,
   Clapperboard,
+  UsersRound,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -65,6 +66,13 @@ export const sidebarData: SidebarData = {
           title: "เดือนเกิด",
           url: "/birthdays",
           icon: Cake,
+        },
+        // การ์ดปัดแบบ Tinder ทำความรู้จักสมาชิก — ทุก role เห็น (รวม
+        // visitor) เหมือนเดือนเกิด (grill-me 2026-11-19)
+        {
+          title: "รู้จักเพื่อน",
+          url: "/friends",
+          icon: UsersRound,
         },
       ],
     },
