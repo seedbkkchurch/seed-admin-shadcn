@@ -15,6 +15,7 @@ export type FriendLamb = Pick<
   | "birthday"
   | "interesting"
   | "favorite_food"
+  | "unfavorite_food"
 > & {
   personality_type: Pick<
     Tables<"personality_type">,
@@ -29,7 +30,7 @@ export function useFriendLambs() {
       const { data, error } = await supabase
         .from("lamb_info")
         .select(
-          "id, first_name, last_name, nick_name, profile_picture, birthday, interesting, favorite_food, personality_type(code, description_th, archetype, explain)",
+          "id, first_name, last_name, nick_name, profile_picture, birthday, interesting, favorite_food, unfavorite_food, personality_type(code, description_th, archetype, explain)",
         )
         .eq("status", true);
 

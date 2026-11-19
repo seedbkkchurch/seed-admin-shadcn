@@ -55,7 +55,7 @@ export function seededShuffle<T>(items: T[], seed: number): T[] {
   return result;
 }
 
-// มีด้านหลังให้พลิกไหม — ต้องมีบุคลิกภาพหรืออาหารที่ชอบอย่างน้อยหนึ่งอย่าง
+// มีด้านหลังให้พลิกไหม — ต้องมีบุคลิกภาพหรืออาหารที่ชอบ/ไม่ชอบอย่างน้อยหนึ่งอย่าง
 export function hasBack(friend: FriendCardData) {
-  return !!friend.personality || !!friend.favoriteFood;
+  return !!friend.personality || !!friend.favoriteFood || !!friend.dislikedFood;
 }

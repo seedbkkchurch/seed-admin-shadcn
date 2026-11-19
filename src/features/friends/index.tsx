@@ -74,6 +74,7 @@ export function Friends() {
             }
           : null,
         favoriteFood: lamb.favorite_food?.trim() || null,
+        dislikedFood: lamb.unfavorite_food?.trim() || null,
       } satisfies FriendCardData;
     });
     // เรียงตาม id ก่อนสุ่ม ให้ผลสุ่มขึ้นกับ seed อย่างเดียว ไม่ขึ้นกับลำดับที่ DB ส่งมา

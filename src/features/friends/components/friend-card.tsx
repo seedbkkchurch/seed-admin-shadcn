@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { RotateCcw, UsersRound, UtensilsCrossed } from "lucide-react";
+import { RotateCcw, ThumbsDown, ThumbsUp, UsersRound } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 export type FriendCardData = {
   id: string;
@@ -22,6 +21,7 @@ export type FriendCardData = {
     explain: string | null;
   } | null;
   favoriteFood: string | null;
+  dislikedFood: string | null;
 };
 
 const MAX_CHIPS = 4;
@@ -33,7 +33,7 @@ type FriendCardProps = {
 
 // การ์ดเพื่อน 1 ใบ (grill-me 2026-11-19) — สองหน้า พลิกด้วย rotateY
 // หน้า: รูปเต็มใบ, ป้าย MBTI มุมขวาบน, ชื่อเล่น · อายุ, ชื่อจริง, ชิปสิ่งที่สนใจ
-// หลัง: รหัส MBTI ตัวใหญ่, description_th, archetype, explain, ชวนไปกิน
+// หลัง: รหัส MBTI ตัวใหญ่, description_th, archetype, explain, อาหารที่ชอบ/ไม่ชอบ
 // การลาก/แตะ/พลิกจัดการที่ FriendSwipeDeck — คอมโพเนนต์นี้แค่วาด
 export function FriendCard({ friend, flipped }: FriendCardProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
@@ -148,7 +148,7 @@ export function FriendCard({ friend, flipped }: FriendCardProps) {
                     </p>
                   )}
                   {friend.personality.explain && (
-                    <p className="mt-4 line-clamp-5 text-sm leading-relaxed text-white/75">
+                    <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-white/75">
                       {friend.personality.explain}
                     </p>
                   )}
@@ -158,17 +158,26 @@ export function FriendCard({ friend, flipped }: FriendCardProps) {
               )}
             </div>
 
-            {friend.favoriteFood && (
-              <div
-                className={cn(
-                  "flex items-start gap-2 border-t border-white/15 pt-4 text-sm",
+            {(friend.favoriteFood || friend.dislikedFood) && (
+              <div className="space-y-1.5 border-t border-white/15 pt-4 text-sm">
+                {friend.favoriteFood && (
+                  <div className="flex items-start gap-2">
+                    <ThumbsUp className="mt-0.5 size-4 shrink-0 text-emerald-300" />
+                    <p className="line-clamp-2">
+                      <span className="text-white/70">ชอบกิน: </span>
+                      {friend.favoriteFood}
+                    </p>
+                  </div>
                 )}
-              >
-                <UtensilsCrossed className="mt-0.5 size-4 shrink-0" />
-                <p className="line-clamp-2">
-                  <span className="text-white/70">ชวนไปกิน: </span>
-                  {friend.favoriteFood}
-                </p>
+                {friend.dislikedFood && (
+                  <div className="flex items-start gap-2">
+                    <ThumbsDown className="mt-0.5 size-4 shrink-0 text-rose-300" />
+                    <p className="line-clamp-2">
+                      <span className="text-white/70">ไม่ชอบกิน: </span>
+                      {friend.dislikedFood}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
