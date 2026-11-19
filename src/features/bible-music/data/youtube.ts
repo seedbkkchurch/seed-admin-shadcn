@@ -24,8 +24,10 @@ export function parseYoutubeId(input: string): string | null {
   return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
 }
 
+// hqdefault (480×360 มีแถบดำบน/ล่าง) — พอ object-cover ลงกรอบ 16:9 แถบดำ
+// ถูกตัดพอดี ได้ภาพจริง 480×270 คมกว่า mqdefault (320×180) ตอนแสดงภาพใหญ่
 export function youtubeThumbnail(id: string) {
-  return `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 }
 
 // ชื่อเพลง/ช่องจาก oEmbed — ช่วยเติมฟอร์มให้อัตโนมัติ ล้มเหลวก็แค่ให้แอดมิน

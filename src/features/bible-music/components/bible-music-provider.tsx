@@ -7,22 +7,45 @@ import { BibleMusicPlayer } from "./bible-music-player";
 // — เพลงเล่นต่อเนื่องระหว่างเปลี่ยนหน้า ตราบที่แอป/แท็บยังเปิดอยู่ ปิดแอป =
 // เพลงหยุด (ตัวเล่น YouTube ฝังในหน้า เล่นเบื้องหลังหลังปิดแอปไม่ได้)
 export function BibleMusicProvider({ children }: { children: ReactNode }) {
-  const { data } = useBibleMusicTracks({ activeOnly: true });
+  const { data, isPending } = useBibleMusicTracks({ activeOnly: true });
   const tracks = useMemo(() => data ?? [], [data]);
   const [open, setOpen] = useState(false);
-  const toggle = useCallback(() => setOpen((value) => !value), []);
-  const close = useCallback(() => setOpen(false), []);
+  // สถานะเล่น/หยุดจริงจาก YouTube — ตัวเล่นเป็นคนอัปเดตผ่าน setPlaying ให้
+  // ปุ่ม 🎵 ทุกปุ่มโชว์แท่งเสียงขยับตอนเล่น (grill-me 2026-11-20) รีเซ็ตทุก
+  // ครั้งที่เปิด/ปิดตัวเล่น — เปิดใหม่แล้ว YouTube จะบอกเองเมื่อเริ่มเล่น
+  const [playing, setPlaying] = useState(false);
+  const toggle = useCallback(() => {
+    setOpen((value) => !value);
+    setPlaying(false);
+  }, []);
+  const close = useCallback(() => {
+    setOpen(false);
+    setPlaying(false);
+  }, []);
+
+  const showPlayer = open && tracks.length > 0;
 
   const value = useMemo(
-    () => ({ tracks, open, toggle }),
-    [tracks, open, toggle],
+    () => ({
+      tracks,
+      isLoading: isPending,
+      open,
+      playing: showPlayer && playing,
+      toggle,
+    }),
+    [tracks, isPending, open, showPlayer, playing, toggle],
   );
 
   return (
     <BibleMusicContext.Provider value={value}>
       {children}
-      {open && tracks.length > 0 && (
-        <BibleMusicPlayer tracks={tracks} onClose={close} />
+      {showPlayer && (
+        <BibleMusicPlayer
+          tracks={tracks}
+          onClose={close}
+          playing={playing}
+          setPlaying={setPlaying}
+        />
       )}
     </BibleMusicContext.Provider>
   );

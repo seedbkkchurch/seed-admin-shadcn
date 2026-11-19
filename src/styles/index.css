@@ -85,3 +85,15 @@
     height: 0;
   }
 }
+
+/* ปุ่ม 🎵 (features/bible-music/components/bible-music-button.tsx): แท่งเสียง
+   ขยับตอนเพลงเล่น ใช้ผ่าน animate-[music-eq_...] — grill-me 2026-11-20 */
+@keyframes music-eq {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}

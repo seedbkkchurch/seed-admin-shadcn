@@ -50,6 +50,9 @@ const ENDED = 0;
 type BibleMusicPlayerProps = {
   tracks: BibleMusicTrack[];
   onClose: () => void;
+  /** สถานะเล่น/หยุด เก็บใน BibleMusicProvider ให้ปุ่ม 🎵 รู้ด้วย */
+  playing: boolean;
+  setPlaying: (playing: boolean) => void;
 };
 
 // Mini player ลอยมุมขวาล่าง (grill-me 2026-11-20):
@@ -60,7 +63,12 @@ type BibleMusicPlayerProps = {
 // - ลากที่แถบด้านบนเพื่อย้าย (ดับเบิลคลิกแถบ = กลับมุมขวาล่าง)
 // - ความดัง/โหมดสุ่ม/ตำแหน่ง จำใน localStorage
 // - วิดีโอที่ฝังไม่ได้ (เจ้าของปิด embed) ข้ามไปเพลงถัดไปเอง
-export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
+export function BibleMusicPlayer({
+  tracks,
+  onClose,
+  playing,
+  setPlaying,
+}: BibleMusicPlayerProps) {
   const [prefs, setPrefs] = useState<BibleMusicPrefs>(readPrefs);
   useEffect(() => writePrefs(prefs), [prefs]);
 
@@ -123,7 +131,6 @@ export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
   const playerRef = useRef<YTPlayer | null>(null);
   const loadedIdRef = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const errorStreak = useRef(0);
 
@@ -133,6 +140,8 @@ export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
     current,
     volume: prefs.volume,
     trackCount: tracks.length,
+    setPlaying,
+    offset: prefs.offset,
   });
   useEffect(() => {
     latest.current = {
@@ -140,6 +149,8 @@ export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
       current,
       volume: prefs.volume,
       trackCount: tracks.length,
+      setPlaying,
+      offset: prefs.offset,
     };
   });
 
@@ -169,17 +180,17 @@ export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
             onStateChange: (event) => {
               if (event.data === PLAYING) {
                 errorStreak.current = 0;
-                setPlaying(true);
+                latest.current.setPlaying(true);
               } else if (event.data === PAUSED) {
-                setPlaying(false);
+                latest.current.setPlaying(false);
               } else if (event.data === ENDED) {
-                setPlaying(false);
+                latest.current.setPlaying(false);
                 latest.current.goNext();
               }
             },
             onError: () => {
               errorStreak.current += 1;
-              setPlaying(false);
+              latest.current.setPlaying(false);
               // ทุกเพลงเล่นไม่ได้ — หยุด ไม่วนข้ามไม่รู้จบ
               if (errorStreak.current >= latest.current.trackCount) {
                 toast.error("เล่นเพลงไม่ได้ ลองใหม่ภายหลัง");
@@ -273,6 +284,40 @@ export function BibleMusicPlayer({ tracks, onClose }: BibleMusicPlayerProps) {
   const onHandleUp = () => {
     drag.current = null;
   };
+
+  // ดึงกล่องตัวเล่นกลับเข้าจอเสมอ (2026-11-20 "ให้มันแสดงเป็น popup เล็ก ๆ
+  // แบบเดิม") — ตำแหน่งที่ลากไว้จำใน localStorage ใช้ร่วมกันทุกขนาดจอของ
+  // เบราว์เซอร์เดียวกัน ลากไว้ไกล ๆ บนจอคอมแล้วมาเปิดจอแคบ (มือถือ/โหมด
+  // responsive/หมุนจอ) กล่องจะหลุดออกนอกจอทั้งที่เพลงเล่นอยู่ — เช็คตอนเปิด
+  // ตัวเล่นและทุกครั้งที่ขนาดจอเปลี่ยน ถ้ากล่องใหญ่กว่าจอให้ชิดซ้าย/บนไว้
+  // (แถบลากกับปุ่ม ✕ ต้องเห็น) คำนวณเป็นค่า offset ตรง ๆ ไม่ใช่บวกเพิ่ม
+  // resize หลายครั้งก่อน render ก็ได้ค่าเดิม
+  useEffect(() => {
+    const keepInView = () => {
+      const el = panelRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const { x: ox, y: oy } = latest.current.offset;
+      const margin = 8;
+      const left = rect.left - ox;
+      const top = rect.top - oy;
+      const minX = margin - left;
+      const maxX = window.innerWidth - margin - (left + rect.width);
+      const minY = margin - top;
+      const maxY = window.innerHeight - margin - (top + rect.height);
+      const x = Math.max(minX, Math.min(maxX, ox));
+      const y = Math.max(minY, Math.min(maxY, oy));
+      if (x !== ox || y !== oy) {
+        setPrefs((p) => ({ ...p, offset: { x, y } }));
+      }
+    };
+    const frame = requestAnimationFrame(keepInView);
+    window.addEventListener("resize", keepInView);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", keepInView);
+    };
+  }, []);
 
   return (
     <div

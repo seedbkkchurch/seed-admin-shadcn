@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { InstallPwaButton } from "@/components/install-pwa-button";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
   fixed?: boolean;
@@ -44,6 +45,12 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
       >
         <SidebarTrigger variant="outline" className="max-md:scale-125" />
         <Separator orientation="vertical" className="h-6" />
+        {/* มือถือ (< md): ปุ่ม 🎵 กลมใหญ่แทนช่อง Search ซึ่งซ่อนบนมือถือ
+            (grill-me 2026-11-20) — me-auto อยู่ที่ wrapper ให้ปุ่มอื่นยังชิด
+            ขวาแทน Search ได้แม้ปุ่มไม่แสดง (นอก BibleMusicProvider) */}
+        <div className="me-auto flex md:hidden">
+          <BibleMusicButton variant="mobile-header" />
+        </div>
         {children}
         {/* Installable-app trigger (grill-me follow-up, 2026-08-12). Global
             here so every route gets it without each one wiring it in. */}

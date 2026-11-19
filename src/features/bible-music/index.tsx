@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import {
   type BibleMusicTrack,
   useAddBibleMusicTrack,
@@ -314,12 +315,22 @@ function TrackRow({
   };
 
   return (
-    <li className="flex items-center gap-3 py-3">
+    // ภาพปกใหญ่ขึ้น (2026-11-20): มือถือ 128px คอม 192px — ปุ่มจัดการของ
+    // แอดมินย้ายไปอยู่ใต้ชื่อเพลงบนมือถือ ไม่ให้เบียดชื่อเพลงจนมองไม่เห็น
+    <li
+      className={cn(
+        "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 py-3 sm:items-center",
+        canManage && "sm:grid-cols-[auto_minmax(0,1fr)_auto]",
+      )}
+    >
       <a
         href={`https://www.youtube.com/watch?v=${track.youtube_id}`}
         target="_blank"
         rel="noreferrer"
-        className="bg-muted aspect-video w-24 shrink-0 overflow-hidden rounded"
+        className={cn(
+          "bg-muted aspect-video w-32 overflow-hidden rounded-md sm:w-48",
+          canManage && "row-span-2 sm:row-span-1",
+        )}
       >
         <img
           src={youtubeThumbnail(track.youtube_id)}
@@ -328,11 +339,7 @@ function TrackRow({
           className="size-full object-cover"
         />
       </a>
-      <div
-        className={
-          track.is_active ? "min-w-0 flex-1" : "min-w-0 flex-1 opacity-60"
-        }
-      >
+      <div className={track.is_active ? "min-w-0" : "min-w-0 opacity-60"}>
         <div className="flex items-center gap-2">
           <p
             className={
@@ -357,7 +364,7 @@ function TrackRow({
         <TrackAdder adder={track.adder} className="mt-1" />
       </div>
       {canManage && (
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="col-start-2 flex items-center gap-1 sm:col-start-3">
           <Switch
             checked={track.is_active}
             aria-label={track.is_active ? "ปิดเพลงนี้" : "เปิดเพลงนี้"}

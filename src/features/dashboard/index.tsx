@@ -213,7 +213,8 @@ export function Dashboard() {
     <>
       {/* ===== Top Heading ===== */}
       <Header>
-        <TopNav links={topNav} className="me-auto" />
+        {/* md:me-auto — บนมือถือปุ่ม 🎵 ใหญ่ใน Header ดันปุ่มอื่นไปขวาเอง */}
+        <TopNav links={topNav} className="md:me-auto" />
         <Search />
         <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />

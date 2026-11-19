@@ -286,7 +286,8 @@ export function BibleReadingMode({
               bookNumber={activeBook.number}
               bookNameTh={activeBook.nameTh}
             />
-            <BibleMusicButton />
+            {/* inline: แสดงบนมือถือด้วย — โหมดนี้ซ่อน header ที่มีปุ่มใหญ่ */}
+            <BibleMusicButton variant="inline" />
             <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
           </>
         )}
