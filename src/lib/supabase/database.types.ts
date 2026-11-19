@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      bible_music_track: {
+        Row: {
+          added_by: string | null
+          artist: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          title: string
+          youtube_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          artist?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title: string
+          youtube_id: string
+        }
+        Update: {
+          added_by?: string | null
+          artist?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title?: string
+          youtube_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bible_music_track_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "lamb_info"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_test_push_subscription: {
         Row: {
           auth: string

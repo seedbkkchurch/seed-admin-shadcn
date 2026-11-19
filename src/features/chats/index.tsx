@@ -25,6 +25,7 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { NewChat } from "./components/new-chat";
 import { type ChatUser, type Convo } from "./data/chat-types";
 // Fake Data
@@ -68,6 +69,7 @@ export function Chats() {
       {/* ===== Top Heading ===== */}
       <Header>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

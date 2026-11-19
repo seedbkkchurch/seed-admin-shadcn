@@ -13,6 +13,7 @@ import { TopNav } from "@/components/layout/top-nav";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import {
   useDevotionOverviewEntries,
   useDevotionOverviewMembers,
@@ -214,6 +215,7 @@ export function Dashboard() {
       <Header>
         <TopNav links={topNav} className="me-auto" />
         <Search />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

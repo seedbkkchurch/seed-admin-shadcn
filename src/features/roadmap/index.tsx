@@ -4,6 +4,7 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { MyDevotionFan } from "./components/my-devotion-fan";
 
 // หน้า /roadmap — การ์ดพัด "เฝ้าเดี่ยวของฉัน" เต็มหน้า ตัวการ์ดพัด + ข้อมูล
@@ -15,6 +16,7 @@ export function Roadmap() {
     <>
       <Header fixed>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

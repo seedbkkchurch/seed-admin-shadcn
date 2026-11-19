@@ -4,6 +4,7 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { DevotionReminderSettingsForm } from "@/features/settings/notifications/devotion-reminder-settings-form";
 
 // แยกออกมาจากหน้า /settings/notifications เดิม (ตกลงใน grill-me 2026-08-18)
@@ -21,6 +22,7 @@ export function DevotionReminderAdmin() {
     <>
       <Header fixed>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

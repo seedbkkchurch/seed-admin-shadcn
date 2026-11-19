@@ -16,6 +16,7 @@ import { Main } from "@/components/layout/main";
 import { LearnMore } from "@/components/learn-more";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { UsersDialogs } from "@/features/users/components/users-dialogs";
 import { UsersPrimaryButtons } from "@/features/users/components/users-primary-buttons";
 import { UsersProvider } from "@/features/users/components/users-provider";
@@ -49,6 +50,7 @@ function UserManagement() {
     <UsersProvider>
       <Header fixed>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <UserButton />

@@ -22,6 +22,7 @@ import {
   Sprout,
   Clapperboard,
   UsersRound,
+  Music,
 } from "lucide-react";
 import { Logo } from "@/assets/logo";
 import { type SidebarData } from "../types";
@@ -126,6 +127,13 @@ export const sidebarData: SidebarData = {
           title: "Bible Project",
           url: "/bible-project",
           icon: Clapperboard,
+        },
+        // รายการเพลง YouTube ของตัวเล่น 🎵 — ทุก role เห็น สมาชิกเพิ่มเพลงได้
+        // ลบได้เฉพาะ music:manage (ย้ายออกจากกลุ่ม Admin, grill-me 2026-11-20)
+        {
+          title: "เพลงตอนอ่านพระคัมภีร์",
+          url: "/bible-music",
+          icon: Music,
         },
       ],
     },

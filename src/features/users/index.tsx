@@ -5,6 +5,7 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { UsersDialogs } from "./components/users-dialogs";
 import { UsersPrimaryButtons } from "./components/users-primary-buttons";
 import { UsersProvider } from "./components/users-provider";
@@ -21,6 +22,7 @@ export function Users() {
     <UsersProvider>
       <Header fixed>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

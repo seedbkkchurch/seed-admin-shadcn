@@ -8,6 +8,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { useMyLamb } from "@/hooks/use-my-lamb";
 import {
   useGiftFromGod,
@@ -81,6 +82,7 @@ export function SpiritualGiftsSurvey() {
     <>
       <Header fixed>
         <Search className="me-auto" />
+        <BibleMusicButton className="rounded-full" />
         <ThemeSwitch />
         <ConfigDrawer />
         <ProfileDropdown />

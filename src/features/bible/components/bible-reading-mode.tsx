@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BibleMusicButton } from "@/features/bible-music/components/bible-music-button";
 import { AiHelpButton } from "./ai-help-button";
 import { BookVideoButton } from "./book-video-button";
 import {
@@ -285,6 +286,7 @@ export function BibleReadingMode({
               bookNumber={activeBook.number}
               bookNameTh={activeBook.nameTh}
             />
+            <BibleMusicButton />
             <AiHelpButton bookNameTh={activeBook.nameTh} chapter={chapter} />
           </>
         )}
