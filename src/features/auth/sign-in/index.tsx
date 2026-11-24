@@ -20,9 +20,8 @@ export function SignIn() {
         <CardHeader>
           <CardTitle className="text-lg tracking-tight">Sign in</CardTitle>
           <CardDescription>
-            Enter your email and password below to log into{" "}
-            <br className="max-sm:hidden" /> your account. Don't have an
-            account?{" "}
+            กรอกอีเมลหรือเบอร์โทรศัพท์ และรหัสผ่าน{" "}
+            <br className="max-sm:hidden" /> เพื่อเข้าสู่ระบบ ยังไม่มีบัญชี?{" "}
             <Link
               to="/sign-up"
               className="text-nowrap underline underline-offset-4 hover:text-primary"

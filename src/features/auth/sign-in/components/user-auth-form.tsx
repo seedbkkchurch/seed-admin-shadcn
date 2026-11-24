@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/password-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 
 // ไอคอน Google แบบ inline SVG (ไม่มีใน lucide-react เพราะเป็น brand logo)
@@ -46,9 +53,11 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-// จำ email ล่าสุดไว้ใน localStorage ตอน login สำเร็จ ถ้าติ๊ก "จำ email ไว้"
-// ไว้ — ตกลงใน grill-me 2026-08-17 (checkbox แบบ opt-in ไม่ใช่จำอัตโนมัติ
-// เพราะเครื่องอาจใช้ร่วมกันได้)
+// จำ email/เบอร์ ล่าสุดไว้ใน localStorage ตอน login สำเร็จ ถ้าติ๊ก "จำอีเมล/
+// เบอร์ไว้" — ตกลงใน grill-me 2026-08-17 (checkbox แบบ opt-in ไม่ใช่จำ
+// อัตโนมัติ เพราะเครื่องอาจใช้ร่วมกันได้) ตั้งแต่ grill-me 2026-11-24 เก็บ
+// สิ่งที่ผู้ใช้พิมพ์ตรงๆ จะเป็นอีเมลหรือเบอร์ก็ได้ (key เดิม ค่าเดิมที่เป็น
+// อีเมลยังใช้ต่อได้)
 const REMEMBERED_EMAIL_KEY = "auth:remembered-email";
 
 function getRememberedEmail(): string {
@@ -59,16 +68,94 @@ function getRememberedEmail(): string {
   }
 }
 
+// เข้าสู่ระบบด้วยเบอร์โทร (grill-me 2026-11-24) — ช่องเดียวรับได้ทั้งอีเมล
+// และเบอร์: มี "@" = อีเมล (signInWithPassword ตรงเหมือนเดิม) ไม่มี = เบอร์
+// ส่งไป Edge Function `phone-sign-in` ซึ่งหาอีเมลจริงของบัญชีฝั่ง server
+// แล้วคืนแค่ session (อีเมลไม่เคยลงมาที่ client) บัญชีที่ยังใช้รหัสเริ่มต้น
+// (must_change_password) ต้องยืนยันวันเกิดเพิ่ม เฉพาะทางเบอร์เท่านั้น
+function isEmailIdentifier(value: string) {
+  return value.includes("@");
+}
+
+type PhoneSignInResponse =
+  | { ok: true; session: { access_token: string; refresh_token: string } }
+  | { ok: false; code: string };
+
+// แยกข้อความตามกรณีตามที่ตกลงกัน (ไม่ใช้ข้อความรวมแบบหน้าลืมรหัสผ่าน)
+const PHONE_SIGN_IN_MESSAGES: Record<string, string> = {
+  phone_not_found: "ไม่พบเบอร์นี้ในระบบ ลองเบอร์อื่น หรือติดต่อผู้ดูแล",
+  no_account: "เบอร์นี้ยังไม่มีบัญชีเข้าใช้งาน กรุณาติดต่อผู้ดูแล",
+  google_only:
+    "บัญชีนี้เข้าสู่ระบบด้วย Google กรุณากดปุ่ม Sign in with Google",
+  wrong_password: "รหัสผ่านไม่ถูกต้อง",
+  birthday_mismatch: "วันเกิดไม่ตรงกับในระบบ",
+  no_birthday_on_file: "ยังไม่มีวันเกิดของคุณในระบบ กรุณาติดต่อผู้ดูแล",
+  rate_limited: "มีการเข้าสู่ระบบถี่เกินไป กรุณารอสักครู่แล้วลองใหม่",
+};
+const SIGN_IN_FAILED_MESSAGE = "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+
+const THAI_MONTHS = [
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
+];
+const BUDDHIST_ERA_OFFSET = 543;
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => String(i + 1));
+// ปี พ.ศ. ย้อนจากปีปัจจุบันไป 100 ปี เรียงใหม่ → เก่า
+const YEAR_BE_OPTIONS = (() => {
+  const currentBe = new Date().getFullYear() + BUDDHIST_ERA_OFFSET;
+  return Array.from({ length: 101 }, (_, i) => String(currentBe - i));
+})();
+
+// วัน/เดือน/ปี พ.ศ. จาก dropdown → "YYYY-MM-DD" ค.ศ. (รูปแบบเดียวกับ
+// lamb_info.birthday) หรือ null ถ้าวันที่ไม่มีจริง เช่น 31 กุมภาพันธ์
+function toIsoBirthday(day: string, month: string, yearBe: string) {
+  const d = Number(day);
+  const m = Number(month);
+  const y = Number(yearBe) - BUDDHIST_ERA_OFFSET;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (
+    date.getUTCFullYear() !== y ||
+    date.getUTCMonth() !== m - 1 ||
+    date.getUTCDate() !== d
+  ) {
+    return null;
+  }
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
 const formSchema = z.object({
-  email: z.email({
-    error: (iss) => (iss.input === "" ? "Please enter your email." : undefined),
-  }),
+  identifier: z
+    .string()
+    .trim()
+    .min(1, "กรุณากรอกอีเมลหรือเบอร์โทรศัพท์")
+    .refine(
+      (value) =>
+        isEmailIdentifier(value)
+          ? z.email().safeParse(value).success
+          : value.replace(/\D/g, "").length >= 8,
+      { message: "รูปแบบอีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง" },
+    ),
   password: z
     .string()
     .min(1, "Please enter your password.")
     .min(7, "Password must be at least 7 characters long."),
   rememberEmail: z.boolean(),
+  birthDay: z.string(),
+  birthMonth: z.string(),
+  birthYear: z.string(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
   redirectTo?: string;
@@ -81,35 +168,26 @@ export function UserAuthForm({
 }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  // true หลัง phone-sign-in ตอบ needs_birthday — แสดง dropdown วันเกิด
+  const [needsBirthday, setNeedsBirthday] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: getRememberedEmail(),
+      identifier: getRememberedEmail(),
       password: "",
       rememberEmail: getRememberedEmail() !== "",
+      birthDay: "",
+      birthMonth: "",
+      birthYear: "",
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-
-    setIsLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
+  function finishSignIn(data: FormValues) {
     try {
       if (data.rememberEmail) {
-        window.localStorage.setItem(REMEMBERED_EMAIL_KEY, data.email);
+        window.localStorage.setItem(REMEMBERED_EMAIL_KEY, data.identifier);
       } else {
         window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
@@ -121,6 +199,84 @@ export function UserAuthForm({
     toast.success("Welcome back!");
     const targetPath = redirectTo || "/";
     navigate({ to: targetPath, replace: true });
+  }
+
+  async function signInWithEmail(data: FormValues) {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.identifier,
+      password: data.password,
+    });
+
+    if (error) {
+      toast.error(
+        error.code === "invalid_credentials"
+          ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+          : error.status === 429
+            ? PHONE_SIGN_IN_MESSAGES.rate_limited
+            : error.message,
+      );
+      return;
+    }
+
+    finishSignIn(data);
+  }
+
+  async function signInWithPhone(data: FormValues) {
+    let birthday: string | undefined;
+    if (needsBirthday) {
+      if (!data.birthDay || !data.birthMonth || !data.birthYear) {
+        form.setError("birthYear", { message: "กรุณาเลือกวันเกิดให้ครบ" });
+        return;
+      }
+      const iso = toIsoBirthday(data.birthDay, data.birthMonth, data.birthYear);
+      if (!iso) {
+        form.setError("birthYear", { message: "ไม่มีวันที่นี้ในปฏิทิน" });
+        return;
+      }
+      birthday = iso;
+    }
+
+    const { data: result, error } =
+      await supabase.functions.invoke<PhoneSignInResponse>("phone-sign-in", {
+        body: { phone: data.identifier, password: data.password, birthday },
+      });
+
+    if (error || !result) {
+      toast.error(SIGN_IN_FAILED_MESSAGE);
+      return;
+    }
+
+    if (!result.ok) {
+      if (result.code === "needs_birthday") {
+        setNeedsBirthday(true);
+        return;
+      }
+      toast.error(PHONE_SIGN_IN_MESSAGES[result.code] ?? SIGN_IN_FAILED_MESSAGE);
+      return;
+    }
+
+    const { error: sessionError } = await supabase.auth.setSession(
+      result.session,
+    );
+    if (sessionError) {
+      toast.error(SIGN_IN_FAILED_MESSAGE);
+      return;
+    }
+
+    finishSignIn(data);
+  }
+
+  async function onSubmit(data: FormValues) {
+    setIsLoading(true);
+    try {
+      if (isEmailIdentifier(data.identifier)) {
+        await signInWithEmail(data);
+      } else {
+        await signInWithPhone(data);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   // เปิดใช้งานจริงแล้ว (grill-me 2026-08-17) — email ที่ verified แล้วตรง
@@ -238,12 +394,22 @@ export function UserAuthForm({
       >
         <FormField
           control={form.control}
-          name="email"
+          name="identifier"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>อีเมล หรือ เบอร์โทรศัพท์</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input
+                  placeholder="name@example.com หรือ 0812345678"
+                  autoComplete="username"
+                  {...field}
+                  onChange={(event) => {
+                    field.onChange(event);
+                    // เปลี่ยนเบอร์/อีเมลแล้ว ขั้นยืนยันวันเกิดของเบอร์เดิมไม่
+                    // เกี่ยวแล้ว — ซ่อนกลับ ให้ server ถามใหม่ถ้าจำเป็น
+                    if (needsBirthday) setNeedsBirthday(false);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -268,6 +434,93 @@ export function UserAuthForm({
             </FormItem>
           )}
         />
+        {needsBirthday && (
+          <div className="grid gap-2 rounded-md border border-dashed p-3">
+            <p className="text-sm font-medium">วันเกิด</p>
+            <p className="text-xs text-muted-foreground">
+              เข้าด้วยเบอร์ครั้งแรก กรุณายืนยันวันเกิด
+            </p>
+            <div className="grid grid-cols-[1fr_1.6fr_1.2fr] gap-2">
+              <FormField
+                control={form.control}
+                name="birthDay"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full" aria-label="วัน">
+                          <SelectValue placeholder="วัน" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DAY_OPTIONS.map((day) => (
+                          <SelectItem key={day} value={day}>
+                            {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="birthMonth"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full" aria-label="เดือน">
+                          <SelectValue placeholder="เดือน" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {THAI_MONTHS.map((month, index) => (
+                          <SelectItem key={month} value={String(index + 1)}>
+                            {month}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="birthYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.clearErrors("birthYear");
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full" aria-label="ปี พ.ศ.">
+                          <SelectValue placeholder="ปี พ.ศ." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {YEAR_BE_OPTIONS.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
+            {form.formState.errors.birthYear?.message && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.birthYear.message}
+              </p>
+            )}
+          </div>
+        )}
         <FormField
           control={form.control}
           name="rememberEmail"
@@ -280,7 +533,7 @@ export function UserAuthForm({
                 />
               </FormControl>
               <FormLabel className="text-sm font-normal text-muted-foreground">
-                จำ email ไว้
+                จำอีเมล/เบอร์ไว้
               </FormLabel>
             </FormItem>
           )}

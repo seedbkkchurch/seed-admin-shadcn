@@ -27,6 +27,25 @@ describe("handleServerError", () => {
     expect(toastError).toHaveBeenCalledWith("No content.");
   });
 
+  it("maps the lamb_info phone unique violation to a Thai message", () => {
+    handleServerError({
+      code: "23505",
+      message:
+        'duplicate key value violates unique constraint "lamb_info_phone_normalized_key"',
+    });
+
+    expect(toastError).toHaveBeenCalledWith("เบอร์นี้มีสมาชิกคนอื่นใช้อยู่แล้ว");
+  });
+
+  it("keeps the generic message for other unique violations", () => {
+    handleServerError({
+      code: "23505",
+      message: 'duplicate key value violates unique constraint "other_key"',
+    });
+
+    expect(toastError).toHaveBeenCalledWith("Something went wrong!");
+  });
+
   it("prefers the API title when the error is an Axios error with response data", () => {
     const error = new AxiosError("Bad request");
     error.response = {
